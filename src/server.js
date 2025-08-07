@@ -8,7 +8,17 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors({ origin: 'http://localhost:3000' }));
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001'];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+}));
 // app.use(cors({ origin: 'https://testdcmk.netlify.app/' }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
