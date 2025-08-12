@@ -40,7 +40,7 @@ const enrolledCourseSchema = new Schema({
 }, { _id: false });
 
 const enrollmentSchema = new Schema({
-  student: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   enrolledCourses: [enrolledCourseSchema],
   enrolledAt: { type: Date, default: Date.now }
 });

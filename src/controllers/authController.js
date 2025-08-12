@@ -4,52 +4,47 @@ import { hashPassword, comparePassword } from '../utils/hashPassword.js'
 import mongoose from 'mongoose';
 import Admin from '../models/admin.js';
 import User from '../models/user.js';
+import { isEmailTaken } from '../utils/findExistingUser.js';
+import { createAccountByRole } from '../utils/createAccountByRole.js';
+
 
 
 export const signup = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role = 'student' } = req.body;
 
   try {
-    // 🔍 Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    // 🚫 Check for duplicates
+    const emailTaken = await isEmailTaken(email, role);
+    if (emailTaken) {
       return res.status(409).json({ error: 'User already exists' });
     }
 
+    // 🔐 Hash password and generate user ID
     const hashedPassword = await hashPassword(password);
     const userId = new mongoose.Types.ObjectId();
 
-    // 🛠 Create new user in User model only
-    const newUser = await new User({
-      _id: userId,
-      name,
-      email,
-      password: hashedPassword,
-      role: role || 'student',
-    }).save();
+    // 🛠 Create account in appropriate collection
+    const account = await createAccountByRole({ userId, name, email, hashedPassword, role });
 
-    // 🎫 Generate token
+    // 🎫 Generate JWT
     const token = jwt.sign(
-      { userId: userId.toString(), email, role: role || 'student' },
+      { userId: userId.toString(), email, role },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
 
+    // ✅ Respond
     return res.status(201).json({
-      message: 'User created successfully',
-      user: {
-        id: newUser._id.toString(),
-        name: newUser.name,
-        email: newUser.email,
-        role: newUser.role,
-      },
+      message: `${role} created successfully`,
+      user: account,
       token,
     });
   } catch (err) {
     console.error('Signup error:', err);
-    res.status(500).json({ error: 'Signup failed' });
+    return res.status(500).json({ error: 'Signup failed' });
   }
 };
+
 
 
 export const login = async (req, res) => {

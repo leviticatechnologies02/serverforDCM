@@ -12,6 +12,6 @@ const AdminSchema = new mongoose.Schema({
     role: { type: String, enum: ['admin'], default: 'admin' },
     password: String,
   },
-  batchList: [BatchSchema],
+  
 });
 export default  mongoose.model('Admin', AdminSchema);
