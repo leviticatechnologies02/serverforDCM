@@ -37,12 +37,13 @@ const enrolledCourseSchema = new Schema({
   course: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
   batch: { type: Schema.Types.ObjectId, ref: 'Batch', default: null },
   assigned: { type: Boolean, default: false },
+  availability:{type:String, default:"morning"},
+  enrolledAt: { type: Date, default: Date.now }
 }, { _id: false });
 
 const enrollmentSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  enrolledCourses: [enrolledCourseSchema],
-  enrolledAt: { type: Date, default: Date.now }
+  enrolledCourses: [enrolledCourseSchema],  
 });
 
 export default mongoose.model('Enrollment', enrollmentSchema); 
