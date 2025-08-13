@@ -10,7 +10,7 @@ import { createAccountByRole } from '../utils/createAccountByRole.js';
 
 
 export const signup = async (req, res) => {
-  const { name, email, password, role = 'student' } = req.body;
+  const { name, email, password, role} = req.body;
 
   try {
     // 🚫 Check for duplicates
@@ -28,7 +28,7 @@ export const signup = async (req, res) => {
 
     // 🎫 Generate JWT
     const token = jwt.sign(
-      { userId: userId.toString(), email, role },
+      { userId: userId.toString(), email,name, role },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
@@ -58,15 +58,17 @@ export const login = async (req, res) => {
 
     // 🔎 If not found, fallback to Admin collection
     if (!account) {
-      account = await Admin.findOne({ 'user.email': email });
+      account = await Admin.findOne({  email })
+      console.log(account)
       roleSource = 'admin';
       if (!account) {
         return res.status(401).json({ error: 'Invalid email or password' });
       }
-      account = account.user; // Unwrap user object from admin doc
+      
     }
 
     const isValid = await comparePassword(password, account.password);
+    console
     if (!isValid) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }

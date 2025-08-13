@@ -78,11 +78,11 @@ export const getUnassignedEnrollments = async (req, res) => {
         }
       },
       { $unwind: "$user" },
-      
+
       {
-        $project:{
-          user:1,
-          enrolledCourses:1
+        $project: {
+          user: 1,
+          enrolledCourses: 1
         }
       },
 
@@ -112,7 +112,20 @@ export const getUnassignedEnrollments = async (req, res) => {
             }
           }
         }
+      },
+      {
+        $project: {
+          _id: 1,
+          enrolledCourses: 1,
+          user: {
+            name: "$user.name",
+            email: "$user.email",
+            role: "$user.role"
+            // password and other sensitive fields are excluded
+          }
+        }
       }
+
     ]);
 
     res.status(200).json({ enrollments });

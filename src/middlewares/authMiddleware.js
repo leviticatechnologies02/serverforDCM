@@ -31,11 +31,12 @@ async function verifyToken(req, res, next) {
   
 
     if (decoded.role === 'admin') {
-      const adminDoc = await Admin.findOne({ 'user.id': decoded.userId });
+      const adminDoc = await Admin.findById( decoded.userId );
       if (!adminDoc) return res.status(404).json({ error: 'Admin not found' });
+      const { password, ...sanitizedAdmin } = adminDoc.toObject();
 
-      account = adminDoc.user;
-    
+      account = sanitizedAdmin;
+
     } else {
       const userDoc = await User.findById(decoded.userId);
       if (!userDoc) return res.status(404).json({ error: 'User not found' });
@@ -43,7 +44,7 @@ async function verifyToken(req, res, next) {
       const { password, ...sanitizedUser } = userDoc.toObject();
       account = sanitizedUser;
     }
-
+console.log(account)
     req.authStatus = 'verified';
     req.userAccount = {
       user: account,
