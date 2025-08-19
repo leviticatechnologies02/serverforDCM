@@ -12,9 +12,10 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
-  'https://designcarrermetrics.com' // Add your deployed frontend if needed
+  'https://designcarrermetrics.com',
+  '*' // Add your deployed frontend if needed
 ];
-
+  origin: "*", 
 // 🛠️ CORS config with mobile support
 app.use(cors({
   origin: function (origin, callback) {
@@ -52,12 +53,17 @@ import assignBatchRouter from './routes/adminroutes/assignBatchRoutes.js';
 import courseRouter from './routes/adminroutes/coursesRoutes.js';
 import batchRouter from './routes/adminroutes/batchDetailsRoutes.js';
 import enrollRouter from './routes/adminroutes/enrollmentsRoutes.js';
+import noticeRouter from './routes/adminroutes/noticeRoutes.js';
+import taskRouter from './routes/adminroutes/taskRoutes.js';
+
 
 app.use('/auth', authRouter);
 app.use('/admin', assignBatchRouter);
 app.use('/admin/courses', courseRouter);
 app.use('/admin/batchs', batchRouter);
 app.use('/student/enroll', enrollRouter);
+app.use('/api/notices', noticeRouter);
+app.use('/tasks', taskRouter);
 
 app.listen(PORT, () => {
   console.log(`🔊 Server running on http://localhost:${PORT}`);
