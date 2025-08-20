@@ -89,6 +89,7 @@ noticeRouter.post('/new', verifyToken, verifyAdmin, upload.single('image'), asyn
       targetAudience,
       sendPushNotification: sendPushNotification === 'true',
       sendEmailNotification: sendEmailNotification === 'true',
+      //createdBy: req.user.userId, 
       createdBy: req.user.userId,
       status: 'pending'
     };
@@ -207,6 +208,7 @@ noticeRouter.get('/', async (req, res) => {
 });
 
 // @route   GET /api/notices/:id
+// @desc    Get single notice by ID
 // @desc    Get single notice by ID
 // @access  Public (or protected based on your needs)
 noticeRouter.get('/:id', async (req, res) => {
