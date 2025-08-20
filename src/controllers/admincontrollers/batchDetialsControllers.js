@@ -57,3 +57,23 @@ export const addBatch = asyncHandler(async (req, res) => {
 
   res.status(201).json({ message: 'Batch created successfully.', batch });
 });
+
+
+export const getAllBatchesIdAndName = async (req, res) => {
+  console.log("fetching for batches id and names")
+  try {
+    const batches = await Batch.find({}, '_id batchName').lean();
+
+    res.status(200).json({
+      success: true,
+      count: batches.length,
+      data: batches,
+    });
+  } catch (error) {
+    console.error('Error fetching batches:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve batches',
+    });
+  }
+};
