@@ -51,13 +51,16 @@ import authRouter from './routes/authRoutes.js';
 import assignBatchRouter from './routes/adminroutes/assignBatchRoutes.js';
 import courseRouter from './routes/adminroutes/coursesRoutes.js';
 import batchRouter from './routes/adminroutes/batchDetailsRoutes.js';
-import enrollRouter from './routes/adminroutes/enrollmentsRoutes.js';
+import enrollRouter from './routes/studentroutes/enrollmentsRoutes.js';
+import assignRouter from './routes/adminroutes/assignRoutes.js';
+
 
 app.use('/auth', authRouter);
 app.use('/admin', assignBatchRouter);
 app.use('/admin/courses', courseRouter);
 app.use('/admin/batchs', batchRouter);
 app.use('/student/enroll', enrollRouter);
+app.use('/admin/enroll',assignRouter)
 
 app.listen(PORT, () => {
   console.log(`🔊 Server running on http://localhost:${PORT}`);

@@ -45,7 +45,7 @@ async function verifyToken(req, res, next) {
       account = sanitizedUser;
     }
 console.log(account)
-    req.authStatus = 'verified';
+    req.authStatus = 'verified'; 
     req.userAccount = {
       user: account,
       
