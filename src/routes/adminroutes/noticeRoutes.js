@@ -1,6 +1,6 @@
 // routes/noticeRoutes.js
 import express from 'express';
-import Notice from '../../models/notice.js';
+import Notice from '../../models/Notice.js';
 // import { verifyAdmin } from '../middleware/authMiddleware.js';
 import { verifyAdmin } from '../../middlewares/verifyadminMiddleware.js';
 import multer from 'multer';
