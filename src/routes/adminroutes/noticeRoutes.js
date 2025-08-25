@@ -89,7 +89,6 @@ noticeRouter.post('/new', verifyToken, verifyAdmin, upload.single('image'), asyn
       targetAudience,
       sendPushNotification: sendPushNotification === 'true',
       sendEmailNotification: sendEmailNotification === 'true',
-      //createdBy: req.user.userId, 
       createdBy: req.user.userId,
       status: 'pending'
     };

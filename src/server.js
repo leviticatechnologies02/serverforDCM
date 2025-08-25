@@ -55,7 +55,7 @@ import batchRouter from './routes/adminroutes/batchDetailsRoutes.js';
 import enrollRouter from './routes/studentroutes/enrollmentsRoutes.js';
 import noticeRouter from './routes/adminroutes/noticeRoutes.js';
 import taskRouter from './routes/adminroutes/taskRoutes.js';
-
+import studentRouter from './routes/studentroutes/studentRoutes.js';
 import assignRouter from './routes/adminroutes/assignRoutes.js';
 
 
@@ -65,6 +65,7 @@ app.use('/admin/courses', courseRouter);
 app.use('/admin/batchs', batchRouter);
 app.use('/student/enroll', enrollRouter);
 app.use('/api/notices', noticeRouter);
+app.use('/api', studentRouter);
 app.use('/tasks', taskRouter);
 app.use('/admin/enroll',assignRouter)
 
