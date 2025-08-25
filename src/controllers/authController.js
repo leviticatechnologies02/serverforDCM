@@ -103,7 +103,7 @@ export const login = async (req, res) => {
       message: 'Login successful',
       token,
       user: {
-        id: account._id.toString(),
+        id: account.id || account._id.toString(),
         name: account.name,
         email: account.email,
         role: account.role,
