@@ -1,10 +1,11 @@
 import Batch from "../../models/batch.js";
 
-export const getBatchNames = async (req, res) => {
+export const getIdAndBatchNames = async (req, res) => {
   try {
-    const batches = await Batch.find({}, 'batchName');
-    const batchNames = batches.map(b => b.batchName);
-    res.status(200).json(batchNames);
+    const batches = await Batch.find({}, '_id batchName').lean();
+    console.log(batches)
+
+    res.status(200).json(batches);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch batch names' });
   }
@@ -59,21 +60,3 @@ export const addBatch = asyncHandler(async (req, res) => {
 });
 
 
-export const getAllBatchesIdAndName = async (req, res) => {
-  console.log("fetching for batches id and names")
-  try {
-    const batches = await Batch.find({}, '_id batchName').lean();
-
-    res.status(200).json({
-      success: true,
-      count: batches.length,
-      data: batches,
-    });
-  } catch (error) {
-    console.error('Error fetching batches:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve batches',
-    });
-  }
-};
