@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import connectDB from './database/connect.js';
+import uploadRoutes from './routes/uploadRoutes.js';
 
 dotenv.config();
 
@@ -15,7 +16,6 @@ const allowedOrigins = [
   'https://designcarrermetrics.com',
   '*' // Add your deployed frontend if needed
 ];
-  origin: "*", 
 // 🛠️ CORS config with mobile support
 app.use(cors({
   origin: function (origin, callback) {
@@ -57,6 +57,8 @@ import noticeRouter from './routes/adminroutes/noticeRoutes.js';
 import taskRouter from './routes/adminroutes/taskRoutes.js';
 import studentRouter from './routes/studentroutes/studentRoutes.js';
 import assignRouter from './routes/adminroutes/assignRoutes.js';
+import profileRoutes from './routes/profileRoutes.js';
+import { v2 as cloudinary } from "cloudinary";
 
 
 app.use('/auth', authRouter);
@@ -67,7 +69,20 @@ app.use('/student/enroll', enrollRouter);
 app.use('/api/notices', noticeRouter);
 app.use('/api', studentRouter);
 app.use('/tasks', taskRouter);
-app.use('/admin/enroll',assignRouter)
+app.use('/admin/enroll',assignRouter);
+app.use('/api', profileRoutes);
+app.use('/api', uploadRoutes);
+
+// Middleware
+app.use(express.json());
+
+
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 app.listen(PORT, () => {
   console.log(`🔊 Server running on http://localhost:${PORT}`);
