@@ -1,4 +1,6 @@
 import Enrollment from '../../models/Enrollment.js';
+import { updateBatchStudents } from './batchDetialsControllers.js';
+import mongoose from 'mongoose';
 
 export const getUnassignedEnrollments = async (req, res) => {
   console.log("enrollment getUnassigned")
@@ -91,43 +93,63 @@ export const getUnassignedEnrollments = async (req, res) => {
 };
 
 //this is for assign student to batch
+
+
+
 export const assignStudentsToBatch = async (req, res) => {
-  console.log(req.body)
   const { enrollmentIds, courseId, batchId } = req.body;
+  console.log(req.body, "iam in unassigned controller");
   if (!Array.isArray(enrollmentIds) || enrollmentIds.length === 0) {
     return res.status(400).json({ error: 'enrollmentIds must be a non-empty array' });
   }
-  try{
-    const results = await Enrollment.updateMany(
-  { _id: { $in: enrollmentIds } }, // filter: match multiple enrollments
-  {
-    $set: {
-      'enrolledCourses.$[course].batch': batchId,
-      'enrolledCourses.$[course].assigned': true
-    }
-  },
-  {
-    arrayFilters: [
-      { 'course.course': courseId } // match the course inside enrolledCourses
-    ]
-  }
-);
-    
-    
 
-    // const modifiedCount = results.reduce((sum, r) => sum + r.modifiedCount, 0);
-    console.log("batch",results)
+  const session = await mongoose.startSession();
 
-    res.status(200).json({
-      message: 'Batch assignment successful',
-      totalUpdated: modifiedCount,
-      totalRequests: assignments.length
+  try {
+    console.log("started")
+    await session.withTransaction(async () => {
+      // Step 1: Get user IDs before update
+      const enrollments = await Enrollment.find(
+        { _id: { $in: enrollmentIds } },
+        { user: 1 } // Only project user field
+      ).session(session);
+
+      const userIds = enrollments.map(e => e.user).filter(Boolean);
+
+      // Step 2: Update enrollments
+      const updateResult = await Enrollment.updateMany(
+        { _id: { $in: enrollmentIds } },
+        {
+          $set: {
+            'enrolledCourses.$[course].batch': batchId,
+            'enrolledCourses.$[course].assigned': true
+          }
+        },
+        {
+          arrayFilters: [{ 'course.course': courseId }],
+          session
+        }
+      );
+
+      // Step 3: Update batch with user IDs
+const batchUpdateResult = await updateBatchStudents({ batchId, userIds, session });
+console.log("Batch update result:", batchUpdateResult);
+  console.log("after updatedbatchstudents")
+
+      // Step 4: Respond inside transaction
+      res.status(200).json({
+        message: 'Batch assignment successful',
+        totalUpdated: updateResult.modifiedCount,
+        totalRequests: enrollmentIds.length
+      });
     });
   } catch (error) {
     console.error('Batch assignment error:', error);
     res.status(500).json({ error: 'Failed to assign batches' });
+  } finally {
+    session.endSession();
   }
- };
+};
 
 export const getAssignedEnrollments = async (req, res) => {
   console.log("enrollment getAssigned");
@@ -229,3 +251,4 @@ export const getAssignedEnrollments = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch enrollments" });
   }
 };
+ 

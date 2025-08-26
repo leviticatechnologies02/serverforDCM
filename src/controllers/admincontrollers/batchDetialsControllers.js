@@ -12,18 +12,22 @@ export const getIdAndBatchNames = async (req, res) => {
 };
 
 export const getBatchDetails = async (req, res) => {
+  console.log("you are in get batch details", req.params.batchName)
   try {
     const batchName = req.params.batchName;
-    const batch = await Batch.findOne({ batchName }).populate('students');
+    console.log("fetching batches")
+    const batch = await Batch.findOne({ batchName }).populate('students').lean()
+    console.log("after queryy")
 
     if (!batch) return res.status(404).json({ error: 'Batch not found' });
 
-    const students = batch.students.map(({ _id, id, name, email, role }) => ({
-      _id, id, name, email, role
+    const students = batch.students.map(({ _id,  name, email, role }) => ({
+      _id,  name, email, role
     }));
 
     res.status(200).json({ students });
   } catch (err) {
+    console.log("there is err in getBatchDetails",err)
     res.status(500).json({ error: 'Failed to fetch batch details' });
   }
 };
@@ -58,5 +62,17 @@ export const addBatch = asyncHandler(async (req, res) => {
 
   res.status(201).json({ message: 'Batch created successfully.', batch });
 });
+// controllers/updateBatchStudents.js
+
+
+export const updateBatchStudents = async ({ batchId, userIds, session }) => {
+  if (!batchId || !Array.isArray(userIds) || userIds.length === 0) return null;
+
+  return await Batch.updateOne(
+    { _id: batchId },
+    { $addToSet: { students: { $each: userIds } } },
+    { session }
+  );
+};
 
 

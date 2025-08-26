@@ -16,9 +16,9 @@ export const enrollInCourses = async (req, res) => {
     let enrollment = await Enrollment.findOne({ user: userId });
 
     // Always set assigned: false and batch: null during enrollment
-    const newEnrollments = enrolledCourses.map(({ course }) => ({
+    const newEnrollments = enrolledCourses.map(({ course, availability }) => ({
       course: course,
-
+      availability: availability
     }));
     console.log(newEnrollments, "new enrollments")
 

@@ -37,7 +37,7 @@ const enrolledCourseSchema = new Schema({
   course: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
   batch: { type: Schema.Types.ObjectId, ref: 'Batch', default: null },
   assigned: { type: Boolean, default: false },
-  availability:{type:String, default:"morning"},
+  availability:{type:String},
   enrolledAt: { type: Date, default: Date.now }
 }, { _id: false });
 

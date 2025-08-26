@@ -13,7 +13,6 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
-  'https://designcarrermetrics.com',
   '*' // Add your deployed frontend if needed
 ];
 // 🛠️ CORS config with mobile support
