@@ -46,3 +46,31 @@ export const enrollInCourses = async (req, res) => {
 };
 
 
+// Alternative version if you need to get enrollments by specific user ID
+export const getStudentEnrollmentsById = async (req, res) => {
+  const { userId } = req.params;
+ 
+  try {
+    const enrollment = await Enrollment.findOne({ user: userId })
+      .populate('enrolledCourses.course', 'name description')
+      .populate('enrolledCourses.batch', 'name _id');
+ 
+    if (!enrollment) {
+      return res.status(404).json({
+        success: false,
+        error: 'No enrollments found for this user'
+      });
+    }
+ 
+    res.status(200).json({
+      success: true,
+      enrolledCourses: enrollment.enrolledments
+    });
+  } catch (err) {
+    console.error('Error fetching enrollments:', err);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch enrollments'
+    });
+  }
+};

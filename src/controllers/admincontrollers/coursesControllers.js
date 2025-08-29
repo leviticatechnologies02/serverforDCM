@@ -1,5 +1,7 @@
-// controllers/courseController.js
-import Course from "../../models/courses.js";
+import Course from '../../models/courses.js';
+import CourseAudit from '../../models/courseAudit.js';
+import { generateUpdatePayload } from '../../utils/generatepayload.js';
+
 
 export const getCourses = async (req, res) => {
   console.log("GET COURSES")
@@ -28,6 +30,46 @@ export const addCourse = async (req, res) => {
   }
 };
 
+export const updateCourse = async (req, res) => {
+  console.log("iam here ")
+  try {
+    const { _id } = req.params;
+    const incoming = req.body;
+
+    const existingCourse = await Course.findById(_id);
+    if (!existingCourse) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+
+    const fields = ['name', 'description', 'instructor', 'duration', 'price'];
+    const { payload, changes } = generateUpdatePayload(existingCourse, incoming, fields);
+
+    if (Object.keys(payload).length === 0) {
+      return res.status(200).json({
+        message: 'No changes detected',
+        data: existingCourse
+      });
+    }
+
+    const updatedCourse = await Course.findByIdAndUpdate(_id, payload, { new: true });
+
+    await CourseAudit.create({
+      courseId: _id,
+      updatedBy: req.user?.id || null,
+      changes,
+      context: 'manual update'
+    });
+
+    res.status(200).json({
+      message: 'Course updated successfully',
+      data: updatedCourse,
+      changes
+    });
+  } catch (error) {
+    console.error('Update error:', error);
+    res.status(500).json({ message: 'Error updating course', error });
+  }
+};
 
 // controllers/courseController.js
 export const deleteCourse = async (req, res) => {

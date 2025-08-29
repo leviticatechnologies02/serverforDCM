@@ -59,6 +59,8 @@ import assignRouter from './routes/adminroutes/assignRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
 import { v2 as cloudinary } from "cloudinary";
 import downloadRouter from "./routes/downloadRoute.js";
+import paymentRouter from './routes/paymentRoutes/paymentRoutes.js';
+
 
 app.use('/auth', authRouter);
 app.use('/admin', assignBatchRouter);
@@ -72,6 +74,7 @@ app.use('/admin/enroll',assignRouter);
 app.use('/api', profileRoutes);
 app.use('/api', uploadRoutes);
 app.use("/api/enrollments", downloadRouter); 
+app.use('/payments',paymentRouter)
 
 // Middleware
 app.use(express.json());
