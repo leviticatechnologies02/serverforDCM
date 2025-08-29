@@ -3,7 +3,6 @@
 import mongoose from "mongoose";
 
 
-
 const LiveClassSchema = new mongoose.Schema({
   batchId: { type: mongoose.Schema.Types.ObjectId, ref: "Batch", required: true },
   teacherName: { type: String, required: true },
