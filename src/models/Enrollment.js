@@ -31,11 +31,13 @@
 
 // export default  mongoose.model('Enrollment', EnrollmentSchema);
 import mongoose from 'mongoose';
+import { type } from 'os';
 const { Schema } = mongoose;
 
 const enrolledCourseSchema = new Schema({
   course: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
   batch: { type: Schema.Types.ObjectId, ref: 'Batch', default: null },
+  paymentId:{type:Schema.Types.ObjectId,ref:'Payment',default:null},
   assigned: { type: Boolean, default: false },
   availability:{type:String},
   enrolledAt: { type: Date, default: Date.now }

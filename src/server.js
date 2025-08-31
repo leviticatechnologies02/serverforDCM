@@ -51,7 +51,6 @@ import authRouter from './routes/authRoutes.js';
 import assignBatchRouter from './routes/adminroutes/assignBatchRoutes.js';
 import courseRouter from './routes/adminroutes/coursesRoutes.js';
 import batchRouter from './routes/adminroutes/batchDetailsRoutes.js';
-import enrollRouter from './routes/studentroutes/enrollmentsRoutes.js';
 import noticeRouter from './routes/adminroutes/noticeRoutes.js';
 import taskRouter from './routes/adminroutes/taskRoutes.js';
 import studentRouter from './routes/studentroutes/studentRoutes.js';
@@ -62,13 +61,14 @@ import downloadRouter from "./routes/downloadRoute.js";
 import paymentRouter from './routes/paymentRoutes/paymentRoutes.js';
 
 import liveClassRoutes from "./routes/liveClassRoutes.js";
+import studentEnrollRouter from './routes/studentroutes/stundentenrollRoutes.js';
 
 
 app.use('/auth', authRouter);
 app.use('/admin', assignBatchRouter);
 app.use('/admin/courses', courseRouter);
 app.use('/admin/batchs', batchRouter);
-app.use('/student/enroll', enrollRouter);
+app.use('/student/enroll', studentEnrollRouter);
 app.use('/api/notices', noticeRouter);
 app.use('/api', studentRouter);
 app.use('/tasks', taskRouter);
@@ -83,7 +83,7 @@ app.use("/api/live-class", liveClassRoutes);
 app.use(express.json());
 
 
-
+  
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,

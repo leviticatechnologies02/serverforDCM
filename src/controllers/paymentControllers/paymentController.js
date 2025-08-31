@@ -3,6 +3,8 @@ import crypto from 'crypto';
 import Razorpay from 'razorpay';
 
 import Payment from '../../models/payments.js ';
+import Course from '../../models/courses.js';
+import { enrollInCourses } from '../studentcontrollers/coursesEnrollControllers.js';
 
 // Razorpay instance
 const razorpay = new Razorpay({
@@ -16,6 +18,7 @@ const razorpay = new Razorpay({
   console.log("iam in order")
   try {
     const { courseId, userId } = req.body;
+    console.log(courseId,userId,"sammmmm")
 
     // 1) Resolve authoritative amount from DB (never trust client)
     const course = await Course.findById(courseId).lean();
@@ -56,30 +59,36 @@ const razorpay = new Razorpay({
  export const verifyPayment = async (req, res) => {
   console.log("iam in verifty")
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const { razorpayOrderId, razorpayPaymentId, razorpaySignature ,userId,courseId} = req.body;
+    console.log("body for verify",req.body)
 
     // 1) Compute expected signature
-    const body = `${razorpay_order_id}|${razorpay_payment_id}`;
+    const body = `${razorpayOrderId}|${razorpayPaymentId}`;
     const expectedSignature = crypto
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
       .update(body)
       .digest('hex');
 
-    const isAuthentic = expectedSignature === razorpay_signature;
+    const isAuthentic = expectedSignature === razorpaySignature;
 
     // 2) Update record idempotently
     const payment = await Payment.findOneAndUpdate(
-      { orderId: razorpay_order_id },
+      { orderId: razorpayOrderId },
       {
         $set: {
-          paymentId: razorpay_payment_id,
-          signature: razorpay_signature,
+          paymentId: razorpayPaymentId,
+          signature: razorpaySignature,
           status: isAuthentic ? 'paid' : 'signature_invalid'
         }
       },
       { new: true }
     );
-
+    console.log(payment,"iam ior")
+if(payment.status==='paid'){
+  enrollInCourses({paymentId:payment._id,
+    userId,courseId
+  })
+}
     if (!payment) return res.status(404).json({ error: 'Payment record not found' });
 
     if (!isAuthentic) return res.status(400).json({ error: 'Invalid signature' });
