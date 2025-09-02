@@ -14,13 +14,14 @@ export const getCourses = async (req, res) => {
 };
 export const addCourse = async (req, res) => {
   try {
-    const { name, description, instructor, duration } = req.body;
+    const { name, description, instructor, duration,price } = req.body;
 
     const newCourse = new Course({
       name,
       description,
       instructor,
-      duration
+      duration,
+      price
     });
 
     await newCourse.save();

@@ -49,7 +49,7 @@ import Enrollment from '../../models/Enrollment.js';
 export const enrollInCourses = async ({ paymentId, userId, courseId }) => {
   try {
     if (!userId || !courseId || !paymentId) {
-      throw new Error('Missing required enrollment data');
+      throw new Error('Missing required enrollment data');  
     }
 
     const newEnrollmentEntry = {
