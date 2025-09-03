@@ -59,6 +59,7 @@ import profileRoutes from './routes/profileRoutes.js';
 import { v2 as cloudinary } from "cloudinary";
 import downloadRouter from "./routes/downloadRoute.js";
 import paymentRouter from './routes/paymentRoutes/paymentRoutes.js';
+import transactionRouter from './routes/adminroutes/transactionRoutes.js'; 
 
 import liveClassRoutes from "./routes/liveClassRoutes.js";
 import studentEnrollRouter from './routes/studentroutes/stundentenrollRoutes.js';
@@ -78,6 +79,7 @@ app.use('/api', uploadRoutes);
 app.use("/api/enrollments", downloadRouter); 
 app.use('/payments',paymentRouter)
 app.use("/api/live-class", liveClassRoutes);
+app.use('/api/admin', transactionRouter); // This should work now
 
 // Middleware
 app.use(express.json());
