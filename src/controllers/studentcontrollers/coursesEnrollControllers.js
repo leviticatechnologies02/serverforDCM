@@ -1,49 +1,5 @@
-// controllers/enrollmentController.js
+// controllers/studentEnrollmentController.js
 import Enrollment from '../../models/Enrollment.js';
-
-// export const enrollInCourses = async ({paymentId,userId,courseId}) => {
-//   // const { userId } = req.params
-
-//   // const enrolledCourses = req.body;
-//   // console.log(enrolledCourses, "enrolled COurses from body")
-
-
-//   // if (!userId || !Array.isArray(enrolledCourses)) {
-//   //   return res.status(400).json({ error: 'Invalid payload' });
-//   // }
-
-//   // try {
-//   //   let enrollment = await Enrollment.findOne({ user: userId });
-
-//   //   // Always set assigned: false and batch: null during enrollment
-//   //   const newEnrollments = enrolledCourses.map(({ course, availability }) => ({
-//   //     course: course,
-//   //     availability: availability
-//   //   }));
-//   //   console.log(newEnrollments, "new enrollments")
-
-//    if(userId&&paymentId&&courseId){
-//   const enrollment = new Enrollment({
-//         user: userId,
-//         enrolledCourses: newEnrollments
-//       });
-//     } else {
-//       const existingCourseIds = enrollment.enrolledCourses.map(ec => ec.course.toString());
-
-//       newEnrollments.forEach(newCourse => {
-//         if (!existingCourseIds.includes(newCourse.course.toString())) {
-//           enrollment.enrolledCourses.push(newCourse);
-//         }
-//       });
-//     }
-
-//     await enrollment.save();
-//     res.status(200).json({ message: 'Enrollment successful', enrollment });
-//   } catch (err) {
-//     console.error('Enrollment error:', err);
-//     res.status(500).json({ error: 'Failed to enroll in courses' });
-//   }
-// };
 
 
 export const enrollInCourses = async ({ paymentId, userId, courseId }) => {
@@ -92,18 +48,28 @@ export const enrollInCourses = async ({ paymentId, userId, courseId }) => {
   }
 };
 
-
-// Alternative version if you need to get enrollments by specific user ID
+// Get enrollments by specific user ID with detailed population
 export const getStudentEnrollmentsById = async (req, res) => {
   const { id } = req.params;
- console.log(id)
+  console.log(id);
+  
   try {
-    const enrollment = await Enrollment.findOne({ user:id })
-      .populate('enrolledCourses.course', 'name description')
-      .populate('enrolledCourses.batch', 'batchName  startDate endDate')
-      .populate('enrolledCourses.paymentId','orderId paymentId amount createdAt')
-      //want extra details 
-      // check which  schema and add in line after exmaple:batchname and same for courses
+    const enrollment = await Enrollment.findOne({ user: id })
+      .populate({
+        path: 'enrolledCourses.course',
+        select: 'title description price duration instructor category thumbnail', // Add more course fields as needed
+        model: Course
+      })
+      .populate({
+        path: 'enrolledCourses.batch',
+        select: 'batchName startDate endDate timing days capacity currentStrength', // Add more batch fields as needed
+        model: Batch
+      })
+      .populate({
+        path: 'enrolledCourses.paymentId',
+        select: 'orderId paymentId amount currency status createdAt', // Add more payment fields as needed
+        model: Payment
+      });
 
     if (!enrollment) {
       return res.status(404).json({
@@ -111,7 +77,7 @@ export const getStudentEnrollmentsById = async (req, res) => {
         error: 'No enrollments found for this user'
       });
     }
- 
+
     res.status(200).json({
       success: true,
      enrollment
