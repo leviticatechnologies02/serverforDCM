@@ -80,7 +80,7 @@ export const getStudentEnrollmentsById = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: enrollment
+     enrollment
     });
   } catch (err) {
     console.error('Error fetching enrollments:', err);
