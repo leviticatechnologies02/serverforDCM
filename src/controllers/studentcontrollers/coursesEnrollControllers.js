@@ -10,7 +10,6 @@ export const enrollInCourses = async ({ paymentId, userId, courseId }) => {
     if (!userId || !courseId || !paymentId) {
       throw new Error('Missing required enrollment data');  
     }
-courses
     const newEnrollmentEntry = {
       course: courseId,
       paymentId,
