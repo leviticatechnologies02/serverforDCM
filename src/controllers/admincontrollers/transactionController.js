@@ -3,11 +3,13 @@ import Payment from '../../models/payments.js';
 
 
 export const getAllTransactions = async (req, res) => {
+  console.log("here transaction")
   try {
-    const transactions = await Payment.find()
-      .populate('courseId', 'title price') // Populate course details
-      .populate('userId', 'name email') // Populate user details
-      .sort({ createdAt: -1 }); // Latest first
+   const transactions = await Payment.find()
+  .select('paymentId amountInRupees status createdAt') // Only these fields from Payment
+  .populate('courseIds', 'name price')          // From Course model
+  .populate('userId', 'name email')            // From User model
+  .sort({ createdAt: -1 });                    // Latest first
 
     res.json({
       success: true,

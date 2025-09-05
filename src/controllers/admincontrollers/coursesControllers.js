@@ -14,13 +14,14 @@ export const getCourses = async (req, res) => {
 };
 export const addCourse = async (req, res) => {
   try {
-    const { name, description, instructor, duration,price } = req.body;
+    const { name, description, instructor, duration,price,category } = req.body;
 
     const newCourse = new Course({
       name,
       description,
       instructor,
       duration,
+      category,
       price
     });
 
@@ -42,7 +43,7 @@ export const updateCourse = async (req, res) => {
       return res.status(404).json({ message: 'Course not found' });
     }
 
-    const fields = ['name', 'description', 'instructor', 'duration', 'price'];
+    const fields = ['name', 'description', 'instructor', 'duration', 'price','category'];
     const { payload, changes } = generateUpdatePayload(existingCourse, incoming, fields);
 
     if (Object.keys(payload).length === 0) {

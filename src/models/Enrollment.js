@@ -31,7 +31,6 @@
 
 // export default  mongoose.model('Enrollment', EnrollmentSchema);
 import mongoose from 'mongoose';
-import { type } from 'os';
 const { Schema } = mongoose;
 
 const enrolledCourseSchema = new Schema({

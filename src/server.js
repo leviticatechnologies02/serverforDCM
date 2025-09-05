@@ -63,6 +63,7 @@ import transactionRouter from './routes/adminroutes/transactionRoutes.js';
 
 import liveClassRoutes from "./routes/liveClassRoutes.js";
 import studentEnrollRouter from './routes/studentroutes/stundentenrollRoutes.js';
+import categoriesRouter from './routes/adminroutes/coursesCategoriesRoutes.js';
 
 
 app.use('/auth', authRouter);
@@ -80,6 +81,7 @@ app.use("/api/enrollments", downloadRouter);
 app.use('/payments',paymentRouter)
 app.use("/api/live-class", liveClassRoutes);
 app.use('/api/admin', transactionRouter); // This should work now
+app.use('/api',categoriesRouter)
 
 // Middleware
 app.use(express.json());
