@@ -55,8 +55,7 @@ export const createOrder = async (req, res) => {
     console.error('Create order error:', err);
     res.status(500).json({ error: 'Failed to create order' });
   }
-};
-};
+}
 
 export const verifyPayment = async (req, res) => {
   console.log("aim verify")
@@ -104,7 +103,7 @@ export const verifyPayment = async (req, res) => {
     res.status(500).json({ error: 'Verification failed' });
   }
 };
-};
+
 
 export const webhook = async (req, res) => {
   try {
