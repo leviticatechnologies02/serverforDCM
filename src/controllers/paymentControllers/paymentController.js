@@ -77,10 +77,10 @@ export const verifyPayment = async (req, res) => {
           paymentId: razorpayPaymentId,
           signature: razorpaySignature,
           status: isAuthentic ? 'paid' : 'signature_invalid',
-          updatedAtIST: moment().tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss")
+          
         }
       },
-      { upsert:true }
+      { upsert:false }
     );
 
     if (!payment) return res.status(404).json({ error: 'Payment record not found' });
@@ -106,10 +106,12 @@ export const verifyPayment = async (req, res) => {
 
 
 export const webhook = async (req, res) => {
+  console.log("iam in webhook")
   try {
     const signature = req.headers['x-razorpay-signature'];
     const rawBody = req.body; // should be raw buffer if using express.raw()
-
+console.log(signature,"iam signature")
+console.log(rawBody,"iam body")
     const expected = crypto
       .createHmac('sha256', process.env.RAZORPAY_WEBHOOK_SECRET)
       .update(rawBody)
@@ -118,15 +120,30 @@ export const webhook = async (req, res) => {
     if (expected !== signature) {
       return res.status(400).send('Invalid webhook signature');
     }
-    if (expected !== signature) {
-      return res.status(400).send('Invalid webhook signature');
-    }
 
     const event = JSON.parse(rawBody.toString());
+    const entity = event.payload.payment?.entity;
 
     if (event.event === 'order.paid' || event.event === 'payment.captured') {
-      const orderId = event.payload.payment?.entity?.order_id || event.payload.order?.entity?.id;
-      const paymentId = event.payload.payment?.entity?.id;
+      const orderId = entity?.order_id || event.payload.order?.entity?.id;
+      const paymentId = entity?.id;
+
+      // Extract payment mode and app hint
+      const method = entity?.method || 'unknown';
+      const vpa = entity?.vpa || null;
+      const wallet = entity?.wallet || null;
+      const card = entity?.card || null;
+
+      // Infer app from VPA suffix (e.g. @okaxis, @paytm)
+      let appUsed = null;
+      if (method === 'upi' && vpa) {
+        const suffix = vpa.split('@')[1];
+        appUsed = suffix?.toLowerCase();
+      } else if (method === 'wallet' && wallet) {
+        appUsed = wallet.toLowerCase();
+      } else if (method === 'card' && card?.network) {
+        appUsed = card.network.toLowerCase();
+      }
 
       await Payment.findOneAndUpdate(
         { orderId },
@@ -134,6 +151,8 @@ export const webhook = async (req, res) => {
           $set: {
             paymentId,
             status: 'paid',
+            paymentMode: method,
+            appUsed,
             meta: event
           }
         },
@@ -145,7 +164,14 @@ export const webhook = async (req, res) => {
       const orderId = event.payload.payment?.entity?.order_id;
       await Payment.findOneAndUpdate(
         { orderId },
-        { $set: { status: 'failed', meta: event } }
+        {
+          $set: {
+            status: 'failed',
+            paymentMode: event.payload.payment?.entity?.method || 'unknown',
+            appUsed: null,
+            meta: event
+          }
+        }
       );
     }
 
