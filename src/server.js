@@ -33,12 +33,15 @@ app.use((req, res, next) => {
   console.log('📡 Incoming Origin:', req.headers.origin);
   next();
 });
-
+import { webhook } from './controllers/paymentControllers/paymentController.js';
+app.post('/payments/webhook', express.raw({ type: 'application/json' }), webhook);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const PORT = process.env.PORT;
 const MONGO_URI = process.env.MONGO_URI;
+console.log("🔑 Razorpay Key ID:", process.env.RAZORPAY_KEY_ID);
+console.log("🔐 Razorpay Key Secret:", process.env.RAZORPAY_KEY_SECRET);
 
 connectDB(MONGO_URI);
 
@@ -53,12 +56,12 @@ import courseRouter from './routes/adminroutes/coursesRoutes.js';
 import batchRouter from './routes/adminroutes/batchDetailsRoutes.js';
 import noticeRouter from './routes/adminroutes/noticeRoutes.js';
 import taskRouter from './routes/adminroutes/taskRoutes.js';
+import paymentRouter from './routes/paymentRoutes/paymentRoutes.js';
 import studentRouter from './routes/studentroutes/studentRoutes.js';
 import assignRouter from './routes/adminroutes/assignRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
 import { v2 as cloudinary } from "cloudinary";
 import downloadRouter from "./routes/downloadRoute.js";
-import paymentRouter from './routes/paymentRoutes/paymentRoutes.js';
 import transactionRouter from './routes/adminroutes/transactionRoutes.js'; 
 
 import liveClassRoutes from "./routes/liveClassRoutes.js";

@@ -1,4 +1,7 @@
 // controllers/studentEnrollmentController.js
+import Course from '../../models/courses.js';
+import Batch from '../../models/batch.js';
+import Payment from '../../models/payments.js';
 import Enrollment from '../../models/Enrollment.js';
 
 
@@ -7,7 +10,7 @@ export const enrollInCourses = async ({ paymentId, userId, courseId }) => {
     if (!userId || !courseId || !paymentId) {
       throw new Error('Missing required enrollment data');  
     }
-
+courses
     const newEnrollmentEntry = {
       course: courseId,
       paymentId,
@@ -67,7 +70,7 @@ export const getStudentEnrollmentsById = async (req, res) => {
       })
       .populate({
         path: 'enrolledCourses.paymentId',
-        select: 'orderId paymentId amount currency status createdAt', // Add more payment fields as needed
+        select: 'orderId paymentId amountINRupees currency status createdAt', // Add more payment fields as needed
         model: Payment
       });
 

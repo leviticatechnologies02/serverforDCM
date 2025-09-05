@@ -6,7 +6,7 @@ export const getAllTransactions = async (req, res) => {
   console.log("here transaction")
   try {
    const transactions = await Payment.find()
-  .select('paymentId amountInRupees status createdAt') // Only these fields from Payment
+  .select('paymentId amountInRupees status createdAt orderId') // Only these fields from Payment
   .populate('courseIds', 'name price')          // From Course model
   .populate('userId', 'name email')            // From User model
   .sort({ createdAt: -1 });                    // Latest first
