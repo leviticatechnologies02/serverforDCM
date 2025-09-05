@@ -56,6 +56,7 @@ export const createOrder = async (req, res) => {
     res.status(500).json({ error: 'Failed to create order' });
   }
 };
+};
 
 export const verifyPayment = async (req, res) => {
   console.log("aim verify")
@@ -76,7 +77,8 @@ export const verifyPayment = async (req, res) => {
         $set: {
           paymentId: razorpayPaymentId,
           signature: razorpaySignature,
-          status: isAuthentic ? 'paid' : 'signature_invalid'
+          status: isAuthentic ? 'paid' : 'signature_invalid',
+          updatedAtIST: moment().tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss")
         }
       },
       { upsert:true }
@@ -102,6 +104,7 @@ export const verifyPayment = async (req, res) => {
     res.status(500).json({ error: 'Verification failed' });
   }
 };
+};
 
 export const webhook = async (req, res) => {
   try {
@@ -113,6 +116,9 @@ export const webhook = async (req, res) => {
       .update(rawBody)
       .digest('hex');
 
+    if (expected !== signature) {
+      return res.status(400).send('Invalid webhook signature');
+    }
     if (expected !== signature) {
       return res.status(400).send('Invalid webhook signature');
     }
