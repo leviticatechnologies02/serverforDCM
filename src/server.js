@@ -33,8 +33,15 @@ app.use((req, res, next) => {
   console.log('📡 Incoming Origin:', req.headers.origin);
   next();
 });
-import { webhook } from './controllers/paymentControllers/paymentController.js';
-app.post('/payments/webhook', express.raw({ type: 'application/json' }), webhook);
+// import { webhook } from './controllers/paymentControllers/paymentController.js';
+app.post('/payments/webhook', express.raw({ type: 'application/json' }), (req, res) => {
+  console.log("🔥 Webhook hit");
+  console.log("Headers:", req.headers);
+  console.log("Body:", req.body);
+  res.status(200).send("OK");
+})
+
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
