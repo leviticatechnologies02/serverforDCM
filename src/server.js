@@ -47,8 +47,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 const PORT = process.env.PORT;
 const MONGO_URI = process.env.MONGO_URI;
-console.log("🔑 Razorpay Key ID:", process.env.RAZORPAY_KEY_ID);
-console.log("🔐 Razorpay Key Secret:", process.env.RAZORPAY_KEY_SECRET);
+
 
 connectDB(MONGO_URI);
 

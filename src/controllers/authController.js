@@ -12,58 +12,51 @@ import { uploadToCloudinary } from '../utils/cloudinaryUtils.js';
 // ---------------- SIGNUP ----------------
 export const signup = async (req, res) => {
   const { name, email, password, role = 'student' } = req.body;
+  console.log(req.body)
 
   try {
-    // 🚫 Check for duplicates
-    const emailTaken = await isEmailTaken(email, role);
-    if (emailTaken) {
-      return res.status(409).json({ error: 'User already exists' });
+    const user = await User.findOne({ email });
+
+    if (!user || !user.isVerified) {
+      return res.status(403).json({ error: 'Email not verified' });
     }
 
-    // 🔐 Hash password and generate user ID
-    const hashedPassword = await hashPassword(password);
-    const userId = new mongoose.Types.ObjectId();
+    if (user.password) {
+      return res.status(409).json({ error: 'User already signed up' });
+    }
 
-    // 📷 Optional profile image upload
-    let profileImageData = null;
+    const hashedPassword = await hashPassword(password);
+    user.password = hashedPassword;
+    user.role = role;
+
+    // Optional profile image
     if (req.file) {
       try {
         const result = await uploadToCloudinary(req.file.path, `${role}_profiles`);
-        profileImageData = {
+        user.profileImage = {
           url: result.secure_url,
           publicId: result.public_id,
         };
-      } catch (uploadError) {
-        console.error('❌ Image upload failed:', uploadError.message);
-        // Continue without image, don't block signup
-        profileImageData = null;
+      } catch (err) {
+        console.error('Image upload failed:', err.message);
       }
     }
 
-    // 🛠 Create account in appropriate collection
-    const account = await createAccountByRole({
-      userId,
-      name,
-      email,
-      hashedPassword,
-      role,
-      profileImage: profileImageData,
-    });
+    await user.save();
 
-    // 🎫 Generate JWT
     const token = jwt.sign(
-      { userId: userId.toString(), email, name, role },
+      { userId: user._id.toString(), email, name: user.name, role },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
 
     return res.status(201).json({
       message: `${role} created successfully`,
-      user: account,
+      user,
       token,
     });
   } catch (err) {
-    console.error('❌ Signup error:', err.message);
+    console.error('Signup error:', err.message);
     return res.status(500).json({ error: 'Signup failed' });
   }
 };
