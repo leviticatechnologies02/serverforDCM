@@ -125,6 +125,7 @@ const validateNotice = (req, res, next) => {
   next();
 };
 
+
 // @route   POST /api/notices
 // @desc    Create a new notice
 // @access  Admin
@@ -143,7 +144,8 @@ noticeRouter.post('/', verifyToken, verifyAdmin, upload.single('attachment'), ha
       tags,
       expiryDate,
       batchName,
-      userRole
+      course,
+      department
     } = req.body;
 
     // Create notice object
@@ -153,8 +155,8 @@ noticeRouter.post('/', verifyToken, verifyAdmin, upload.single('attachment'), ha
       noticeType,
       priority,
       targetAudience,
-      sendPushNotification: Boolean(sendPushNotification),
-      sendEmailNotification: Boolean(sendEmailNotification),
+      sendPushNotification: sendPushNotification === 'true' || sendPushNotification === true,
+      sendEmailNotification: sendEmailNotification === 'true' || sendEmailNotification === true,
       createdBy: req.user.userId,
       status: 'draft'
     };
@@ -164,8 +166,12 @@ noticeRouter.post('/', verifyToken, verifyAdmin, upload.single('attachment'), ha
       noticeFields.batchName = batchName;
     }
 
-    if (targetAudience === 'Role Specific' && userRole) {
-      noticeFields.userRole = userRole;
+    if (targetAudience === 'Course Specific' && course) {
+      noticeFields.course = course;
+    }
+
+    if (targetAudience === 'Department' && department) {
+      noticeFields.department = department;
     }
 
     // Handle tags
@@ -373,7 +379,7 @@ noticeRouter.get('/user/me', verifyToken, async (req, res) => {
     // Build filter based on user role and other attributes
     const filter = {
       status: 'published',
-      $and: [
+      $or: [
         { expiryDate: { $exists: false } },
         { expiryDate: { $gte: new Date() } },
         { expiryDate: null }
