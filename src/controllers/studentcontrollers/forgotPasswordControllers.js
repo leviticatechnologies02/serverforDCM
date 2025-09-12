@@ -1,5 +1,5 @@
 import User from '../../models/user.js';
-import Token from '../../models/Token.js';
+import Token from '../../models/token.js';
 import { generateRawToken ,isTokenMatch} from '../../utils/generateToken.js';
 import { sendEmail } from '../../utils/Email/sendEmail.js';
 import { getPasswordResetEmailHTML } from '../../utils/Email/generateHTML.js';
