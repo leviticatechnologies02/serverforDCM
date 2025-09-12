@@ -18,7 +18,7 @@ const paymentSchema = new mongoose.Schema({
 
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User',    required: true},
 
-  courseIds: [{type: mongoose.Schema.Types.ObjectId,ref: 'Course'}],
+  courseIds: [{type: mongoose.Schema.Types.ObjectId,ref: 'Course'}  ],
 
   meta: { type: Object }, // full webhook payload for audit/debug
 }, { timestamps: true });

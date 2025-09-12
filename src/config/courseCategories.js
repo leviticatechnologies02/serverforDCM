@@ -2,7 +2,7 @@
 export const courseCategories = [
   'Web Development',
   'Data Science',
-  'Mobile App Development',
+  'App Development',
   'UI/UX Design',
   'Marketing',
   'Cybersecurity',

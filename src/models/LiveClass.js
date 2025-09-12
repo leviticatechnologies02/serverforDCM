@@ -1,43 +1,17 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const liveClassSchema = new mongoose.Schema({
-  batchId: {
-    type: String,
-    required: true
-  },
-  createdBy: {
-    type: String,
-    required: true
-  },
-  roomName: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  joinUrl: {
-    type: String,
-    required: true
-  },
-  moderatorUrl: {
-    type: String,
-    required: true
-  },
-  moderatorPassword: {
-    type: String,
-    required: true
-  },
-  participantPassword: {
-    type: String,
-    required: true
-  },
-  isActive: {
-    type: Boolean,
-    default: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
-});
+const LiveClassSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  courseId: { type: String, required: true },
+  batchId: { type: String, required: true },
+  startTime: { type: Date, required: true },
+  duration: { type: Number, required: true }, // in minutes
+  zoomMeetingId: { type: String, required: true },
+  zoomJoinUrl: { type: String, required: true },
+  zoomStartUrl: { type: String, required: true },
+  hostEmail: { type: String, required: true },
+  recordingUrl: { type: String },
+  status: { type: String, enum: ['scheduled', 'ongoing', 'completed'], default: 'scheduled' }
+}, { timestamps: true });
 
-export default mongoose.model("LiveClass", liveClassSchema);
+export default mongoose.model('LiveClass', LiveClassSchema);

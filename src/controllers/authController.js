@@ -1,23 +1,15 @@
-// src/controllers/authController.js
-import Enrollment from '../models/Enrollment.js';
 import jwt from 'jsonwebtoken';
-import { hashPassword, comparePassword } from '../utils/hashPassword.js';
-import mongoose from 'mongoose';
 import Admin from '../models/admin.js';
 import User from '../models/user.js';
-import { isEmailTaken } from '../utils/findExistingUser.js';
-import { createAccountByRole } from '../utils/createAccountByRole.js';
 import { uploadToCloudinary } from '../utils/cloudinaryUtils.js';
 
-// ---------------- SIGNUP ----------------
 export const signup = async (req, res) => {
   const { name, email, password, role = 'student' } = req.body;
-  console.log(req.body)
 
   try {
     const user = await User.findOne({ email });
 
-    if (!user || !user.isVerified) {
+    if (!user || !user.emailVerified) {
       return res.status(403).json({ error: 'Email not verified' });
     }
 
@@ -25,8 +17,8 @@ export const signup = async (req, res) => {
       return res.status(409).json({ error: 'User already signed up' });
     }
 
-    const hashedPassword = await hashPassword(password);
-    user.password = hashedPassword;
+    // ✅ No manual hashing — let schema pre-save hook handle it
+    user.password = password;
     user.role = role;
 
     // Optional profile image
@@ -42,7 +34,7 @@ export const signup = async (req, res) => {
       }
     }
 
-    await user.save();
+    await user.save(); // password will be hashed here automatically
 
     const token = jwt.sign(
       { userId: user._id.toString(), email, name: user.name, role },
@@ -61,23 +53,33 @@ export const signup = async (req, res) => {
   }
 };
 
-// ---------------- LOGIN ----------------
+
+
+
+const findAccountByEmail = async (email) => {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const user = await User.findOne({ email: normalizedEmail }).select('+password');
+  if (user) return { account: user, role: 'user' };
+
+  const admin = await Admin.findOne({ email: normalizedEmail }).select('+password');
+  if (admin) return { account: admin, role: 'admin' };
+
+  return { account: null, role: null };
+};
+
 export const login = async (req, res) => {
   const { email, password } = req.body;
+  console.log(req.body)
 
   try {
-    let account = await User.findOne({ email }).select('+password');
-    let roleSource = 'user';
-
+    const { account, role } = await findAccountByEmail(email);
+    console.log(account,"iamacc")
     if (!account) {
-      account = await Admin.findOne({ email }).select('+password');
-      roleSource = 'admin';
-      if (!account) {
-        return res.status(401).json({ error: 'Invalid email or password' });
-      }
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    const isValid = await comparePassword(password, account.password);
+    const isValid = await account.comparePassword(password);
     if (!isValid) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
@@ -96,13 +98,13 @@ export const login = async (req, res) => {
       message: 'Login successful',
       token,
       user: {
-        id: account.id || account._id.toString(),
+        id: account._id.toString(),
         name: account.name,
         email: account.email,
         role: account.role,
-        profileImage: account.profileImage?.url || null, // ✅ optional
+        profileImage: account.profileImage?.url || null,
       },
-      source: roleSource,
+      source: role,
     });
   } catch (err) {
     console.error('❌ Login error:', err.message);

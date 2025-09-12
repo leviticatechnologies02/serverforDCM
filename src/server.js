@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import http from 'http';             // ⬅️ Import http
-import { Server } from 'socket.io';  // ⬅️ Import socket.io
+
 import connectDB from './database/connect.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 
@@ -39,20 +39,9 @@ app.use((req, res, next) => {
 });
 
 // 📡 Setup Socket.IO server
-const io = new Server(server, {
-  cors: {
-    origin: "*", // allow all origins (adjust if needed)
-    methods: ["GET", "POST"]
-  }
-});
 
-io.on("connection", (socket) => {
-  console.log("✅ New WebSocket client connected:", socket.id);
 
-  socket.on("disconnect", () => {
-    console.log("❌ Client disconnected:", socket.id);
-  });
-});
+
 
 // Export function to emit notices
 export const notifyNewNotice = (notice) => {
@@ -94,14 +83,21 @@ import profileRoutes from './routes/profileRoutes.js';
 import { v2 as cloudinary } from "cloudinary";
 import downloadRouter from "./routes/downloadRoute.js";
 import transactionRouter from './routes/adminroutes/transactionRoutes.js'; 
-import liveClassRoutes from "./routes/liveClassRoutes.js";
 import studentEnrollRouter from './routes/studentroutes/stundentenrollRoutes.js';
 import categoriesRouter from './routes/adminroutes/coursesCategoriesRoutes.js';
+// import { socketEvents } from './utils/socketEvents.js';
+import cartRouter from './routes/studentroutes/cartRoutes.js';
+import liveClassRouter from './routes/adminroutes/liveClassesRoutes.js';
+import studentLiveClassRouter from './routes/studentroutes/liveClassStudentRoutes.js';
+import { initSocket } from './socket.js';
+
 
 app.use('/auth', authRouter);
 app.use('/admin', assignBatchRouter);
 app.use('/admin/courses', courseRouter);
+
 app.use('/admin/batchs', batchRouter);
+
 app.use('/student/enroll', studentEnrollRouter);
 app.use('/api/notices', noticeRouter);
 app.use('/api', studentRouter);
@@ -111,12 +107,17 @@ app.use('/api', profileRoutes);
 app.use('/api', uploadRoutes);
 app.use("/api/enrollments", downloadRouter); 
 app.use('/payments', paymentRouter);
-app.use("/api/live-class", liveClassRoutes);
 app.use('/api/admin', transactionRouter);
 app.use('/api', categoriesRouter);
+app.use('/api/cart',cartRouter)
+app.use("/api/zoom",liveClassRouter)
+app.use("/api/classes",studentLiveClassRouter)
 
 // Middleware
 app.use(express.json());
+// ...existing imports...
+
+initSocket(server)
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,

@@ -14,10 +14,11 @@ export const getIdAndBatchNames = async (req, res) => {
 export const getBatchDetails = async (req, res) => {
   console.log("you are in get batch details", req.params.batchName)
   try {
-    const batchName = req.params.batchName;
+    const {id }= req.params;
     console.log("fetching batches")
-    const batch = await Batch.findOne({ batchName }).populate('students').lean()
+    const batch = await Batch.findOne({id}).populate('students').lean()
     console.log("after queryy")
+    console.log(batch,"iambatch")
 
     if (!batch) return res.status(404).json({ error: 'Batch not found' });
 
