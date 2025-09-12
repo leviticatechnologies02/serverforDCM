@@ -1,7 +1,6 @@
 import User from '../../models/user.js';
 import Token from '../../models/Token.js';
-import { sendPasswordResetEmail } from '../../utils/authEmail.js';
-import { generateRawToken, hashToken ,isTokenMatch} from '../../utils/generateToken.js';
+import { generateRawToken ,isTokenMatch} from '../../utils/generateToken.js';
 import { sendEmail } from '../../utils/Email/sendEmail.js';
 import { getPasswordResetEmailHTML } from '../../utils/Email/generateHTML.js';
 
@@ -13,7 +12,7 @@ export async function forgotPassword(req, res) {
 
   const user = await User.findOne({ email });
   // Always respond 200 to prevent email enumeration
-  if (!user) return res.json({ message: 'If that email exists, a reset link has been sent' });
+  if (!user) return res.json({ message: 'Email is not found in our records' });
 
   const rawToken = generateRawToken();
  
@@ -53,7 +52,7 @@ export async function forgotPassword(req, res) {
 
 export async function resetPassword(req, res) {
   const { email, rspd, newPassword } = req.body;
-  if (!email || !token || !newPassword) {
+  if (!email || !rspd || !newPassword) {
     return res.status(400).json({ message: 'Email, token, and newPassword are required' });
   }
 
@@ -71,8 +70,8 @@ export async function resetPassword(req, res) {
   if (!tokenDocs.length) {
     return res.status(400).json({ message: 'Invalid or expired reset token' });
   }
-
- const validToken = tokenDocs.find(doc => isTokenMatch(token, doc.token));
+console.log(tokenDocs)
+ const validToken = tokenDocs.find(doc => isTokenMatch(rspd, doc.token));
 
   if (!validToken) {
     return res.status(400).json({ message: 'Invalid or expired reset token' });
