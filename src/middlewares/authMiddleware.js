@@ -2,10 +2,12 @@ import jwt from 'jsonwebtoken'
 const verifyToken = (req, res, next) => {
   console.log(req,"rei")
   const ACCESS_SECRET = process.env.ACCESS_SECRET;
-  console.log(ACCESS_SECRET,"iam access token")
+const token =
+  req.cookies.auth_token || // Web
+  req.headers.authorization?.split(' ')[1]; // Mobile
 
-  const token = req.cookies.auth_token;
- console.log(token,"token")
+if (!token) return res.status(401).json({ error: 'Unauthorized' });
+
   
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
 

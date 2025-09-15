@@ -103,7 +103,7 @@ try{
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  res.status(200).json({ message: 'Login successful', user: payload });
+  res.status(200).json({ message: 'Login successful', user: payload ,token:accessToken});
 } catch (err) {
     console.error('❌ Login error:', err.message);
     res.status(500).json({ error: 'Login failed. Please try again later.' });
