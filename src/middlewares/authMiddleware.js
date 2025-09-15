@@ -6,7 +6,6 @@ const token =
   req.cookies.auth_token || // Web
   req.headers.authorization?.split(' ')[1]; // Mobile
 
-if (!token) return res.status(401).json({ error: 'Unauthorized' });
 
   
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
