@@ -7,7 +7,8 @@ const enrolledCourseSchema = new Schema({
   batch: { type: Schema.Types.ObjectId, ref: 'Batch', default: null },
   paymentId:{type:Schema.Types.ObjectId,ref:'Payment',default:null},
   assigned: { type: Boolean, default: false },
-  availability:{type:String},
+  progress: { type: Number, default: 0 }, 
+  completed: { type: Boolean, default: false },
   enrolledAt: { type: Date, default: Date.now }
 }, { _id: false });
 

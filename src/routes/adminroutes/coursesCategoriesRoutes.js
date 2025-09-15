@@ -6,4 +6,4 @@ const categoriesRouter = express.Router();
 
 categoriesRouter.get('/categories', getCourseCategories);
 
-export default categoriesRouter;
+export default categoriesRouter;    

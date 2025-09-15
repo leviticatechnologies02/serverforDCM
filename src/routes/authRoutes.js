@@ -1,6 +1,6 @@
 // src/routes/authRoutes.js
 import express from 'express';
-import { signup, login, verifyAuthToken } from '../controllers/authController.js';
+import { signup, login, verifyAuthToken, refreshToken } from '../controllers/authController.js';
 import verifyToken from '../middlewares/authMiddleware.js';
 import upload from '../middlewares/uploadMiddleware.js'; //  Cloudinary upload middleware
 import { sendVerificationEmail, verifyEmail } from '../controllers/admincontrollers/emailVerificationControllers.js';
@@ -18,6 +18,7 @@ authRouter.get('/verify-email',verifyEmail);
 
 // 🔍 Verify token
 authRouter.get('/verify', verifyToken, verifyAuthToken);
+authRouter.get("/refresh",refreshToken)
 authRouter.post('/forgot-password',forgotPassword)
 authRouter.post('/reset-password', resetPassword)
 
