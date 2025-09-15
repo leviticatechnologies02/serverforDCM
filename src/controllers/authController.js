@@ -92,14 +92,14 @@ try{
   res.cookie('auth_token', accessToken, {
   httpOnly: true,
   secure: true,
-  sameSite: 'Strict',
+  sameSite: 'None',
   maxAge: 60 * 60 * 1000, // 1 hour in milliseconds
 });
 
   res.cookie('refresh_token', refreshToken, {
     httpOnly: true,
     secure: true,
-    sameSite: 'Strict',
+    sameSite: 'None',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
@@ -148,7 +148,7 @@ export const refreshToken = async (req, res) => {
     res.cookie('auth_token', newAccessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: 'Strict',
+      sameSite: 'None',
       maxAge: 15 * 60 * 1000,
     });
 
