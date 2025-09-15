@@ -71,7 +71,7 @@ app.post('/payments/webhook', express.raw({ type: 'application/json' }), (req, r
   res.status(200).send("OK");
 });
 
-// 🧭 Routes
+// -------------------- Routes --------------------
 import authRouter from './routes/authRoutes.js';
 import assignBatchRouter from './routes/adminroutes/assignBatchRoutes.js';
 import courseRouter from './routes/adminroutes/coursesRoutes.js';
@@ -91,6 +91,7 @@ import cartRouter from './routes/studentroutes/cartRoutes.js';
 import liveClassRouter from './routes/adminroutes/liveClassesRoutes.js';
 import studentLiveClassRouter from './routes/studentroutes/liveClassStudentRoutes.js';
 
+// Routers
 app.use('/auth', authRouter);
 app.use('/admin', assignBatchRouter);
 app.use('/admin/courses', courseRouter);
