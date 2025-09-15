@@ -1,25 +1,41 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
+
 const userSchema = new mongoose.Schema({
   name: String,
-      email: {
-      type: String,
-      unique: true,
-      required: true,
-      lowercase: true,
-      trim: true,
-      match: [/^\S+@\S+\.\S+$/, 'Invalid email format']
-    },
+
+  email: {
+    type: String,
+    unique: true,
+    required: true,
+    lowercase: true,
+    trim: true,
+    match: [/^\S+@\S+\.\S+$/, 'Invalid email format']
+  },
 
   password: String,
   emailVerified: { type: Boolean, required: true, default: false },
-  
 
-  role: { type: String, enum: ['student', 'admin', 'instructor'], default: 'student' },
+  role: { 
+    type: String, 
+    enum: ['student', 'admin', 'instructor'], 
+    default: 'student' 
+  },
+
+  // 👇 Batch reference (important for notices)
+  batch: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "Batch",   // Assuming you have a Batch model
+    default: null 
+  },
+
+  fcmToken: { type: String, default: null },
+
   profileImage: {
     url: String,
     publicId: String
   }
+
 }, { timestamps: true });
 
 // Hash password before save
