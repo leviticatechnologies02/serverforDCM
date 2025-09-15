@@ -134,21 +134,24 @@ connectDB(process.env.MONGO_URI);
 const PORT = process.env.PORT || 5000;
 let server;
 
-if (process.env.NODE_ENV === 'production') {
-  const httpsOptions = {
-    key: fs.readFileSync('path/to/private-key.pem'),
-    cert: fs.readFileSync('path/to/certificate.pem')
-  };
-  server = https.createServer(httpsOptions, app);
-  server.listen(PORT, () => {
-    console.log(`🔒 HTTPS Server running on port ${PORT}`);
-  });
-} else {
-  server = http.createServer(app);
-  server.listen(PORT, () => {
-    console.log(`🔓 HTTP Server running on http://localhost:${PORT}`);
-  });
-}
+// if (process.env.NODE_ENV === 'production') {
+//   const httpsOptions = {
+//     key: fs.readFileSync('path/to/private-key.pem'),
+//     cert: fs.readFileSync('path/to/certificate.pem')
+//   };
+//   server = https.createServer(httpsOptions, app);
+//   server.listen(PORT, () => {
+//     console.log(`🔒 HTTPS Server running on port ${PORT}`);
+//   });
+// } else {
+//   server = http.createServer(app);
+//   server.listen(PORT, () => {
+//     console.log(`🔓 HTTP Server running on http://localhost:${PORT}`);
+//   });
+// }
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port http://localhost:${PORT}`);
+});
 
 // 📡 Initialize WebSocket
 initSocket(server);
