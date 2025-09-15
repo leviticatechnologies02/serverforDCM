@@ -1,60 +1,7 @@
 import jwt from 'jsonwebtoken';
 import Admin from '../models/admin.js';
-import User from '../models/user.js';
+import User from '../models/user.js'
 import { uploadToCloudinary } from '../utils/cloudinaryUtils.js';
-
-export const signup = async (req, res) => {
-  const { name, email, password, role = 'student' } = req.body;
-
-  try {
-    const user = await User.findOne({ email });
-
-    if (!user || !user.emailVerified) {
-      return res.status(403).json({ error: 'Email not verified' });
-    }
-
-    if (user.password) {
-      return res.status(409).json({ error: 'User already signed up' });
-    }
-
-    // ✅ No manual hashing — let schema pre-save hook handle it
-    user.password = password;
-    user.role = role;
-
-    // Optional profile image
-    if (req.file) {
-      try {
-        const result = await uploadToCloudinary(req.file.path, `${role}_profiles`);
-        user.profileImage = {
-          url: result.secure_url,
-          publicId: result.public_id,
-        };
-      } catch (err) {
-        console.error('Image upload failed:', err.message);
-      }
-    }
-
-    await user.save(); // password will be hashed here automatically
-
-    const token = jwt.sign(
-      { userId: user._id.toString(), email, name: user.name, role },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
-
-    return res.status(201).json({
-      message: `${role} created successfully`,
-      user,
-      token,
-    });
-  } catch (err) {
-    console.error('Signup error:', err.message);
-    return res.status(500).json({ error: 'Signup failed' });
-  }
-};
-
-
-
 
 const findAccountByEmail = async (email) => {
   const normalizedEmail = email.trim().toLowerCase();
@@ -68,45 +15,96 @@ const findAccountByEmail = async (email) => {
   return { account: null, role: null };
 };
 
-export const login = async (req, res) => {
-  const { email, password } = req.body;
-  console.log(req.body)
+export const signup = async (req, res) => {
+  const { name, email, password, role = 'student' } = req.body;
 
   try {
-    const { account, role } = await findAccountByEmail(email);
-    console.log(account,"iamacc")
-    if (!account) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+    const { account, role: source } = await findAccountByEmail(email);
+
+    if (!account || !account.emailVerified) {
+      return res.status(403).json({ error: 'Email not verified or user not found' });
     }
 
-    const isValid = await account.comparePassword(password);
-    if (!isValid) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+    if (account.password) {
+      return res.status(409).json({ error: 'User already signed up' });
     }
 
-    const token = jwt.sign(
-      {
-        userId: account._id.toString(),
-        email: account.email,
-        role: account.role,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
+    // Finalize account setup
+    account.name = name;
+    account.password = password; // Schema handles hashing
+    account.role = role;
 
-    res.status(200).json({
-      message: 'Login successful',
-      token,
+    // Optional profile image upload
+    if (req.file?.path) {
+      try {
+        const result = await uploadToCloudinary(req.file.path, `${role}_profiles`);
+        account.profileImage = {
+          url: result.secure_url,
+          publicId: result.public_id,
+        };
+      } catch (err) {
+        console.warn('⚠️ Cloudinary upload failed:', err.message);
+      }
+    }
+
+    await account.save();
+
+    res.status(201).json({
+      message: `${role} account created successfully`,
       user: {
-        id: account._id.toString(),
+        id: account._id,
         name: account.name,
         email: account.email,
         role: account.role,
         profileImage: account.profileImage?.url || null,
       },
-      source: role,
     });
   } catch (err) {
+    console.error('❌ Signup error:', err.message);
+    res.status(500).json({ error: 'Signup failed. Please try again later.' });
+  }
+};
+
+
+
+
+export const login = async (req, res) => {
+  const ACCESS_SECRET = process.env.ACCESS_SECRET;
+const REFRESH_SECRET = process.env.REFRESH_SECRET;
+  const { email, password } = req.body;
+try{
+ const { account, role } = await findAccountByEmail(email);
+   if (!account) return res.status(401).json({ error: 'Invalid credentials' });
+
+  const isValid = await account.comparePassword(password);
+  if (!isValid) return res.status(401).json({ error: 'Invalid credentials' });
+
+  const payload = {
+    id: account._id.toString(),
+    email: account.email,
+    role: account.role,
+    name: account.name,
+  };
+
+  const accessToken = jwt.sign(payload, ACCESS_SECRET, { expiresIn: '1h' });
+  const refreshToken = jwt.sign(payload, REFRESH_SECRET, { expiresIn: '7d' });
+
+  res.cookie('auth_token', accessToken, {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'Strict',
+  maxAge: 60 * 60 * 1000, // 1 hour in milliseconds
+});
+
+  res.cookie('refresh_token', refreshToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'Strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
+  res.status(200).json({ message: 'Login successful', user: payload });
+} catch (err) {
     console.error('❌ Login error:', err.message);
     res.status(500).json({ error: 'Login failed. Please try again later.' });
   }
@@ -114,17 +112,49 @@ export const login = async (req, res) => {
 
 // ---------------- VERIFY TOKEN ----------------
 export const verifyAuthToken = async (req, res) => {
-  const { user } = req.userAccount || {};
+  const ACCESS_SECRET = process.env.ACCESS_SECRET;
 
-  res.status(200).json({
-    verified: req.authStatus === 'verified',
-    token: req.headers.authorization?.split(' ')[1],
-    user: {
-      id: user?._id?.toString() || user?.id,
-      name: user?.name,
-      email: user?.email,
-      role: user?.role,
-      profileImage: user?.profileImage?.url || null, // ✅ safe optional chaining
-    },
-  });
+  const token = req.cookies.auth_token;
+  
+  if (!token) return res.status(401).json({ verified: false });
+
+  try {
+    const decoded = jwt.verify(token, ACCESS_SECRET);
+    res.status(200).json({ verified: true, user: decoded });
+  } catch (err) {
+    res.status(401).json({ verified: false });
+  }
+};
+
+export const refreshToken = async (req, res) => {
+  const token = req.cookies.refresh_token;
+  if (!token) return res.status(401).json({ error: 'Missing refresh token' });
+
+  try {
+    const decoded = jwt.verify(token, REFRESH_SECRET);
+    const account = await findAccountById(decoded.id);
+
+    if (!account) return res.status(401).json({ error: 'Invalid refresh token' });
+
+    const payload = {
+      id: account._id.toString(),
+      email: account.email,
+      role: account.role,
+      name: account.name,
+    };
+
+    const newAccessToken = jwt.sign(payload, ACCESS_SECRET, { expiresIn: '15m' });
+
+    res.cookie('auth_token', newAccessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'Strict',
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.status(200).json({ message: 'Access token refreshed' });
+  } catch (err) {
+    console.error('❌ Refresh error:', err.message);
+    res.status(401).json({ error: 'Invalid or expired refresh token' });
+  }
 };

@@ -1,9 +1,10 @@
 import mongoose from 'mongoose';
+const { Schema } = mongoose;
 
 const LiveClassSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  courseId: { type: String, required: true },
-  batchId: { type: String, required: true },
+  course: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
+  batch: { type: Schema.Types.ObjectId, ref: 'Batch', required:true},
   startTime: { type: Date, required: true },
   duration: { type: Number, required: true }, // in minutes
   zoomMeetingId: { type: String, required: true },

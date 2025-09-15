@@ -1,5 +1,5 @@
 import LiveClass from '../../models/LiveClass.js';
-import Enrollment from '../../models/Enrollment.js';
+
 import { createMeeting } from '../../service/zoomService.js';
 import { io } from '../../socket.js';
 import { asyncHandler } from '../../middlewares/asyncHandler.js';
@@ -19,12 +19,12 @@ console.log(req.body,"creating mett")
     duration,
     hostEmail: instructorEmail
   });
-
+console.log(meeting,"iam meeting")
   // Persist
   const liveClass = await LiveClass.create({
     title,
-    courseId,
-    batchId,
+    course:courseId,
+    batch:batchId,
     startTime,
     duration,
     zoomMeetingId: String(meeting.id),
@@ -52,24 +52,52 @@ export const listLiveClasses = asyncHandler(async (req, res) => {
   res.json(classes);
 });
 
-// Enrolled-only join redirect
-export const joinLiveClass = asyncHandler(async (req, res) => {
+
+
+export const getAllLiveClasses = async (req, res) => {
+  try {
+    const liveClasses = await LiveClass.find()
+      .sort({ startTime: 1 })
+      .populate({
+        path: 'course',
+        select: 'name'
+      })
+      .populate({
+        path: 'batch',
+        select: 'batchName'
+      })
+      .select('title startTime duration course batch status  hostEmail ');
+
+    res.json({ liveClasses });
+  } catch (error) {
+    console.error('Admin fetch live classes error:', error);
+    res.status(500).json({ error: 'Failed to fetch live classes' });
+  }
+};
+
+
+
+export const startLiveClass = asyncHandler(async (req, res) => {
   const { id } = req.params;
+
+  // Find the live class
   const liveClass = await LiveClass.findById(id);
-  if (!liveClass) return res.status(404).json({ error: 'Live class not found' });
+  if (!liveClass) {
+    return res.status(404).json({ error: 'Live class not found' });
+  }
 
-  const isEnrolled = await Enrollment.exists({
-    userId: req.user._id,
-    courseId: liveClass.courseId,
-    status: 'active'
-  });
+  // Optional: Check if the requester is the host or admin
+  if (req.userAccount.user.email !== liveClass.hostEmail && !req.userAccount.user.role!=="admin") {
+    return res.status(403).json({ error: 'Unauthorized to start this class' });
+  }
 
-  if (!isEnrolled) return res.status(403).json({ error: 'Not enrolled' });
+  // Update status to 'ongoing'
+  liveClass.status = 'ongoing';
+  await liveClass.save();
 
-  // Safe redirect to Zoom's join URL
-  return res.redirect(liveClass.zoomJoinUrl);
+  // Redirect to Zoom start URL
+  return res.redirect(liveClass.zoomStartUrl);
 });
-
 
 export const updateLiveClass = async (req, res) => {
   try {

@@ -4,7 +4,7 @@ import verifyToken from '../../middlewares/authMiddleware.js';
 
 const studentLiveClassRouter = express.Router();
 
-studentLiveClassRouter.get('/join/:classId', verifyToken, joinLiveClass);
+studentLiveClassRouter.get('/join/:id', verifyToken, joinLiveClass);
 studentLiveClassRouter.get('/upcoming', verifyToken, getLiveClasses);
 
 export default studentLiveClassRouter;

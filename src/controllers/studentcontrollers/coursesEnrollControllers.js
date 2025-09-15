@@ -3,6 +3,8 @@ import Course from '../../models/courses.js';
 import Batch from '../../models/batch.js';
 import Payment from '../../models/payments.js';
 import Enrollment from '../../models/Enrollment.js';
+import User from '../../models/user.js';
+
 
 
 export const enrollInCourses = async ({ paymentId, userId, courseId }) => {
@@ -59,7 +61,7 @@ export const getStudentEnrollmentsById = async (req, res) => {
     const enrollment = await Enrollment.findOne({ user: id })
       .populate({
         path: 'enrolledCourses.course',
-        select: 'title description price duration instructor category thumbnail', // Add more course fields as needed
+        select: 'name description price duration instructor category thumbnail', // Add more course fields as needed
         model: Course
       })
       .populate({
@@ -89,6 +91,69 @@ export const getStudentEnrollmentsById = async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to fetch enrollments'
+    });
+  }
+};
+export const getStudentEnrolledCourses = async (req, res) => {
+  try {
+    const { id} = req.params;
+    
+    // Validate userId
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required"
+      });
+    }
+
+    // Check if user exists
+    const userExists = await User.findById(id);
+    if (!userExists) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // Find enrollment and populate course details
+    const enrollment = await Enrollment.findOne({ user: id })
+      .populate({
+        path: 'enrolledCourses.course',
+        select: 'name description price duration instructor category thumbnail',
+        model: Course
+      })
+     console.log(enrollment)
+
+    // If no enrollment found
+    if (!enrollment) {
+      return res.status(200).json({
+        
+        message: "No enrolled courses found for this user"
+      });
+    }
+
+    // Format the response data
+    const enrolledCourses = enrollment.enrolledCourses.map(item => ({
+      course: item.course,
+      enrolledAt: item.enrolledAt,
+      progress: item.progress || 0,
+      completed: item.completed || false,
+      lastAccessed: item.lastAccessed
+    }));
+
+    return res.status(200).json({
+      success: true,
+      message: "Enrolled courses retrieved successfully",
+      data: enrolledCourses,
+      totalCourses: enrolledCourses.length
+    });
+
+  } catch (error) {
+    console.error("Error fetching enrolled courses:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message
     });
   }
 };

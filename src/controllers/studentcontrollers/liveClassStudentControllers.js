@@ -1,48 +1,62 @@
+import { asyncHandler } from '../../middlewares/asyncHandler.js';
+import Enrollment from '../../models/Enrollment.js';
 import LiveClass from '../../models/LiveClass.js';
 
-export const joinLiveClass = async (req, res) => {
-  try {
-    const { classId } = req.params;
-    const studentId = req.user.id;
+export const joinLiveClass = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const liveClass = await LiveClass.findById(id);
+  if (!liveClass) return res.status(404).json({ error: 'Live class not found' });
 
-    const liveClass = await LiveClass.findById(classId);
-    if (!liveClass) {
-      return res.status(404).json({ error: 'Live class not found' });
-    }
+  const isEnrolled = await Enrollment.exists({
+    user: req.userAccount.user.id,
+    course: liveClass.course,
+  
+  });
 
-    // Check if student is enrolled in the course
-    const isEnrolled = await Enrollment.findOne({
-      'user.id': studentId,
-      'enrolledCourses.courseId': liveClass.courseId
-    });
+  if (!isEnrolled) return res.status(403).json({ error: 'Not enrolled' });
 
-    if (!isEnrolled) {
-      return res.status(403).json({ error: 'Not enrolled in this course' });
-    }
-
-    res.json({
-      message: 'Join URL retrieved successfully',
-      joinUrl: liveClass.zoomJoinUrl
-    });
-  } catch (error) {
-    console.error('Join live class error:', error);
-    res.status(500).json({ error: 'Failed to get join URL' });
-  }
-};
+  // Safe redirect to Zoom's join URL
+  return res.redirect(liveClass.zoomJoinUrl);
+});
 
 export const getLiveClasses = async (req, res) => {
-  try {
-    const studentId = req.user.id;
-    
-    // Get enrolled courses
-    const enrollment = await Enrollment.findOne({ 'user.id': studentId });
-    const courseIds = enrollment.enrolledCourses.map(course => course.courseId);
 
-    // Get upcoming live classes for enrolled courses
+  try {
+    const {user}= req.userAccount;
+
+
+    // Get active enrollment
+    const enrollment = await Enrollment.findOne({
+      'user': user.id,
+     
+    });
+
+    if (!enrollment || !enrollment.enrolledCourses?.length) {
+      return res.json({ liveClasses: [] });
+    }
+
+    const courseIds = enrollment.enrolledCourses.map(c => c.course);
+    const batchIds = enrollment.enrolledCourses.map(c => c.batch).filter(Boolean);
+    
+
+    // Fetch and populate only needed fields
     const liveClasses = await LiveClass.find({
-      courseId: { $in: courseIds },
-      startTime: { $gte: new Date() }
-    }).sort({ startTime: 1 });
+      course: { $in: courseIds },
+      batch: { $in: batchIds },
+      startTime: { $gte: new Date() },
+      status: { $in: ['scheduled', 'ongoing'] }
+    })
+      .sort({ startTime: 1 })
+      .populate({
+        path: 'course',
+        select: 'name'
+      })
+      .populate({
+        path: 'batch',
+        select: 'batchName'
+      })
+      .select('courseId batchId startTime title duration');
+      console.log(liveClasses,"iam live classes")
 
     res.json({ liveClasses });
   } catch (error) {

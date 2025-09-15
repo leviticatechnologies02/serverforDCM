@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 const courseSchema = new mongoose.Schema(
     {
         name: { type: String, required: true, trim: true },
+        thumbnail: { type: String },
         description: { type: String, trim: true },
         instructor: { type: String, trim: true },
         category: { type: String, require: true },
