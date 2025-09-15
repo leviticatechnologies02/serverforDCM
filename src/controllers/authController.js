@@ -15,6 +15,20 @@ const findAccountByEmail = async (email) => {
   return { account: null, role: null };
 };
 
+ const findAccountById = async (id) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return { account: null, role: null };
+  }
+
+  const user = await User.findById(id).select('+password');
+  if (user) return { account: user, role: 'user' };
+
+  const admin = await Admin.findById(id).select('+password');
+  if (admin) return { account: admin, role: 'admin' };
+
+  return { account: null, role: null };
+};
+
 export const signup = async (req, res) => {
   const { name, email, password, role = 'student' } = req.body;
 
@@ -103,7 +117,7 @@ try{
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  res.status(200).json({ message: 'Login successful', user: payload ,token:accessToken});
+  res.status(200).json({ message: 'Login successful', user: payload ,token:accessToken, refreshToken});
 } catch (err) {
     console.error('❌ Login error:', err.message);
     res.status(500).json({ error: 'Login failed. Please try again later.' });
@@ -127,14 +141,19 @@ export const verifyAuthToken = async (req, res) => {
 };
 
 export const refreshToken = async (req, res) => {
-  const token = req.cookies.refresh_token;
-  if (!token) return res.status(401).json({ error: 'Missing refresh token' });
+  const token = req.cookies.refresh_token || req.body.refresh_token;
+
+  if (!token) {
+    return res.status(401).json({ error: 'Missing refresh token' });
+  }
 
   try {
     const decoded = jwt.verify(token, REFRESH_SECRET);
     const account = await findAccountById(decoded.id);
 
-    if (!account) return res.status(401).json({ error: 'Invalid refresh token' });
+    if (!account) {
+      return res.status(401).json({ error: 'Invalid refresh token' });
+    }
 
     const payload = {
       id: account._id.toString(),
@@ -145,16 +164,24 @@ export const refreshToken = async (req, res) => {
 
     const newAccessToken = jwt.sign(payload, ACCESS_SECRET, { expiresIn: '15m' });
 
-    res.cookie('auth_token', newAccessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'None',
-      maxAge: 15 * 60 * 1000,
-    });
+    const isMobile = req.headers['user-agent']?.includes('Mobile');
 
-    res.status(200).json({ message: 'Access token refreshed' });
+    if (isMobile || req.body.fromMobile) {
+      // 📱 Mobile: send token in response
+      return res.status(200).json({ accessToken: newAccessToken });
+    } else {
+      // 🖥️ Web: set token in cookie
+      res.cookie('auth_token', newAccessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'None',
+        maxAge: 15 * 60 * 1000,
+      });
+
+      return res.status(200).json({ message: 'Access token refreshed' });
+    }
   } catch (err) {
     console.error('❌ Refresh error:', err.message);
-    res.status(401).json({ error: 'Invalid or expired refresh token' });
+    return res.status(401).json({ error: 'Invalid or expired refresh token' });
   }
 };
