@@ -1,21 +1,48 @@
+import mongoose from 'mongoose';
 import { asyncHandler } from '../../middlewares/asyncHandler.js';
 import Enrollment from '../../models/Enrollment.js';
 import LiveClass from '../../models/LiveClass.js';
 
+
+
+
 export const joinLiveClass = asyncHandler(async (req, res) => {
   const { id } = req.params;
+
+  // Fetch live class
   const liveClass = await LiveClass.findById(id);
+  console.log(id, 'live class ID');
   if (!liveClass) return res.status(404).json({ error: 'Live class not found' });
 
+  console.log(liveClass, 'Live class data');
+
+  // Ensure user and course IDs are ObjectId
+  const userId = new mongoose.Types.ObjectId(req.userAccount.user.id);
+  const courseId = new mongoose.Types.ObjectId(liveClass.course);
+  const batchId = liveClass.batch ? new mongoose.Types.ObjectId(liveClass.batch) : null;
+
+  // Check enrollment via course or batch
   const isEnrolled = await Enrollment.exists({
-    user: req.userAccount.user.id,
-    course: liveClass.course,
-  
+    user: userId,
+    enrolledCourses: {
+      $elemMatch: batchId
+        ? {
+            $or: [{ course: courseId }, { batch: batchId }]
+          }
+        : { course: courseId }
+    }
   });
 
-  if (!isEnrolled) return res.status(403).json({ error: 'Not enrolled' });
+  console.log(isEnrolled, 'Enrollment status');
 
-  // Safe redirect to Zoom's join URL
+  if (!isEnrolled) return res.status(403).json({ error: 'Not enrolled in this class' });
+
+  // Optional: Validate Zoom URL format
+  if (!liveClass.zoomJoinUrl?.startsWith('https://')) {
+    return res.status(400).json({ error: 'Invalid Zoom URL' });
+  }
+
+  // Redirect to Zoom join URL
   return res.redirect(liveClass.zoomJoinUrl);
 });
 
@@ -43,7 +70,7 @@ export const getLiveClasses = async (req, res) => {
     const liveClasses = await LiveClass.find({
       course: { $in: courseIds },
       batch: { $in: batchIds },
-      startTime: { $gte: new Date() },
+    
       status: { $in: ['scheduled', 'ongoing'] }
     })
       .sort({ startTime: 1 })

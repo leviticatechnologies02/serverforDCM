@@ -87,15 +87,14 @@ export const startLiveClass = asyncHandler(async (req, res) => {
   }
 
   // Optional: Check if the requester is the host or admin
-  if (req.userAccount.user.email !== liveClass.hostEmail && !req.userAccount.user.role!=="admin") {
-    return res.status(403).json({ error: 'Unauthorized to start this class' });
-  }
+
 
   // Update status to 'ongoing'
   liveClass.status = 'ongoing';
   await liveClass.save();
 
   // Redirect to Zoom start URL
+  console.log(liveClass.zoomStartUrl)
   return res.redirect(liveClass.zoomStartUrl);
 });
 
