@@ -8,7 +8,7 @@ export const createLiveClass = asyncHandler(async (req, res) => {
   const { title, startTime, duration, courseId, batchId, instructorEmail } = req.body;
 
   // RBAC example: only admin/instructor can create
-  if (!['admin', 'instructor'].includes(req.user.role)) {
+  if (!['admin', 'instructor'].includes(req.userAccount.user.role)) {
     return res.status(403).json({ error: 'Forbidden' });
   }
 console.log(req.body,"creating mett")

@@ -13,6 +13,7 @@ const token =
   try {
     const decoded = jwt.verify(token, ACCESS_SECRET);
     req.userAccount = { user: decoded };
+    console.log(req.userAccount)
     req.authStatus = 'verified';
     console.log(decoded,"iam decoded")
    
