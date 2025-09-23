@@ -113,7 +113,7 @@ app.use('/api/classes', studentLiveClassRouter);
 
 // 🌍 Default route
 app.get('/', (req, res) => {
-  res.send('Welcome to SAMsWorld API');
+  res.send('Hello  Welcome to Design Career Metrics');
 });
 
 // ❤️ Health check
