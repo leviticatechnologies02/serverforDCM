@@ -12,7 +12,7 @@ import { verifyAdmin } from '../../middlewares/verifyadminMiddleware.js';
 const batchRouter = express.Router();
 
 batchRouter.get('/allbatchNames', verifyToken, verifyAdmin, getIdAndBatchNames);
-batchRouter.get('/:batchName', verifyToken, verifyAdmin, getBatchDetails);
+batchRouter.get('/:id', verifyToken, verifyAdmin, getBatchDetails);
 batchRouter.post('/newbatch' , verifyToken, verifyAdmin, addBatch);
 
 export default batchRouter

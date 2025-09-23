@@ -10,8 +10,8 @@ import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import { v2 as cloudinary } from 'cloudinary';
 
-import connectDB from './database/connect.js';
-import { initSocket } from './socket.js';
+import connectDB from './src/database/connect.js';
+import { initSocket } from './src/socket.js';
 
 // 🌐 Allowed Origins
 const allowedOrigins = [
@@ -72,28 +72,27 @@ app.post('/payments/webhook', express.raw({ type: 'application/json' }), (req, r
 });
 
 // -------------------- Routes --------------------
-import authRouter from './routes/authRoutes.js';
-import assignBatchRouter from './routes/adminroutes/assignBatchRoutes.js';
-import courseRouter from './routes/adminroutes/coursesRoutes.js';
-import batchRouter from './routes/adminroutes/batchDetailsRoutes.js';
-import noticeRouter from './routes/adminroutes/noticeRoutes.js';
-import taskRouter from './routes/adminroutes/taskRoutes.js';
-import paymentRouter from './routes/paymentRoutes/paymentRoutes.js';
-import studentRouter from './routes/studentroutes/studentRoutes.js';
-import assignRouter from './routes/adminroutes/assignRoutes.js';
-import profileRoutes from './routes/profileRoutes.js';
-import uploadRoutes from './routes/uploadRoutes.js';
-import downloadRouter from './routes/downloadRoute.js';
-import transactionRouter from './routes/adminroutes/transactionRoutes.js';
-import studentEnrollRouter from './routes/studentroutes/stundentenrollRoutes.js';
-import categoriesRouter from './routes/adminroutes/coursesCategoriesRoutes.js';
-import cartRouter from './routes/studentroutes/cartRoutes.js';
-import liveClassRouter from './routes/adminroutes/liveClassesRoutes.js';
-import studentLiveClassRouter from './routes/studentroutes/liveClassStudentRoutes.js';
+import authRouter from './src/routes/authRoutes.js';
+import courseRouter from './src/routes/adminroutes/coursesRoutes.js';
+import batchRouter from './src/routes/adminroutes/batchDetailsRoutes.js';
+import noticeRouter from './src/routes/adminroutes/noticeRoutes.js';
+import taskRouter from './src/routes/adminroutes/taskRoutes.js';
+import paymentRouter from './src/routes/paymentRoutes/paymentRoutes.js';
+import studentRouter from './src/routes/studentroutes/studentRoutes.js';
+import assignRouter from './src/routes/adminroutes/assignRoutes.js';
+import profileRoutes from './src/routes/profileRoutes.js';
+import uploadRoutes from './src/routes/uploadRoutes.js';
+import downloadRouter from './src/routes/downloadRoute.js';
+import transactionRouter from './src/routes/adminroutes/transactionRoutes.js';
+import studentEnrollRouter from './src/routes/studentroutes/stundentenrollRoutes.js';
+import categoriesRouter from './src/routes/adminroutes/coursesCategoriesRoutes.js';
+import cartRouter from './src/routes/studentroutes/cartRoutes.js';
+import liveClassRouter from './src/routes/adminroutes/liveClassesRoutes.js';
+import studentLiveClassRouter from './src/routes/studentroutes/liveClassStudentRoutes.js';
+import statsRouter from './src/routes/adminroutes/statsRoutes.js';
 
 // Routers
 app.use('/auth', authRouter);
-app.use('/admin', assignBatchRouter);
 app.use('/admin/courses', courseRouter);
 app.use('/admin/batchs', batchRouter);
 app.use('/student/enroll', studentEnrollRouter);
@@ -103,6 +102,7 @@ app.use('/tasks', taskRouter);
 app.use('/admin/enroll', assignRouter);
 app.use('/api', profileRoutes);
 app.use('/api', uploadRoutes);
+app.use('/api/admin',statsRouter)
 app.use('/api/enrollments', downloadRouter);
 app.use('/payments', paymentRouter);
 app.use('/api/admin', transactionRouter);

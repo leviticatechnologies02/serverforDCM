@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 const verifyToken = (req, res, next) => {
-  console.log(req,"rei")
+  
   const ACCESS_SECRET = process.env.ACCESS_SECRET;
 const token =
   req.cookies.auth_token || // Web
@@ -13,10 +13,9 @@ const token =
   try {
     const decoded = jwt.verify(token, ACCESS_SECRET);
     req.userAccount = { user: decoded };
-    console.log(req.userAccount)
-    req.authStatus = 'verified';
-    console.log(decoded,"iam decoded")
    
+    req.authStatus = 'verified';
+ 
     next();
   } catch (err) {
     return res.status(401).json({ error: 'Invalid token' });

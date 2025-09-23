@@ -19,6 +19,7 @@ authRouter.get('/verify-email',verifyEmail);
 // 🔍 Verify token
 authRouter.get('/verify', verifyToken, verifyAuthToken);
 authRouter.post("/refresh",refreshToken)
+// password changes
 authRouter.post('/forgot-password',forgotPassword)
 authRouter.post('/reset-password', resetPassword)
 

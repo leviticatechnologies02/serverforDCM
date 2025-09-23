@@ -82,43 +82,54 @@ export const signup = async (req, res) => {
 
 
 
+
 export const login = async (req, res) => {
   const ACCESS_SECRET = process.env.ACCESS_SECRET;
-const REFRESH_SECRET = process.env.REFRESH_SECRET;
+  const REFRESH_SECRET = process.env.REFRESH_SECRET;
   const { email, password } = req.body;
-try{
- const { account, role } = await findAccountByEmail(email);
-   if (!account) return res.status(401).json({ error: 'Invalid credentials' });
 
-  const isValid = await account.comparePassword(password);
-  if (!isValid) return res.status(401).json({ error: 'Invalid credentials' });
+  try {
+    const { account, role } = await findAccountByEmail(email);
+    if (!account) return res.status(401).json({ error: 'Invalid credentials' });
 
-  const payload = {
-    id: account._id.toString(),
-    email: account.email,
-    role: account.role,
-    name: account.name,
-  };
+    const isValid = await account.comparePassword(password);
+    if (!isValid) return res.status(401).json({ error: 'Invalid credentials' });
 
-  const accessToken = jwt.sign(payload, ACCESS_SECRET, { expiresIn: '1h' });
-  const refreshToken = jwt.sign(payload, REFRESH_SECRET, { expiresIn: '7d' });
+    const payload = {
+      id: account._id.toString(),
+      email: account.email,
+      role: account.role,
+      name: account.name,
+    };
 
-  res.cookie('auth_token', accessToken, {
-  httpOnly: true,
-  secure: true,
-  sameSite: 'None',
-  maxAge: 60 * 60 * 1000, // 1 hour in milliseconds
-});
+    const accessToken = jwt.sign(payload, ACCESS_SECRET, { expiresIn: '1h' });
+    const refreshToken = jwt.sign(payload, REFRESH_SECRET, { expiresIn: '7d' });
 
-  res.cookie('refresh_token', refreshToken, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'None',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+    res.cookie('auth_token', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 60 * 60 * 1000,
+    });
 
-  res.status(200).json({ message: 'Login successful', user: payload ,token:accessToken, refreshToken});
-} catch (err) {
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+
+
+    res.status(200).json({
+      message: 'Login successful',
+      user: payload,
+      token: accessToken,
+      refreshToken,
+      
+    });
+
+  } catch (err) {
     console.error('❌ Login error:', err.message);
     res.status(500).json({ error: 'Login failed. Please try again later.' });
   }
@@ -134,7 +145,9 @@ export const verifyAuthToken = async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, ACCESS_SECRET);
-    res.status(200).json({ verified: true, user: decoded });
+  const { exp, iat, ...sanitizedUser } = decoded;
+    
+    res.status(200).json({ verified: true, user: sanitizedUser });
   } catch (err) {
     res.status(401).json({ verified: false });
   }

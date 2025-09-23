@@ -7,7 +7,7 @@ import User from '../../models/user.js';
 
 
 
-export const enrollInCourses = async ({ paymentId, userId, courseId }) => {
+export const  enrollInCourses = async ({ paymentId, userId, courseId }) => {
   try {
     if (!userId || !courseId || !paymentId) {
       throw new Error('Missing required enrollment data');  

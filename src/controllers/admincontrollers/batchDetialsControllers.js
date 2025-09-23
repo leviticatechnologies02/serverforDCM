@@ -1,4 +1,5 @@
 import Batch from "../../models/batch.js";
+import Enrollment from "../../models/Enrollment.js";
 
 export const getIdAndBatchNames = async (req, res) => {
   try {
@@ -11,33 +12,47 @@ export const getIdAndBatchNames = async (req, res) => {
   }
 };
 
+
+
 export const getBatchDetails = async (req, res) => {
-  console.log("you are in get batch details", req.params.batchName)
   try {
-    const {id }= req.params;
-    console.log("fetching batches")
-    const batch = await Batch.findOne({id}).populate('students').lean()
-    console.log("after queryy")
-    console.log(batch,"iambatch")
+    const { id } = req.params;
 
-    if (!batch) return res.status(404).json({ error: 'Batch not found' });
+    // Find enrollments where at least one enrolledCourse has this batch
+    const enrollments = await Enrollment.find({
+      "enrolledCourses.batch": id
+    })
+      .populate("user", "name email role") // only bring safe fields
+      .populate("enrolledCourses.course", "name"); // only bring course title
 
-    const students = batch.students.map(({ _id,  name, email, role }) => ({
-      _id,  name, email, role
-    }));
+    if (!enrollments || enrollments.length === 0) {
+      return res.status(200).json({ msg: "Batch not found or no students" });
+    }
+
+    // Flatten and sanitize
+    console.log(enrollments,"iam enrollments")
+    const students = enrollments.flatMap(enrollment =>
+      enrollment.enrolledCourses
+        .filter(c => c.batch?.toString() === id) // only courses in this batch
+        .map(c => ({
+          id:enrollment.user._id,
+          name: enrollment.user.name,
+          email: enrollment.user.email,
+          role: enrollment.user.role,
+          course: c.course?.name 
+        }))
+    );
 
     res.status(200).json({ students });
   } catch (err) {
-    console.log("there is err in getBatchDetails",err)
-    res.status(500).json({ error: 'Failed to fetch batch details' });
+    console.error("Error in getBatchDetails:", err);
+    res.status(500).json({ error: "Failed to fetch batch details" });
   }
 };
-// controllers/batchController.js
 
-// Mongoose model
-import asyncHandler from 'express-async-handler'; // Optional for error handling
+import asyncHandler from 'express-async-handler';
 
-// POST /admin/batchs/addBatch
+
 export const addBatch = asyncHandler(async (req, res) => {
   const { batchName, courseId, startDate, endDate, isActive } = req.body;
 
@@ -63,7 +78,7 @@ export const addBatch = asyncHandler(async (req, res) => {
 
   res.status(201).json({ message: 'Batch created successfully.', batch });
 });
-// controllers/updateBatchStudents.js
+
 
 
 export const updateBatchStudents = async ({ batchId, userIds, session }) => {
