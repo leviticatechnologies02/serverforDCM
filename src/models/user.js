@@ -12,6 +12,14 @@ const userSchema = new mongoose.Schema({
     trim: true,
     match: [/^\S+@\S+\.\S+$/, 'Invalid email format']
   },
+    mobile: {
+    type: String,
+  default:null,
+    unique: true,
+    trim: true,
+    match: [/^\d{10}$/, 'Mobile number must be 10 digits']
+  },
+
 
   password: String,
   emailVerified: { type: Boolean, required: true, default: false },
@@ -21,15 +29,6 @@ const userSchema = new mongoose.Schema({
     enum: ['student', 'admin', 'instructor'], 
     default: 'student' 
   },
-
-  // 👇 Batch reference (important for notices)
-  batch: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: "Batch",   // Assuming you have a Batch model
-    default: null 
-  },
-
-  fcmToken: { type: String, default: null },
 
   profileImage: {
     url: String,

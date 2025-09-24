@@ -90,6 +90,7 @@ import cartRouter from './src/routes/studentroutes/cartRoutes.js';
 import liveClassRouter from './src/routes/adminroutes/liveClassesRoutes.js';
 import studentLiveClassRouter from './src/routes/studentroutes/liveClassStudentRoutes.js';
 import statsRouter from './src/routes/adminroutes/statsRoutes.js';
+import createUserRouter from './src/routes/adminroutes/createUserRoutes.js';
 
 // Routers
 app.use('/auth', authRouter);
@@ -102,6 +103,7 @@ app.use('/tasks', taskRouter);
 app.use('/admin/enroll', assignRouter);
 app.use('/api', profileRoutes);
 app.use('/api', uploadRoutes);
+app.use('/api/admin',createUserRouter)
 app.use('/api/admin',statsRouter)
 app.use('/api/enrollments', downloadRouter);
 app.use('/payments', paymentRouter);
@@ -113,7 +115,7 @@ app.use('/api/classes', studentLiveClassRouter);
 
 // 🌍 Default route
 app.get('/', (req, res) => {
-  res.send('Welcome to SAMsWorld API');
+  res.send('Hello  Welcome to Design Career Metrics');
 });
 
 // ❤️ Health check

@@ -4,54 +4,62 @@ import Batch from '../../models/batch.js';
 import Payment from '../../models/payments.js';
 import Enrollment from '../../models/Enrollment.js';
 import User from '../../models/user.js';
+import mongoose from 'mongoose';
 
 
 
-export const  enrollInCourses = async ({ paymentId, userId, courseId }) => {
+
+export const enrollInCourses = async ({ paymentId, userId, courseId, session }) => {
   try {
-    if (!userId || !courseId || !paymentId) {
-      throw new Error('Missing required enrollment data');  
-    }
-    const newEnrollmentEntry = {
-      course: courseId,
-      paymentId,
-      assigned: false,
-      batch: null,
-      enrolledAt: new Date()
-    };
-
-    let enrollment = await Enrollment.findOne({ user: userId });
-
-    if (!enrollment) {
-      // First-time enrollment for this user
-      enrollment = new Enrollment({
+    // Use findOneAndUpdate with upsert to atomically handle enrollment
+    const result = await Enrollment.findOneAndUpdate(
+      { 
         user: userId,
-        enrolledCourses: [newEnrollmentEntry]
-      });
-    } else {
-      // Check if course already enrolled
-      const alreadyEnrolled = enrollment.enrolledCourses.some(
-        ec => ec.course.toString() === courseId.toString()
-      );
+        "enrolledCourses.course": { $ne: courseId } // Only if not already enrolled
+      },
+      {
+        $addToSet: {
+          enrolledCourses: {
+            course: courseId,
+            paymentId,
+            assigned: false,
+            batch: null,
+            enrolledAt: new Date()
+          }
+        }
+      },
+      { 
+        session,
+        new: true,
+        upsert: true, // Create if doesn't exist
+        setDefaultsOnInsert: true 
+      }
+    );
 
-      if (!alreadyEnrolled) {
-        enrollment.enrolledCourses.push(newEnrollmentEntry);
+    // If the course was already enrolled, handle accordingly
+    if (!result) {
+      // This means the user was found but already enrolled in the course
+      const existingEnrollment = await Enrollment.findOne({ 
+        user: userId,
+        "enrolledCourses.course": courseId 
+      }).session(session);
+      
+      if (existingEnrollment) {
+        return existingEnrollment; // Already enrolled, return existing
       }
     }
 
-    await enrollment.save();
-
-    return {
-      success: true,
-      message: 'Enrollment successful',
-      enrollment
-    };
-  } catch (err) {
-    console.error('Enrollment error:', err);
-    throw new Error('Failed to enroll in course');
+    return result;
+  } catch (error) {
+    // Handle duplicate key error (shouldn't happen with proper session handling)
+    if (error.code === 11000) {
+      // If we get a duplicate key error, fetch the existing enrollment
+      const existingEnrollment = await Enrollment.findOne({ user: userId }).session(session);
+      return existingEnrollment;
+    }
+    throw error;
   }
 };
-
 // Get enrollments by specific user ID with detailed population
 export const getStudentEnrollmentsById = async (req, res) => {
   const { id } = req.params;
