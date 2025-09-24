@@ -11,10 +11,9 @@ export const joinLiveClass = asyncHandler(async (req, res) => {
 
   // Fetch live class
   const liveClass = await LiveClass.findById(id);
-  console.log(id, 'live class ID');
-  if (!liveClass) return res.status(404).json({ error: 'Live class not found' });
-
-  console.log(liveClass, 'Live class data');
+  if (!liveClass) {
+    return res.status(404).json({ error: 'Live class not found' });
+  }
 
   // Ensure user and course IDs are ObjectId
   const userId = new mongoose.Types.ObjectId(req.userAccount.user.id);
@@ -26,24 +25,22 @@ export const joinLiveClass = asyncHandler(async (req, res) => {
     user: userId,
     enrolledCourses: {
       $elemMatch: batchId
-        ? {
-            $or: [{ course: courseId }, { batch: batchId }]
-          }
+        ? { $or: [{ course: courseId }, { batch: batchId }] }
         : { course: courseId }
     }
   });
 
-  console.log(isEnrolled, 'Enrollment status');
+  if (!isEnrolled) {
+    return res.status(403).json({ error: 'Not enrolled in this class' });
+  }
 
-  if (!isEnrolled) return res.status(403).json({ error: 'Not enrolled in this class' });
-
-  // Optional: Validate Zoom URL format
+  // Validate Zoom URL
   if (!liveClass.zoomJoinUrl?.startsWith('https://')) {
     return res.status(400).json({ error: 'Invalid Zoom URL' });
   }
 
-  // Redirect to Zoom join URL
-  return res.redirect(liveClass.zoomJoinUrl);
+  // ✅ Return Zoom URL in response
+  return res.json({ join: liveClass.zoomJoinUrl });
 });
 
 export const getLiveClasses = async (req, res) => {
