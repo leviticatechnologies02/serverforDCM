@@ -30,7 +30,7 @@ const findAccountByEmail = async (email) => {
 };
 
 export const signup = async (req, res) => {
-  const { name, email, password, role = 'student' } = req.body;
+  const { name, email, password, role = 'student',mobile } = req.body;
 
   try {
     const { account, role: source } = await findAccountByEmail(email);
@@ -47,6 +47,7 @@ export const signup = async (req, res) => {
     account.name = name;
     account.password = password; // Schema handles hashing
     account.role = role;
+    account.mobile=mobile
 
     // Optional profile image upload
     if (req.file?.path) {

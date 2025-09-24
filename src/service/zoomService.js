@@ -1,12 +1,14 @@
 import axios from 'axios';
 import { getZoomAccessToken } from './zoomAuth.js';
 
-export async function createMeeting({ topic, start_time, duration, hostEmail, timezone }) {
+export async function createMeeting({ topic, start_time, duration, hostEmail, timezone, recurrence,
+   endDate }) {
   const token = await getZoomAccessToken();
 
+  // Base payload
   const payload = {
     topic,
-    type: 2, // scheduled
+    type: recurrence === 'daily' ? 8 : 2, // 8 for recurring meeting with fixed time, 2 for scheduled
     start_time,            // ISO 8601 string
     duration,              // minutes
     timezone: timezone || process.env.APP_TIMEZONE || 'UTC',
@@ -20,11 +22,20 @@ export async function createMeeting({ topic, start_time, duration, hostEmail, ti
     }
   };
 
+  // Add recurrence settings for daily meetings
+  if (recurrence === 'daily') {
+    payload.recurrence = {
+      type: 1, // Daily
+      end_date_time: endDate, // ISO 8601 string for when recurrence should end
+      end_times: 7 // Optional: maximum number of occurrences (max 50)
+    };
+  }
+
   const { data } = await axios.post(
     `https://api.zoom.us/v2/users/${encodeURIComponent(hostEmail)}/meetings`,
     payload,
     { headers: { Authorization: `Bearer ${token}` } }
   );
 
-  return data; // contains id, join_url, start_url, etc.
+  return data;
 }

@@ -5,7 +5,7 @@ import { io } from '../../socket.js';
 import { asyncHandler } from '../../middlewares/asyncHandler.js';
 
 export const createLiveClass = asyncHandler(async (req, res) => {
-  const { title, startTime, duration, courseId, batchId, instructorEmail } = req.body;
+  const { title, startTime, duration, courseId, batchId, instructorEmail,recurrence,endDate } = req.body;
 
   // RBAC example: only admin/instructor can create
   if (!['admin', 'instructor'].includes(req.userAccount.user.role)) {
@@ -17,7 +17,9 @@ console.log(req.body,"creating mett")
     topic: title,
     start_time: startTime, // ensure ISO 8601 string, e.g., "2025-09-11T10:30:00"
     duration,
-    hostEmail: instructorEmail
+    hostEmail: instructorEmail,
+    recurrence,
+    endDate
   });
 console.log(meeting,"iam meeting")
   // Persist
