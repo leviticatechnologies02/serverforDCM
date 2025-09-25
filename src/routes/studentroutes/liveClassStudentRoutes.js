@@ -7,4 +7,4 @@ const studentLiveClassRouter = express.Router();
 studentLiveClassRouter.get('/join/:id', verifyToken, joinLiveClass);
 studentLiveClassRouter.get('/upcoming', verifyToken, getLiveClasses);
 
-export default studentLiveClassRouter;
+export default studentLiveClassRouter;  

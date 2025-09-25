@@ -156,6 +156,8 @@ export const verifyAuthToken = async (req, res) => {
 
 export const refreshToken = async (req, res) => {
   const token = req.cookies.refresh_token || req.body.refresh_token;
+   const REFRESH_SECRET = process.env.REFRESH_SECRET;
+   const ACCESS_SECRET = process.env.ACCESS_SECRET;
 
   if (!token) {
     return res.status(401).json({ error: 'Missing refresh token' });
@@ -176,7 +178,7 @@ export const refreshToken = async (req, res) => {
       name: account.name,
     };
 
-    const newAccessToken = jwt.sign(payload, ACCESS_SECRET, { expiresIn: '15m' });
+    const newAccessToken = jwt.sign(payload, ACCESS_SECRET, { expiresIn: '3h' });
 
     const isMobile = req.headers['user-agent']?.includes('Mobile');
 
