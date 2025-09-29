@@ -2,6 +2,8 @@ import jwt from 'jsonwebtoken';
 import Admin from '../models/admin.js';
 import User from '../models/user.js'
 import { uploadToCloudinary } from '../utils/cloudinaryUtils.js';
+import mongoose from 'mongoose';
+
 
 const findAccountByEmail = async (email) => {
   const normalizedEmail = email.trim().toLowerCase();
@@ -158,6 +160,8 @@ export const refreshToken = async (req, res) => {
   const token = req.cookies.refresh_token || req.body.refresh_token;
    const REFRESH_SECRET = process.env.REFRESH_SECRET;
    const ACCESS_SECRET = process.env.ACCESS_SECRET;
+   console.log(req.cookies.refresh_token)
+   console.log(token,"imatoken in refresh")
 
   if (!token) {
     return res.status(401).json({ error: 'Missing refresh token' });
@@ -165,8 +169,9 @@ export const refreshToken = async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, REFRESH_SECRET);
-    const account = await findAccountById(decoded.id);
-
+    console.log(decoded,"iam decoded")
+    const {account} = await findAccountById(decoded.id);
+console.log(account,"iam account")
     if (!account) {
       return res.status(401).json({ error: 'Invalid refresh token' });
     }
@@ -182,7 +187,7 @@ export const refreshToken = async (req, res) => {
 
     const isMobile = req.headers['user-agent']?.includes('Mobile');
 
-    if (isMobile || req.body.fromMobile) {
+    if (isMobile) {
       // 📱 Mobile: send token in response
       return res.status(200).json({ accessToken: newAccessToken });
     } else {

@@ -32,6 +32,7 @@ console.log(req.body,"creating mett")
     endDate
   });
 console.log(meeting,"iam meeting")
+const {data}=meeting
   // Persist
   const liveClass = await LiveClass.create({
     title,
@@ -39,9 +40,9 @@ console.log(meeting,"iam meeting")
     batch:batchId,
     startTime,
     duration,
-    zoomMeetingId: String(meeting.id),
-    zoomJoinUrl: meeting.join_url,
-    zoomStartUrl: meeting.start_url,
+    zoomMeetingId: String(data.id),
+    zoomJoinUrl:data.join_url,
+    zoomStartUrl: data.start_url,
     hostEmail: instructorEmail
   });
 

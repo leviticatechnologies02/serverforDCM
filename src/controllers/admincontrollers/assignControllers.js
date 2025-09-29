@@ -1,5 +1,7 @@
 import Enrollment from '../../models/Enrollment.js';
-import { updateBatchStudents } from './batchDetialsControllers.js';
+import user from '../../models/user.js';
+import { getBatchAssignmentEmailHTML } from '../../utils/Email/generateHTML.js';
+import { sendEmail } from '../../utils/Email/sendEmail.js';
 import mongoose from 'mongoose';
 
 export const getUnassignedEnrollments = async (req, res) => {
@@ -97,7 +99,7 @@ export const getUnassignedEnrollments = async (req, res) => {
 
 
 export const assignStudentsToBatch = async (req, res) => {
-  const { enrollmentIds, courseId, batchId } = req.body;
+  const { enrollmentIds, courseId, batchId,courseTitle,batchName } = req.body;
   console.log(req.body, "iam in unassigned controller");
   if (!Array.isArray(enrollmentIds) || enrollmentIds.length === 0) {
     return res.status(400).json({ error: 'enrollmentIds must be a non-empty array' });
@@ -130,11 +132,24 @@ export const assignStudentsToBatch = async (req, res) => {
           session
         }
       );
+const UserData = await user.find({ _id: { $in: userIds } }).lean().session(session); 
+// .lean() returns plain JS objects, faster + lighter than full Mongoose docs
 
-      // Step 3: Update batch with user IDs
-const batchUpdateResult = await updateBatchStudents({ batchId, userIds, session });
-console.log("Batch update result:", batchUpdateResult);
-  console.log("after updatedbatchstudents")
+await Promise.allSettled(
+  UserData.map(u =>
+    sendEmail({
+      to: u.email,
+      subject: "Batch Assigned Successfully",
+      html: getBatchAssignmentEmailHTML(
+        u.name,
+        courseTitle,
+        batchName,
+        u.email
+      ),
+    })
+  )
+);
+
 
       // Step 4: Respond inside transaction
       res.status(200).json({

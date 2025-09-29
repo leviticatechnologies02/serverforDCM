@@ -9,7 +9,7 @@ router.get('/students', async (req, res) => {
   try {
     const { page = 1, limit = 10, search } = req.query;
     
-    let query = { role: 'student' };
+    let query = { role: 'student',emailVerified:true};
     
     // Add search functionality
     if (search) {
@@ -23,7 +23,7 @@ router.get('/students', async (req, res) => {
     const students = await User.find(query)
       .sort({ createdAt: -1 })
       .limit(limit * 1)
-      .skip((page - 1) * limit);
+      .skip((page - 1) * limit).select('_id name mobile email emailVerified');
     
     const total = await User.countDocuments(query);
     
@@ -42,14 +42,11 @@ router.get('/students', async (req, res) => {
 // Advanced Excel download with filters
 router.get('/students/download', async (req, res) => {
   try {
-    const { verified, startDate, endDate } = req.query;
+    const {  startDate, endDate } = req.query;
     
-    let query = { role: 'student' };
+    let query = { role: 'student',emailVerified:true };
     
-    // Add filters if provided
-    if (verified) {
-      query.emailVerified = verified === 'true';
-    }
+
     
     if (startDate || endDate) {
       query.createdAt = {};
