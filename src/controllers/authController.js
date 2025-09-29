@@ -8,10 +8,10 @@ import mongoose from 'mongoose';
 const findAccountByEmail = async (email) => {
   const normalizedEmail = email.trim().toLowerCase();
 
-  const user = await User.findOne({ email: normalizedEmail }).select('+password');
+  const user = await User.findOne({ email: normalizedEmail });
   if (user) return { account: user, role: 'user' };
 
-  const admin = await Admin.findOne({ email: normalizedEmail }).select('+password');
+  const admin = await Admin.findOne({ email: normalizedEmail });
   if (admin) return { account: admin, role: 'admin' };
 
   return { account: null, role: null };
@@ -22,10 +22,10 @@ const findAccountByEmail = async (email) => {
     return { account: null, role: null };
   }
 
-  const user = await User.findById(id).select('+password');
+  const user = await User.findById(id);
   if (user) return { account: user, role: 'user' };
 
-  const admin = await Admin.findById(id).select('+password');
+  const admin = await Admin.findById(id);
   if (admin) return { account: admin, role: 'admin' };
 
   return { account: null, role: null };
