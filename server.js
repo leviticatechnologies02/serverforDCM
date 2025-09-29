@@ -12,11 +12,15 @@ import { v2 as cloudinary } from 'cloudinary';
 
 import connectDB from './src/database/connect.js';
 import { initSocket } from './src/socket.js';
+import chatRouter from "./src/routes/chat.js";
 
 // 🌐 Allowed Origins
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
+  'http://localhost:3002',
+  'http://localhost:3003',
+  'http://192.168.1.48:3000', // Your Flutter app might use this
   '*' // Add deployed frontend domains here
 ];
 
@@ -26,7 +30,7 @@ const app = express();
 // 🧠 Trust proxy for secure cookies behind reverse proxy
 app.set('trust proxy', 1);
 
-// 🍪 Cookie + Body Parsing
+// 🍪 Cookie + Body Parsing - MUST COME BEFORE ROUTES
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -34,7 +38,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // 🛡️ CORS with credentials
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin) || origin === 'null') {
+    if (!origin || allowedOrigins.includes(origin) || origin === 'null' || allowedOrigins.includes('*')) {
       callback(null, true);
     } else {
       console.log(`❌ Blocked by CORS: ${origin}`);
@@ -43,12 +47,12 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-// 🕵️ Log incoming origin
+// 🕵️ Log incoming origin and method
 app.use((req, res, next) => {
-  console.log('📡 Incoming Origin:', req.headers.origin);
+  console.log('📡 Incoming:', req.method, req.url, 'Origin:', req.headers.origin);
   next();
 });
 
@@ -63,13 +67,16 @@ const apiLimiter = rateLimit({
 });
 app.use('/auth', apiLimiter);
 
-// 🔥 Razorpay Webhook
+// 🔥 Razorpay Webhook (needs raw body)
 app.post('/payments/webhook', express.raw({ type: 'application/json' }), (req, res) => {
   console.log("🔥 Webhook hit");
   console.log("Headers:", req.headers);
   console.log("Body:", req.body);
   res.status(200).send("OK");
 });
+
+// ✅ MOUNT CHAT ROUTER (after body parser but before other routes)
+app.use("/api/chat", chatRouter);
 
 // -------------------- Routes --------------------
 import authRouter from './src/routes/authRoutes.js';
@@ -103,8 +110,8 @@ app.use('/tasks', taskRouter);
 app.use('/admin/enroll', assignRouter);
 app.use('/api', profileRoutes);
 app.use('/api', uploadRoutes);
-app.use('/api/admin',createUserRouter)
-app.use('/api/admin',statsRouter)
+app.use('/api/admin', createUserRouter);
+app.use('/api/admin', statsRouter);
 app.use('/api/enrollments', downloadRouter);
 app.use('/payments', paymentRouter);
 app.use('/api/admin', transactionRouter);
@@ -115,12 +122,49 @@ app.use('/api/classes', studentLiveClassRouter);
 
 // 🌍 Default route
 app.get('/', (req, res) => {
-  res.send('Hello  Welcome to Design Career Metrics');
+  res.json({ 
+    message: 'Hello! Welcome to Design Career Metrics',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      chat: '/api/chat',
+      health: '/health',
+      auth: '/auth',
+      courses: '/admin/courses'
+    }
+  });
 });
 
 // ❤️ Health check
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', timestamp: new Date() });
+  res.status(200).json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    service: 'DCM Server',
+    version: '1.0.0'
+  });
+});
+
+// 🔍 Debug route to check all registered routes
+app.get('/debug/routes', (req, res) => {
+  const routes = [];
+  app._router.stack.forEach((middleware) => {
+    if (middleware.route) {
+      routes.push({
+        path: middleware.route.path,
+        methods: Object.keys(middleware.route.methods)
+      });
+    } else if (middleware.name === 'router') {
+      middleware.handle.stack.forEach((handler) => {
+        if (handler.route) {
+          routes.push({
+            path: handler.route.path,
+            methods: Object.keys(handler.route.methods)
+          });
+        }
+      });
+    }
+  });
+  res.json({ routes });
 });
 
 // ☁️ Cloudinary Config
@@ -133,27 +177,17 @@ cloudinary.config({
 // 🔌 Connect DB
 connectDB(process.env.MONGO_URI);
 
-// 🔊 Start Server (HTTPS in production, HTTP in dev)
-const PORT = process.env.PORT || 5000;
-let server;
+// 🔊 Start Server
+const PORT = process.env.PORT || 7777; // Changed to 7777 to match your running port
 
-// if (process.env.NODE_ENV === 'production') {
-//   const httpsOptions = {
-//     key: fs.readFileSync('path/to/private-key.pem'),
-//     cert: fs.readFileSync('path/to/certificate.pem')
-//   };
-//   server = https.createServer(httpsOptions, app);
-//   server.listen(PORT, () => {
-//     console.log(`🔒 HTTPS Server running on port ${PORT}`);
-//   });
-// } else {
-//   server = http.createServer(app);
-//   server.listen(PORT, () => {
-//     console.log(`🔓 HTTP Server running on http://localhost:${PORT}`);
-//   });
-// }
-app.listen(PORT, () => {
+// Create HTTP server
+const server = http.createServer(app);
+
+// Start the server
+server.listen(PORT, () => {
   console.log(`🚀 Server running on port http://localhost:${PORT}`);
+  console.log(`💬 Chat endpoint available at: http://localhost:${PORT}/api/chat`);
+  console.log(`❤️ Health check: http://localhost:${PORT}/health`);
 });
 
 // 📡 Initialize WebSocket
@@ -161,6 +195,39 @@ initSocket(server);
 
 // 🧼 Global Error Handler
 app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err.stack);
-  res.status(500).json({ error: 'Something went wrong' });
+  console.error('❌ Unhandled error:', err.stack);
+  
+  // CORS errors
+  if (err.message === 'Not allowed by CORS') {
+    return res.status(403).json({ 
+      success: false,
+      error: 'CORS policy violation',
+      message: 'Origin not allowed'
+    });
+  }
+  
+  // Default error
+  res.status(500).json({ 
+    success: false,
+    error: 'Internal server error',
+    message: process.env.NODE_ENV === 'production' ? 'Something went wrong' : err.message
+  });
 });
+
+// 🚨 Handle unhandled promise rejections
+process.on('unhandledRejection', (err, promise) => {
+  console.error('❌ Unhandled Promise Rejection:', err);
+  console.error('At promise:', promise);
+  // Close server & exit process
+  server.close(() => {
+    process.exit(1);
+  });
+});
+
+// 🚨 Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught Exception:', err);
+  process.exit(1);
+});
+
+export default app;

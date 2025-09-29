@@ -1,0 +1,20 @@
+
+services:
+  node:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/usr/src/app
+    environment:
+      - RASA_URL=http://rasa:5005/webhooks/rest/webhook
+    depends_on:
+      - rasa
+
+  rasa:
+    image: rasa/rasa:latest-full
+    command: run --enable-api --cors "*"
+    volumes:
+      - ./rasa:/app
+    ports:
+      - "5005:5005"
