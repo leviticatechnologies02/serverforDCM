@@ -99,23 +99,10 @@ export const verifyPayment = async (req, res) => {
       await enrollInCourses({ paymentId: payment._id, userId, courseId });
     }
 
-    // ✅ Fetch student info
-    const student = await User.findById(userId).select('name email');
+    console.log("verfied hitted")
 
-    // ✅ Create admin notice
-    await Notice.create({
-      title: 'New Payment Received',
-      description: `${student?.name || 'A student'} (${student?.email}) has successfully paid ₹${payment.amountInRupees} for courses.`,
-      noticeType: 'Payment Notification',
-      priority: 'High',
-      targetAudience: 'Role Specific',
-      userRole: 'admin', // 👈 only admins will see this
-      createdBy: userId,
-      status: 'published',
-      publishedAt: new Date()
-    });
-
-    res.json({ success: true });
+    
+    res.status(200).json({ success: true });
   } catch (err) {
     console.error('Verify error:', err);
     res.status(500).json({ error: 'Verification failed' });

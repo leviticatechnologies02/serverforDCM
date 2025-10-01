@@ -19,7 +19,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:3002',
-  'http://localhost:3003',
+  "https://dcm-platform.vercel.app",
   'http://192.168.1.48:3000', // Your Flutter app might use this
   '*' // Add deployed frontend domains here
 ];
@@ -32,6 +32,13 @@ app.set('trust proxy', 1);
 
 // 🍪 Cookie + Body Parsing - MUST COME BEFORE ROUTES
 app.use(cookieParser());
+// 🔥 Razorpay Webhook (needs raw body)
+app.post('/payments/webhook', express.raw({ type: 'application/json' }), (req, res) => {
+  console.log("🔥 Webhook hit");
+  console.log("Headers:", req.headers);
+  console.log("Body:", req.body);
+  res.status(200).send("OK");
+});
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -67,13 +74,7 @@ const apiLimiter = rateLimit({
 });
 app.use('/auth', apiLimiter);
 
-// 🔥 Razorpay Webhook (needs raw body)
-app.post('/payments/webhook', express.raw({ type: 'application/json' }), (req, res) => {
-  console.log("🔥 Webhook hit");
-  console.log("Headers:", req.headers);
-  console.log("Body:", req.body);
-  res.status(200).send("OK");
-});
+
 
 // ✅ MOUNT CHAT ROUTER (after body parser but before other routes)
 app.use("/api/chat", chatRouter);

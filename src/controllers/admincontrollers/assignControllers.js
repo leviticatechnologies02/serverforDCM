@@ -9,7 +9,7 @@ export const getUnassignedEnrollments = async (req, res) => {
   try {
     const enrollments = await Enrollment.aggregate([
       // Filter only unassigned courses
-      {
+      { 
         $project: {
           user: 1,
           enrolledCourses: {
