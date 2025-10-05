@@ -19,6 +19,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:3002',
+"https://designcareermetrics.com",
   "https://dcm-platform.vercel.app",
   'http://192.168.1.48:3000', // Your Flutter app might use this
   '*' // Add deployed frontend domains here
