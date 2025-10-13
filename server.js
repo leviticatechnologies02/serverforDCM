@@ -34,7 +34,7 @@ app.set('trust proxy', 1);
 // 🍪 Cookie + Body Parsing - MUST COME BEFORE ROUTES
 app.use(cookieParser());
 // 🔥 Razorpay Webhook (needs raw body)
-app.post('/payments/webhook', express.raw({ type: 'application/json' }), (req, res) => {
+app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
   console.log("🔥 Webhook hit");
   console.log("Headers:", req.headers);
   console.log("Body:", req.body);
