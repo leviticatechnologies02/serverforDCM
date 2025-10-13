@@ -119,9 +119,10 @@ export const webhook = async (req, res) => {
     }
  const expected = crypto
       .createHmac('sha256', process.env.RAZORPAY_WEBHOOK_SECRET)
-      .update(rawBody)
+      .update(rawBody.toString())
       .digest('hex');
-
+console.log("🔐 Received Signature:", signature);
+console.log("🔐 Expected Signature:", expected);
     if (expected !== signature) {
        console.warn('❌ Invalid webhook signature');
       return res.status(400).send('Invalid webhook signature');

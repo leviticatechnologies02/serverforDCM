@@ -34,12 +34,7 @@ app.set('trust proxy', 1);
 // 🍪 Cookie + Body Parsing - MUST COME BEFORE ROUTES
 app.use(cookieParser());
 // 🔥 Razorpay Webhook (needs raw body)
-app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
-  console.log("🔥 Webhook hit");
-  console.log("Headers:", req.headers);
-  console.log("Body:", req.body);
-  res.status(200).send("OK");
-});
+app.post('/webhook', express.raw({ type: 'application/json' }), webhook);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -100,6 +95,7 @@ import liveClassRouter from './src/routes/adminroutes/liveClassesRoutes.js';
 import studentLiveClassRouter from './src/routes/studentroutes/liveClassStudentRoutes.js';
 import statsRouter from './src/routes/adminroutes/statsRoutes.js';
 import createUserRouter from './src/routes/adminroutes/createUserRoutes.js';
+import { webhook } from './src/controllers/paymentControllers/paymentController.js';
 
 // Routers
 app.use('/auth', authRouter);
