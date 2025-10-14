@@ -6,30 +6,44 @@ import User from '../../models/user.js';
 export const getAllTransactions = async (req, res) => {
   try {
     const transactions = await Payment.find()
-      .populate('courseIds', 'title price')  // Changed from 'name' to 'title'
+      .populate('courseIds', 'name price') 
       .populate('userId', 'name email')
       .sort({ createdAt: -1 })
       .lean(); // Use lean() for better performance
-
+console.log("Fetched Transactions:", transactions);
     // Transform data to match Flutter expectations
-    const formattedTransactions = transactions.map(transaction => ({
-      _id: transaction._id,
-      amount: transaction.amountInRupees, // Use amountInRupees instead of amount
-      status: transaction.status,
-      courseId: {
-        _id: transaction.courseIds?.[0]?._id || '', // Handle array of courses
-        title: transaction.courseIds?.[0]?.title || 'Unknown Course',
-        price: transaction.courseIds?.[0]?.price || 0
-      },
-      userId: {
-        _id: transaction.userId?._id || '',
-        name: transaction.userId?.name || 'Unknown User',
-        email: transaction.userId?.email || ''
-      },
-      createdAt: transaction.createdAt,
-      updatedAtIST: transaction.updatedAt || transaction.createdAt // Fallback to createdAt
-    }));
+   const formattedTransactions = transactions.map(transaction => {
+ const user = transaction.userId || {};
 
+
+  return {
+    _id: transaction._id,
+    paymentId: transaction.paymentId, // 🔧 typo fixed: "paymenId" → "paymentId"
+    orderId: transaction.orderId,
+    appUsed: transaction.appUsed,
+    paymentMode: transaction.paymentMode,
+    amount: transaction.amountInRupees || 0, // fallback to 0 if undefined
+    status: transaction.status,
+
+    courses: Array.isArray(transaction.courseIds)
+  ? transaction.courseIds.map(course => ({
+      _id: course._id || '',
+      name: course.name || 'Unknown Course',
+      price: course.price || 0
+    }))
+  : []
+,
+    user: {
+      _id: user._id || '',
+      name: user.name || 'Unknown User',
+      email: user.email || ''
+    },
+
+    createdAt: transaction.createdAt,
+    updatedAtIST: transaction.updatedAt || transaction.createdAt
+  };
+});
+console.log("Formatted Transactions:", formattedTransactions);
     res.json({
       success: true,
       transactions: formattedTransactions
