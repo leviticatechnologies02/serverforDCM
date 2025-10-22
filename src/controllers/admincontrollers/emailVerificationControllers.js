@@ -40,7 +40,6 @@ export const sendVerificationEmail = async (req, res) => {
 
     // 5. Send email
     await sendEmail({
-      from: `"Design Career Metric" <verification@designcareermetrics.com>`,
       to: email,
       subject: 'Verify Your Email',
       html: getVerificationEmailHTML(name, verifyUrl, email),

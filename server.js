@@ -96,8 +96,10 @@ import studentLiveClassRouter from './src/routes/studentroutes/liveClassStudentR
 import statsRouter from './src/routes/adminroutes/statsRoutes.js';
 import createUserRouter from './src/routes/adminroutes/createUserRoutes.js';
 import { webhook } from './src/controllers/paymentControllers/paymentController.js';
+import { submitContactForm } from './src/controllers/admincontrollers/contactUsMail.js';
 
 // Routers
+app.post('/contact',submitContactForm)
 app.use('/auth', authRouter);
 app.use('/admin/courses', courseRouter);
 app.use('/admin/batchs', batchRouter);

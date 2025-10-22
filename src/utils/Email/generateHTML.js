@@ -3,7 +3,7 @@ export const getVerificationEmailHTML = (name, verifyUrl, email) => {
     <div style="font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; padding: 0; margin: 0;">
       <!-- Header -->
       <div style="background-color: #1e293b; padding: 20px; text-align: center;">
-        <img src="https://yourdomain.com/logo.png" alt="Design Career Metric" style="height: 40px;" />
+        <img src="https://api.designcareermetrics.com/img/dcmlogotransperent.png" alt="Design Career Metric" style="height: 40px;" />
         <h1 style="color: #ffffff; font-size: 20px; margin-top: 10px;">Design Career Metric</h1>
       </div>
 
@@ -27,8 +27,8 @@ export const getVerificationEmailHTML = (name, verifyUrl, email) => {
       <!-- Footer -->
       <div style="background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #666;">
         &copy; ${new Date().getFullYear()} Design Career Metric. All rights reserved.<br/>
-        <a href="https://yourdomain.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
-        <a href="https://yourdomain.com/contact" style="color: #2563eb; text-decoration: none;">Contact Us</a>
+        <a href="https://designcareermetrics.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
+        <a href="https://designcareermetrics.com/contact-us" style="color: #2563eb; text-decoration: none;">Contact Us</a>
       </div>
     </div>
   `;
@@ -110,7 +110,7 @@ export const getBatchAssignmentEmailHTML = (name, courseTitle, batchName,email) 
     <div style="font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; padding: 0; margin: 0;">
       <!-- Header -->
       <div style="background-color: #1e293b; padding: 20px; text-align: center;">
-        <img src="https://yourdomain.com/logo.png" alt="Design Career Metric" style="height: 40px;" />
+        <img src="https://api.designcareermetrics.com/img/dcmlogotransperent.png" alt="Design Career Metric" style="height: 40px;" />
         <h1 style="color: #ffffff; font-size: 20px; margin-top: 10px;">Design Career Metric</h1>
       </div>
 
@@ -144,8 +144,45 @@ export const getBatchAssignmentEmailHTML = (name, courseTitle, batchName,email) 
       <!-- Footer -->
       <div style="background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #666;">
         &copy; ${new Date().getFullYear()} Design Career Metric. All rights reserved.<br/>
-        <a href="https://yourdomain.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
-        <a href="https://yourdomain.com/contact" style="color: #2563eb; text-decoration: none;">Contact Us</a>
+        <a href="https://designcareermetrics.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
+        <a href="https://designcareermetrics.com/contact-us" style="color: #2563eb; text-decoration: none;">Contact Us</a>
+      </div>
+    </div>
+  `;
+};
+
+export const getContactEmailHTML = (name, email, message,mobile) => {
+  return `
+    <div style="font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; padding: 0; margin: 0;">
+      <!-- Header -->
+      <div style="background-color: #1e293b; padding: 20px; text-align: center;">
+        <img src="https://api.designcareermetrics.com/img/dcmlogotransperent.png" alt="Design Career Metric" style="height: 40px;" />
+        <h1 style="color: #ffffff; font-size: 20px; margin-top: 10px;">Design Career Metric</h1>
+      </div>
+
+      <!-- Body -->
+      <div style="padding: 40px; max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px;">
+        <h2 style="color: #222;">New Contact Form Submission</h2>
+        <p style="color: #555; font-size: 16px;">
+          You’ve received a new message via the website contact form.
+        </p>
+        <div style="margin: 20px 0;">
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Mobile Number:</strong> ${mobile}</p>
+          <p><strong>Message:</strong><br/>${message}</p>
+        </div>
+        <p style="font-size: 13px; color: #888;">
+          You can reply directly to <strong>${email}</strong> to continue the conversation.
+        </p>
+        
+      </div>
+
+      <!-- Footer -->
+      <div style="background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #666;">
+        &copy; ${new Date().getFullYear()} Design Career Metric. All rights reserved.<br/>
+        <a href="https://designcareermetrics.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
+        <a href="https://designcareermetrics.com/contact-us" style="color: #2563eb; text-decoration: none;">Contact Us</a>
       </div>
     </div>
   `;

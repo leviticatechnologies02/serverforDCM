@@ -20,6 +20,7 @@ export async function getZoomAccessToken() {
       }
     }
   );
+  console.log(res,"zoom res")
 
   cache.token = res.data.access_token;
   cache.exp = now + res.data.expires_in;

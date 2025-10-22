@@ -1,3 +1,4 @@
+import asyncHandler from 'express-async-handler';
 import Batch from "../../models/batch.js";
 import Enrollment from "../../models/Enrollment.js";
 
@@ -11,8 +12,6 @@ export const getIdAndBatchNames = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch batch names' });
   }
 };
-
-
 
 export const getBatchDetails = async (req, res) => {
   try {
@@ -50,9 +49,6 @@ export const getBatchDetails = async (req, res) => {
   }
 };
 
-import asyncHandler from 'express-async-handler';
-
-
 export const addBatch = asyncHandler(async (req, res) => {
   const { batchName, courseId, startDate, endDate, isActive } = req.body;
 
@@ -79,8 +75,6 @@ export const addBatch = asyncHandler(async (req, res) => {
   res.status(201).json({ message: 'Batch created successfully.', batch });
 });
 
-
-
 export const updateBatchStudents = async ({ batchId, userIds, session }) => {
   if (!batchId || !Array.isArray(userIds) || userIds.length === 0) return null;
 
@@ -91,4 +85,64 @@ export const updateBatchStudents = async ({ batchId, userIds, session }) => {
   );
 };
 
+export const deleteBatch = asyncHandler(async (req, res) => {
+  const { id } = req.params;
 
+  // Check if batch exists
+  const batch = await Batch.findById(id);
+  if (!batch) {
+    return res.status(404).json({ message: 'Batch not found.' });
+  }
+
+  // Optional: Check if there are any enrollments associated with this batch
+  const enrollmentsWithBatch = await Enrollment.findOne({
+    "enrolledCourses.batch": id
+  });
+
+  if (enrollmentsWithBatch) {
+    return res.status(400).json({ 
+      message: 'Cannot delete batch. There are students enrolled in this batch. Please remove all enrollments first.' 
+    });
+  }
+
+  // Delete the batch
+  await Batch.findByIdAndDelete(id);
+
+  res.status(200).json({ 
+    message: 'Batch deleted successfully.',
+    deletedBatch: {
+      id: batch._id,
+      batchName: batch.batchName
+    }
+  });
+});
+
+export const completeBatch = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  // Check if batch exists
+  const batch = await Batch.findById(id);
+  if (!batch) {
+    return res.status(404).json({ message: 'Batch not found.' });
+  }
+
+  // Check if batch is already completed
+  if (batch.isActive === false) {
+    return res.status(400).json({ message: 'Batch is already completed.' });
+  }
+
+  // Update batch to mark as completed (isActive: false)
+  const updatedBatch = await Batch.findByIdAndUpdate(
+    id,
+    { 
+      isActive: false,
+      completedAt: new Date() // Optional: add completion timestamp
+    },
+    { new: true } // Return updated document
+  );
+
+  res.status(200).json({ 
+    message: 'Batch marked as completed successfully.',
+    batch: updatedBatch
+  });
+});
