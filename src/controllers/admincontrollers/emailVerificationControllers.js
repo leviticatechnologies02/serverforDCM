@@ -53,47 +53,103 @@ export const sendVerificationEmail = async (req, res) => {
 };
 
 // Verify email using token
+// export const verifyEmail = async (req, res) => {
+//   const { ivfm, id } = req.query;
+//   console.log(req.query)
+//   if (!ivfm || !id) {
+//     return res.status(400).json({ error: 'Token and user ID are required' });
+//   }
+
+//   try {
+//     const tokenDoc = await Token.findOne({
+//       userId: id,
+//       type: 'emailVerification',
+//       expiresAt: { $gt: new Date() },
+//     });
+
+//     console.log(tokenDoc,"iam tokndoc")
+//     if (!tokenDoc) {
+//       return res.status(400).json({ error: 'Invalid or expired token' });
+//     }
+//     const isValid = await isTokenMatch(ivfm, tokenDoc.token);
+//     console.log(isValid,"Imavalid")
+//     if (!isValid) {
+//       return res.status(400).json({ error: 'Invalid or expired token' });
+//     }
+
+//     const user = await User.findByIdAndUpdate(
+//       id,
+//       { emailVerified: true },
+//       { new: true, select: 'name email' } // return updated user with name & email
+//     );
+// console.log(user,"iam user")
+//     await Token.deleteMany({ userId: id, type: 'emailVerification' });
+
+//     res.status(200).json({
+//       message: 'Email verified successfully',
+//       user: {
+//         name: user.name,
+//         email: user.email,
+//       },
+//     });
+//   } catch (err) {
+//     console.error('❌ Verify email error:', err);
+//     res.status(500).json({ error: 'Email verification failed' });
+//   }
+// };
 export const verifyEmail = async (req, res) => {
   const { ivfm, id } = req.query;
-  console.log(req.query)
   if (!ivfm || !id) {
-    return res.status(400).json({ error: 'Token and user ID are required' });
+    return res.status(400).send("❌ Token and user ID are required");
   }
 
   try {
+    // 1. Find token
     const tokenDoc = await Token.findOne({
       userId: id,
-      type: 'emailVerification',
+      type: "emailVerification",
       expiresAt: { $gt: new Date() },
     });
 
-    console.log(tokenDoc,"iam tokndoc")
     if (!tokenDoc) {
-      return res.status(400).json({ error: 'Invalid or expired token' });
+      return res.redirect("/link-invalid"); // show friendly error page
     }
+
+    // 2. Validate token
     const isValid = await isTokenMatch(ivfm, tokenDoc.token);
-    console.log(isValid,"Imavalid")
     if (!isValid) {
-      return res.status(400).json({ error: 'Invalid or expired token' });
+      return res.redirect("/link-invalid");
     }
 
-    const user = await User.findByIdAndUpdate(
-      id,
-      { emailVerified: true },
-      { new: true, select: 'name email' } // return updated user with name & email
-    );
-console.log(user,"iam user")
-    await Token.deleteMany({ userId: id, type: 'emailVerification' });
+    // 3. Mark user as verified
+    await User.findByIdAndUpdate(id, { emailVerified: true });
 
-    res.status(200).json({
+    // 4. Delete used tokens
+    await Token.deleteMany({ userId: id, type: "emailVerification" });
+
+    // 5. Decide redirect
+    const ua = req.headers["user-agent"] || "";
+    console.log(ua)
+    const isMobile = /iPhone|Android/i.test(ua);
+    console.log(isMobile)
+
+    if (isMobile) {
+      // Try deep link into app with short-lived token
+      
+      return res.redirect(`DCM://login`);
+    }
+
+    // Default: redirect to web success page
+   res.status(200).json({
       message: 'Email verified successfully',
       user: {
         name: user.name,
         email: user.email,
       },
     });
+
   } catch (err) {
-    console.error('❌ Verify email error:', err);
-    res.status(500).json({ error: 'Email verification failed' });
+    console.error("❌ Verify email error:", err);
+    return res.redirect("/error"); // fallback error page
   }
 };
