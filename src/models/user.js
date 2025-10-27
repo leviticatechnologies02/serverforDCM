@@ -15,7 +15,11 @@ const userSchema = new mongoose.Schema({
     mobile: {
     type: String,
   default:null,
+   index: {
     unique: true,
+    partialFilterExpression: { mobile: { $type: "string" } }
+  },
+
     trim: true,
     match: [/^\d{10}$/, 'Mobile number must be 10 digits']
   },
