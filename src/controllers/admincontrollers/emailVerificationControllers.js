@@ -122,7 +122,13 @@ export const verifyEmail = async (req, res) => {
     }
 
     // 3. Mark user as verified
-    await User.findByIdAndUpdate(id, { emailVerified: true });
+    // await User.findByIdAndUpdate(id, { emailVerified: true });
+      const user = await User.findByIdAndUpdate(
+      id,
+      { emailVerified: true },
+      { new: true, select: 'name email' } // return updated user with name & email
+    );
+console.log(user,"iam user")
 
     // 4. Delete used tokens
     await Token.deleteMany({ userId: id, type: "emailVerification" });
