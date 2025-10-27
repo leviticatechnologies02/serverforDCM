@@ -22,7 +22,7 @@ const allowedOrigins = [
 "https://designcareermetrics.com",
   "https://dcm-platform.vercel.app",
   'http://192.168.1.48:3000', // Your Flutter app might use this
-  '*' // Add deployed frontend domains here
+
 ];
 
 dotenv.config();
@@ -97,6 +97,7 @@ import statsRouter from './src/routes/adminroutes/statsRoutes.js';
 import createUserRouter from './src/routes/adminroutes/createUserRoutes.js';
 import { webhook } from './src/controllers/paymentControllers/paymentController.js';
 import { submitContactForm } from './src/controllers/admincontrollers/contactUsMail.js';
+import InternshipPaymentRouter from './src/routes/InternshipRoutes/InternshipPaymentRoutes.js';
 
 // Routers
 app.post('/contact',submitContactForm)
@@ -109,6 +110,7 @@ app.use('/api', studentRouter);
 app.use('/tasks', taskRouter);
 app.use('/admin/enroll', assignRouter);
 app.use('/api', profileRoutes);
+app.use('/api/internship/payments',InternshipPaymentRouter);
 app.use('/api', uploadRoutes);
 app.use('/api/admin', createUserRouter);
 app.use('/api/admin', statsRouter);
@@ -125,12 +127,12 @@ app.get('/', (req, res) => {
   res.json({ 
     message: 'Hello! Welcome to Design Career Metrics',
     timestamp: new Date().toISOString(),
-    endpoints: {
-      chat: '/api/chat',
-      health: '/health',
-      auth: '/auth',
-      courses: '/admin/courses'
-    }
+    // endpoints: {
+    //   chat: '/api/chat',
+    //   health: '/health',
+    //   auth: '/auth',
+    //   courses: '/admin/courses'
+    // }
   });
 });
 
