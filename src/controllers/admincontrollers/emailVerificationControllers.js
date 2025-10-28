@@ -141,10 +141,11 @@ console.log(user,"iam user")
     console.log(isMobile)
 
     if (isMobile) {
-      // Try deep link into app with short-lived token
-      
-      return res.redirect(`DCM`);
-    }
+  // Redirect to custom scheme deep link
+  // return res.redirect(`dcm://signup?verified=true&email=${encodeURIComponent(user.email)}`);
+     return res.redirect("instagram://app");
+
+}
 
     // Default: redirect to web success page
    res.status(200).json({
