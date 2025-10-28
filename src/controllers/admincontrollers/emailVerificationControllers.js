@@ -37,7 +37,7 @@ export const sendVerificationEmail = async (req, res) => {
 
     // 4. Build verification URL
     const verifyUrl = `${process.env.FRONTEND_URL}/verify-email?ivfm=${rawToken}&id=${user._id}`;
-    console.log(verifyUrl,"verifyurl")
+    console.log(verifyUrl,"verify")
 
     // 5. Send email
     await sendEmail({
@@ -143,7 +143,7 @@ console.log(user,"iam user")
     if (isMobile) {
       // Try deep link into app with short-lived token
       
-      return res.redirect(`DCM://login`);
+      return res.redirect(`DCM://verified?username=${user.name}`);
     }
 
     // Default: redirect to web success page
