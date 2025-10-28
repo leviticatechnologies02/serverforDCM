@@ -143,7 +143,7 @@ console.log(user,"iam user")
     if (isMobile) {
       // Try deep link into app with short-lived token
       
-      return res.redirect(`DCM://verified?username=${user.name}`);
+      return res.redirect(`DCM`);
     }
 
     // Default: redirect to web success page
