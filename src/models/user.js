@@ -14,7 +14,6 @@ const userSchema = new mongoose.Schema({
   },
     mobile: {
     type: String,
-  default:null,
    index: {
     unique: true,
     partialFilterExpression: { mobile: { $type: "string" } }

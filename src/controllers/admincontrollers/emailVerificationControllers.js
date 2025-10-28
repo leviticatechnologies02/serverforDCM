@@ -37,6 +37,7 @@ export const sendVerificationEmail = async (req, res) => {
 
     // 4. Build verification URL
     const verifyUrl = `${process.env.FRONTEND_URL}/verify-email?ivfm=${rawToken}&id=${user._id}`;
+    console.log(verifyUrl,"verifyurl")
 
     // 5. Send email
     await sendEmail({
