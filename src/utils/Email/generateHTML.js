@@ -343,3 +343,59 @@ const getDomainDisplayName = (domainId) => {
   };
   return programs[programId] || programId;
 };
+
+export const getVerificationEmailHTMLOTP = (name, otp, email) => {
+  return `
+    <div style="font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; padding: 0; margin: 0;">
+      <!-- Header -->
+      <div style="background-color: #1e293b; padding: 20px; text-align: center;">
+        <img src="https://api.designcareermetrics.com/img/dcmlogotransperent.png" alt="Design Career Metric" style="height: 40px;" />
+        <h1 style="color: #ffffff; font-size: 20px; margin-top: 10px;">Design Career Metric</h1>
+      </div>
+
+      <!-- Body -->
+      <div style="padding: 40px; max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px;">
+        <h2 style="color: #222;">Hi ${name},</h2>
+        <p style="color: #555; font-size: 16px;">
+          Thanks for signing up! Use the OTP below to verify your email and activate your account.
+        </p>
+        
+        <!-- OTP Display -->
+        <div style="text-align: center; margin: 30px 0;">
+          <div style="background: #f8fafc; border: 2px dashed #cbd5e1; padding: 20px; border-radius: 8px; display: inline-block;">
+            <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">YOUR VERIFICATION CODE</div>
+            <div style="font-size: 32px; font-weight: bold; color: #1e293b; letter-spacing: 8px; font-family: monospace;">
+              ${otp}
+            </div>
+          </div>
+        </div>
+
+        <div style="background: #fffbeb; border: 1px solid #fef3c7; padding: 16px; border-radius: 6px; margin: 20px 0;">
+          <div style="display: flex; align-items: start; gap: 12px;">
+            <div style="color: #d97706; font-size: 18px;">⚠️</div>
+            <div>
+              <strong style="color: #92400e;">Important:</strong>
+              <ul style="color: #92400e; margin: 8px 0; padding-left: 20px;">
+                <li>This OTP is valid for <strong>10 minutes</strong> only</li>
+                <li>Do not share this code with anyone</li>
+                <li>Enter this code in the verification page to complete your registration</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <p style="font-size: 13px; color: #888;">
+          If you didn't request this, you can safely ignore it.<br/>
+          This email was sent to <strong>${email}</strong>
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <div style="background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #666;">
+        &copy; ${new Date().getFullYear()} Design Career Metric. All rights reserved.<br/>
+        <a href="https://designcareermetrics.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
+        <a href="https://designcareermetrics.com/contact-us" style="color: #2563eb; text-decoration: none;">Contact Us</a>
+      </div>
+    </div>
+  `;
+};
