@@ -7,7 +7,7 @@ import { hashPassword, comparePassword } from '../utils/hashPassword.js';
 // Get Student Profile
 export const getStudentProfile = async (req, res) => {
   try {
-    const studentId = req.userAccount?.user.id || req.user?.userId || req.user?.id;
+    const studentId = req.user.id || req.user?.userId || req.user?.id;
 
 
     if (!studentId) {
@@ -36,7 +36,7 @@ export const getStudentProfile = async (req, res) => {
 // Get Admin Profile
 export const getAdminProfile = async (req, res) => {
   try {
-    const adminId = req.userAccount?.user.id || req.user?.userId || req.user?.id;
+    const adminId = req.user.id || req.user?.userId || req.user?.id;
 
     if (!adminId) {
       return res.status(401).json({ error: "Admin not authenticated" });
@@ -64,7 +64,7 @@ export const getAdminProfile = async (req, res) => {
 // Universal profile endpoint
 export const getProfile = async (req, res) => {
   try {
-    const userId = req.userAccount?.userId || req.user?.userId || req.user?.id;
+    const userId = req.userId || req.user?.userId || req.user?.id;
     const userRole = req.userAccount?.role || req.user?.role;
     
     if (!userId || !userRole) {
@@ -98,8 +98,8 @@ export const getProfile = async (req, res) => {
 // Update profile (including optional image)
 export const updateProfile = async (req, res) => {
   try {
-    const userId = req.userAccount?.user.id|| req.user?.userId || req.user?.id;
-    const userRole = req.userAccount?.user.role || req.user?.role;
+    const userId = req.user.id|| req.user?.userId || req.user?.id;
+    const userRole = req.user.role || req.user?.role;
     const { name, email, currentPassword, newPassword } = req.body;
     
     if (!userId || !userRole) {
@@ -179,8 +179,8 @@ export const updateProfile = async (req, res) => {
 // Delete profile image only
 export const deleteProfileImage = async (req, res) => {
   try {
-    const userId = req.userAccount?.user.id || req.user?.userId || req.user?.id;
-    const userRole = req.userAccount?.user.role || req.user?.role;
+    const userId = req.user.id || req.user?.userId || req.user?.id;
+    const userRole = req.user.role || req.user?.role;
     
     if (!userId || !userRole) {
       return res.status(401).json({ error: 'User not authenticated' });

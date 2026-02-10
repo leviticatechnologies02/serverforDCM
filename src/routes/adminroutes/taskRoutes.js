@@ -1,7 +1,7 @@
 import express from "express";
 import { assignTask, getStudentTasks } from "../../controllers/admincontrollers/taskController.js";
 import verifyToken from "../../middlewares/authMiddleware.js";
-import { verifyAdmin } from "../../middlewares/verifyadminMiddleware.js";
+import { verifyAdmin } from "../../middlewares/verifyMiddleware.js";
 
 const taskRouter = express.Router();
 

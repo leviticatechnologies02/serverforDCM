@@ -5,7 +5,17 @@ const batchSchema = new mongoose.Schema({
   courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
   startDate: Date,
   endDate: Date,
-  isActive: { type: Boolean, default: true }
+  status: {
+  type: String,
+  enum: ["active", "completed", "cancelled", "inactive"],
+  default: "active",
+},
+completedAt:{type:Date, default:null}
+
+
 }, { timestamps: true });
+
+batchSchema.index({ status: 1, courseId: 1 });
+
 
 export default mongoose.model('Batch', batchSchema);

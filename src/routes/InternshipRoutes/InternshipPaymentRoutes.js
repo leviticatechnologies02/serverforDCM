@@ -1,12 +1,15 @@
 import express from 'express';
-import { createOrder, verifyPayment, handleWebhook, getPayment } from '../../controllers/InternshipControllers/InternshipPaymentControllers.js'
-const InternshipPaymentRouter = express.Router();
+import { createOrder, verifyPayment, handleWebhook, getPayment, getAllInternshipPayments } from '../../controllers/InternshipControllers/InternshipPaymentControllers.js'
+import { getAllInternshipsDomains } from '../../controllers/admincontrollers/internshipsDomainControllers.js';
+
+const router = express.Router();
 
 
 // Payment routes
-InternshipPaymentRouter.post('/create-order', createOrder);
-InternshipPaymentRouter.post('/verify-payment', verifyPayment);
-InternshipPaymentRouter.post('/webhook', handleWebhook);
-InternshipPaymentRouter.get('/:orderId', getPayment);
+router.post('/payments/create-order', createOrder);
+router.post('/payments/verify-payment', verifyPayment);
+router.post('/payments/webhook', handleWebhook);
+router.get('/payments/:orderId', getPayment);
+router.get('/',getAllInternshipsDomains);
 
-export default InternshipPaymentRouter;
+export default router;

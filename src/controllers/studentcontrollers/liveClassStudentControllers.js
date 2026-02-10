@@ -16,7 +16,7 @@ export const joinLiveClass = asyncHandler(async (req, res) => {
   }
 
   // Ensure user and course IDs are ObjectId
-  const userId = new mongoose.Types.ObjectId(req.userAccount.user.id);
+  const userId = new mongoose.Types.ObjectId(req.user.id);
   const courseId = new mongoose.Types.ObjectId(liveClass.course);
   const batchId = liveClass.batch ? new mongoose.Types.ObjectId(liveClass.batch) : null;
 
@@ -46,12 +46,12 @@ export const joinLiveClass = asyncHandler(async (req, res) => {
 export const getLiveClasses = async (req, res) => {
 
   try {
-    const {user}= req.userAccount;
+      const userId = new mongoose.Types.ObjectId(req.user.id);
 
 
     // Get active enrollment
     const enrollment = await Enrollment.findOne({
-      'user': user.id,
+      'user': userId,
      
     });
 

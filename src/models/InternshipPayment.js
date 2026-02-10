@@ -1,97 +1,102 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-
-const InternshipPaymentSchema = new mongoose.Schema({
+const InternshipPaymentSchema = new mongoose.Schema(
+  {
     name: {
-        type: String,
-        required: [true, 'Name is required'],
-        trim: true
+      type: String,
+      required: true,
+      trim: true,
     },
     email: {
-        type: String,
-        required: [true, 'Email is required'],
-        trim: true,
-        lowercase: true
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true,
+      index: true, // ✅ keep index here
     },
-    program:{type: String,
-        required: [true, 'Program is required'],
-        trim: true
+    program: {
+      type: String,
+      required: true,
+      trim: true,
     },
     phone: {
-        type: String,
-        required: [true, 'Phone number is required'],
-        trim: true
+      type: String,
+      required: true,
+      trim: true,
     },
     department: {
-        type: String,
-        required: [true, 'Department is required'],
-        trim: true
+      type: String,
+      required: true,
+      trim: true,
     },
     semester: {
-        type: String,
-        required: [true, 'Semester is required'],
-        trim: true
+      type: String,
+      required: true,
+      trim: true,
     },
-    domain:{
-        type: String,
-        required: [true, 'Domain is required'],
-        trim: true
+    domain: {
+      type: String,
+      required: true,
+      trim: true,
     },
     rollNumber: {
-        type: String,
-        required: [true, 'Roll number is required'],
-        trim: true
+      type: String,
+      required: true,
+      trim: true,
+      index: true, // ✅ frequent lookup
     },
-  
     collegeName: {
-        type: String,
-        required: [true, 'College Name is required'],
-        trim: true
+      type: String,
+      required: true,
+      trim: true,
     },
     collegeCode: {
-        type: String,
-        required: [true, 'College code is required'],
-        trim: true
+      type: String,
+      required: true,
+      trim: true,
     },
+
+    // 🔐 Razorpay fields
     razorpayOrderId: {
-        type: String,
-        required: true,
-        unique: true
+      type: String,
+      required: true,
+      unique: true, // ✅ creates index automatically
     },
     razorpayPaymentId: {
-        type: String,
-        sparse: true
+      type: String,
+      sparse: true,
     },
     razorpaySignature: {
-        type: String,
-        sparse: true
+      type: String,
+      sparse: true,
     },
+
     amount: {
-        type: Number,
-        required: true,
-        min: 0
+      type: Number,
+      required: true,
+      min: 0,
     },
     currency: {
-        type: String,
-        default: 'INR'
+      type: String,
+      default: "INR",
     },
     status: {
-        type: String,
-        enum: ['created', 'attempted', 'paid', 'failed'],
-        default: 'created'
+      type: String,
+      enum: ["created", "attempted", "paid", "failed"],
+      default: "created",
+      index: true, // ✅ status queries
     },
     receipt: {
-        type: String,
-        required: true
-    }
-}, {
-    timestamps: true
-});
+      type: String,
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-// Indexes for better performance
-InternshipPaymentSchema.index({ razorpayOrderId: 1 });
-InternshipPaymentSchema.index({ email: 1 });
-InternshipPaymentSchema.index({ rollNumber: 1 });
-InternshipPaymentSchema.index({ status: 1 });
-
-export default mongoose.model('InternshipPayment', InternshipPaymentSchema);
+export default mongoose.model(
+  "InternshipPayment",
+  InternshipPaymentSchema
+);

@@ -1,14 +1,36 @@
+import { Router } from "express";
+import {
+  addCourse,
+  deleteCourse,
+  updateCourse,
+  addCourseDetails,
+  updateCurriculum,
+  updateCourseDetails,
+} from "../../controllers/admincontrollers/coursesControllers.js";
 
-import express from 'express';
-import { getCourses, addCourse, deleteCourse, updateCourse } from '../../controllers/admincontrollers/coursesControllers.js';
-import  verifyToken from '../../middlewares/authMiddleware.js';
-import { verifyAdmin } from '../../middlewares/verifyadminMiddleware.js';
+const router = Router();
 
-const courseRouter = express.Router();
+/**
+ * Admin-only course mutations
+ * verifyToken + verifyAdmin are applied at /admin level
+ */
 
-courseRouter.get('/getcourses', verifyToken,  getCourses);
-courseRouter.post('/add-course', verifyToken, verifyAdmin, addCourse);
-courseRouter.put('/update-course/:_id',verifyToken,verifyAdmin,updateCourse)
-courseRouter.delete('/delete-course/:id', verifyToken, verifyAdmin, deleteCourse);
- 
-export default courseRouter
+// Create course
+router.post("/", addCourse);
+
+// Update course
+router.put("/:id", updateCourse);
+
+// Delete course
+router.delete("/:id", deleteCourse);
+
+// Add course details
+router.post("/:courseId/details", addCourseDetails);
+
+// Update curriculum
+router.patch("/:courseId/details/curriculum", updateCurriculum);
+
+// Update course details
+router.put("/:courseId/details", updateCourseDetails);
+
+export default router;

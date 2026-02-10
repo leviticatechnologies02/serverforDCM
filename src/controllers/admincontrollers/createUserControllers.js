@@ -13,7 +13,7 @@ export const createUser = async (req, res) => {
 
   try {
     // Only admins can create users
-    if (req.userAccount?.user?.role !== "admin") {
+    if (req.user?.role !== "admin") {
       return res.status(403).json({
         success: false,
         message: "Access denied. Admin privileges required."

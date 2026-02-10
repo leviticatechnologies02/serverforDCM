@@ -3,6 +3,7 @@ import Token from '../../models/token.js';
 import { generateRawToken ,isTokenMatch} from '../../utils/generateToken.js';
 import { sendEmail } from '../../utils/Email/sendEmail.js';
 import { getPasswordResetEmailHTML } from '../../utils/Email/generateHTML.js';
+import { createOTP,verifyOTP } from '../../utils/otp.js';
 
 const RESET_TTL_MIN = Number(process.env.RESET_TTL_MIN || 15);
 
@@ -84,6 +85,7 @@ console.log(tokenDocs)
 
   return res.json({ message: 'Password has been reset successfully' });
 }
+
 export async function changePassword(req, res) {
   const { currentPassword, newPassword } = req.body;
   const userId = req.user._id; // Assuming user is attached to req from auth middleware
@@ -115,3 +117,88 @@ export async function changePassword(req, res) {
     return res.status(500).json({ message: 'Internal server error' });
   }
 }
+
+
+
+
+
+export const forgotPasswordOTP = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+
+    // Prevent email enumeration
+    if (!user) {
+      return res.json({ message: 'If that email exists, an OTP has been sent' });
+    }
+
+    const otp = await createOTP({
+      userId: user._id,
+      type: 'passwordReset',
+      ttlMin: 15,
+    });
+
+    await sendEmail({
+      to: email,
+      subject: 'Password Reset OTP',
+      html: `
+        <p>Hello ${user.name},</p>
+        <p>Your password reset OTP is:</p>
+        <h2>${otp}</h2>
+        <p>This OTP expires in 15 minutes.</p>
+      `,
+    });
+
+    res.json({
+      message: 'If that email exists, an OTP has been sent',
+      userId: user._id,
+    });
+  } catch (err) {
+    console.error('❌ Forgot password OTP error:', err);
+    res.status(500).json({ error: 'Failed to send OTP' });
+  }
+};
+
+
+export const resetPasswordWithOTP = async (req, res) => {
+  const { userId, otp, newPassword } = req.body;
+
+  if (!userId || !otp || !newPassword) {
+    return res.status(400).json({
+      error: 'userId, otp, and newPassword are required',
+    });
+  }
+
+  try {
+    const isValid = await verifyOTP({
+      userId,
+      otp,
+      type: 'passwordReset',
+    });
+
+    if (!isValid) {
+      return res.status(400).json({ error: 'Invalid or expired OTP' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({
+      message: 'Password reset successfully',
+    });
+  } catch (err) {
+    console.error('❌ Reset password OTP error:', err);
+    res.status(500).json({ error: 'Failed to reset password' });
+  }
+};
+

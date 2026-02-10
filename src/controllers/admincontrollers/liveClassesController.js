@@ -1,7 +1,7 @@
 import LiveClass from '../../models/LiveClass.js';
 
 import { createMeeting ,
-    getMeeting,
+  getMeeting,
   getAllMeetings,
   updateMeeting,
   deleteMeeting,
@@ -15,7 +15,7 @@ import { io } from '../../socket.js';
 import { asyncHandler } from '../../middlewares/asyncHandler.js';
 
 export const createLiveClass = asyncHandler(async (req, res) => {
-  const { title, startTime, duration, courseId, batchId, instructorEmail,recurrence,endDate } = req.body;
+  const { title, startTime, duration, courseId, batchId, hostEmail,recurrence,endDate } = req.body;
 
   // RBAC example: only admin/instructor can create
   if (!['admin', 'instructor'].includes(req.userAccount.user.role)) {
@@ -23,11 +23,13 @@ export const createLiveClass = asyncHandler(async (req, res) => {
   }
 console.log(req.body,"creating mett")
   // Create Zoom meeting
+ const startTimeUTC = new Date(startTime).toISOString();
+
   const meeting = await createMeeting({
     topic: title,
-    start_time: startTime, // ensure ISO 8601 string, e.g., "2025-09-11T10:30:00"
+    start_time: startTimeUTC, // ensure ISO 8601 string, e.g., "2025-09-11T10:30:00"
     duration,
-    hostEmail: instructorEmail,
+    hostEmail,
     recurrence,
     endDate
   });
@@ -80,7 +82,7 @@ export const getAllLiveClasses = async (req, res) => {
         select: 'batchName'
       })
       .select('title startTime duration course batch status  hostEmail ');
-
+console.log(liveClasses,"iam live classes")
     res.json({ liveClasses });
   } catch (error) {
     console.error('Admin fetch live classes error:', error);

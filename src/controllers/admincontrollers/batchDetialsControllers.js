@@ -1,15 +1,113 @@
 import asyncHandler from 'express-async-handler';
 import Batch from "../../models/batch.js";
 import Enrollment from "../../models/Enrollment.js";
+import mongoose from "mongoose";
+
 
 export const getIdAndBatchNames = async (req, res) => {
   try {
-    const batches = await Batch.find({}, '_id batchName').lean();
-    console.log(batches)
+    const batches = await Batch.find(
+      { status: "active" },
+      "_id batchName"
+    ).sort({ createdAt: -1 });
 
-    res.status(200).json(batches);
+
+
+
+    res.status(200).json({
+      success: true,
+      data: batches,
+    });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch batch names' });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch batch names",
+    });
+  }
+};
+
+export const getAllBatches = async (req, res) => {
+  try {
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit) || 10, 50);
+    const skip = (page - 1) * limit;
+
+    const { status } = req.query;
+
+    // 🔹 Dynamic filter
+    const filter = {};
+
+    // Apply status filter ONLY if provided
+    if (status) {
+      filter.status = status; 
+      // expected: active | completed | cancelled | inactive
+    }
+
+    const [batches, total] = await Promise.all([
+      Batch.find(filter)
+        .populate("courseId", "name")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+
+      Batch.countDocuments(filter),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: batches,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        hasNextPage: page * limit < total,
+        hasPrevPage: page > 1,
+      },
+    });
+  } catch (error) {
+    console.error("GET ALL BATCHES ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch batches",
+    });
+  }
+};
+
+
+
+export const getBatchesByCourseId = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+
+    if (!courseId) {
+      return res.status(400).json({
+        success: false,
+        message: "courseId is required",
+      });
+    }
+
+    const batches = await Batch.find(
+      {
+        courseId,
+        status:"active", //  only active batches
+      },
+      "_id batchName"
+    )
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      data: batches,
+    });
+  } catch (error) {
+    console.error("GET BATCHES BY COURSE ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch batches",
+    });
   }
 };
 
@@ -17,40 +115,64 @@ export const getBatchDetails = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Find enrollments where at least one enrolledCourse has this batch
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit) || 10, 50);
+    const skip = (page - 1) * limit;
+
     const enrollments = await Enrollment.find({
-      "enrolledCourses.batch": id
+      "enrolledCourses.batch": id,
     })
-      .populate("user", "name email role") // only bring safe fields
-      .populate("enrolledCourses.course", "name"); // only bring course title
+      .populate("user", "name email role")
+      .populate("enrolledCourses.course", "name")
+      .lean();
 
     if (!enrollments || enrollments.length === 0) {
-      return res.status(200).json({ msg: "Batch not found or no students" });
+      return res.status(200).json({
+        students: [],
+        pagination: {
+          total: 0,
+          page,
+          limit,
+          totalPages: 0,
+        },
+      });
     }
 
-    // Flatten and sanitize
-    console.log(enrollments,"iam enrollments")
-    const students = enrollments.flatMap(enrollment =>
+    // 🔹 Flatten
+    const allStudents = enrollments.flatMap((enrollment) =>
       enrollment.enrolledCourses
-        .filter(c => c.batch?.toString() === id) // only courses in this batch
-        .map(c => ({
-          id:enrollment.user._id,
+        .filter((c) => c.batch?.toString() === id)
+        .map((c) => ({
+          id: enrollment.user._id,
           name: enrollment.user.name,
           email: enrollment.user.email,
           role: enrollment.user.role,
-          course: c.course?.name 
+          course: c.course?.name,
         }))
     );
 
-    res.status(200).json({ students });
+    const total = allStudents.length;
+
+    const students = allStudents.slice(skip, skip + limit);
+
+    res.status(200).json({
+      students,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (err) {
     console.error("Error in getBatchDetails:", err);
     res.status(500).json({ error: "Failed to fetch batch details" });
   }
 };
 
+
 export const addBatch = asyncHandler(async (req, res) => {
-  const { batchName, courseId, startDate, endDate, isActive } = req.body;
+  const { batchName, courseId, startDate, endDate } = req.body;
 
   // Basic field validation
   if (!batchName || !courseId || !startDate || !endDate) {
@@ -69,21 +191,78 @@ export const addBatch = asyncHandler(async (req, res) => {
   }
 
   // Create and save the new batch
-  const batch = new Batch({ batchName, courseId, startDate, endDate, isActive });
+  const batch = new Batch({ batchName, courseId, startDate, endDate, });
   await batch.save();
 
   res.status(201).json({ message: 'Batch created successfully.', batch });
 });
 
-export const updateBatchStudents = async ({ batchId, userIds, session }) => {
-  if (!batchId || !Array.isArray(userIds) || userIds.length === 0) return null;
 
-  return await Batch.updateOne(
-    { _id: batchId },
-    { $addToSet: { students: { $each: userIds } } },
-    { session }
-  );
+
+
+export const updateBatch = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // ✅ Validate MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid batch ID" });
+    }
+
+    const {
+      batchName,
+      courseId, 
+      startDate,
+      endDate,
+      status,
+    } = req.body;
+
+    const batch = await Batch.findById(id);
+    if (!batch) {
+      return res.status(404).json({ message: "Batch not found" });
+    }
+
+    // ✅ Check unique batch name (if changed)
+    if (batchName && batchName !== batch.batchName) {
+      const exists = await Batch.findOne({ batchName });
+      if (exists) {
+        return res.status(409).json({ message: "Batch name already exists" });
+      }
+      batch.batchName = batchName;
+    }
+
+    // ✅ Update allowed fields
+    if (courseId) batch.courseId = courseId;
+    if (startDate) batch.startDate = startDate;
+    if (endDate) batch.endDate = endDate;
+
+    // ✅ Handle status logic
+    if (status && status !== batch.status) {
+      batch.status = status;
+
+      if (status === "completed") {
+        batch.completedAt = new Date();
+      } else {
+        batch.completedAt = null;
+      }
+    }
+
+    await batch.save();
+
+    return res.status(200).json({
+      message: "Batch updated successfully",
+      data: batch,
+    });
+
+  } catch (error) {
+    console.error("Update Batch Error:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
 };
+
+
 
 export const deleteBatch = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -100,15 +279,15 @@ export const deleteBatch = asyncHandler(async (req, res) => {
   });
 
   if (enrollmentsWithBatch) {
-    return res.status(400).json({ 
-      message: 'Cannot delete batch. There are students enrolled in this batch. Please remove all enrollments first.' 
+    return res.status(400).json({
+      message: 'Cannot delete batch. There are students enrolled in this batch. Please remove all enrollments first.'
     });
   }
 
   // Delete the batch
   await Batch.findByIdAndDelete(id);
 
-  res.status(200).json({ 
+  res.status(200).json({
     message: 'Batch deleted successfully.',
     deletedBatch: {
       id: batch._id,
@@ -127,21 +306,21 @@ export const completeBatch = asyncHandler(async (req, res) => {
   }
 
   // Check if batch is already completed
-  if (batch.isActive === false) {
+  if (batch.status === "completed") {
     return res.status(400).json({ message: 'Batch is already completed.' });
   }
 
   // Update batch to mark as completed (isActive: false)
   const updatedBatch = await Batch.findByIdAndUpdate(
     id,
-    { 
-      isActive: false,
+    {
+      status: 'completed',
       completedAt: new Date() // Optional: add completion timestamp
     },
     { new: true } // Return updated document
   );
 
-  res.status(200).json({ 
+  res.status(200).json({
     message: 'Batch marked as completed successfully.',
     batch: updatedBatch
   });

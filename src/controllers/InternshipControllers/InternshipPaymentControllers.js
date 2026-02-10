@@ -5,8 +5,8 @@ import InternshipPayment from '../../models/InternshipPayment.js';
 import { sendEmail } from '../../utils/Email/sendEmail.js';
 
 const Program = [
-    { id: '5days', name: '5 Days Program', days: 5, amount: 500 },
-    { id: '15days', name: '15 Days Program', days: 15, amount: 1000 }
+    { id: '5days', name: '5 Days Program', days: 5, amount: 1000 },
+    { id: '15days', name: '15 Days Program', days: 15, amount: 2000 }
 ];
 
 // Initialize Razorpay
@@ -308,4 +308,56 @@ export const getPayment = async (req, res) => {
             error: error.message
         });
     }
+}
+
+
+export const getAllInternshipPayments = async (req, res) => {
+  try {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const search = req.query.search || "";
+    const status = req.query.status;
+
+    const query = {
+      $or: [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { rollNumber: { $regex: search, $options: "i" } },
+        { domain: { $regex: search, $options: "i" } }
+      ],
+    };
+
+    if (status) {
+      query.status = status;
+    }
+
+    const [payments, total] = await Promise.all([
+      InternshipPayment.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+
+      InternshipPayment.countDocuments(query),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: payments,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error("Get payments error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch internship payments",
+    });
+  }
 };
