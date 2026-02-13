@@ -1,70 +1,98 @@
 // controllers/adminControllers/transactionController.js
 import Payment from '../../models/payments.js';
-import Course from '../../models/courses.js';
-import User from '../../models/user.js';
+
+import InternshipPayment from '../../models/InternshipPayment.js';
 
 export const getAllTransactions = async (req, res) => {
   try {
+    // 1️⃣ Get page & limit from query
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    // Prevent negative values
+    const validPage = page > 0 ? page : 1;
+    const validLimit = limit > 0 ? limit : 10;
+
+    const skip = (validPage - 1) * validLimit;
+
+    // 2️⃣ Get total count (for frontend pagination)
+    const totalTransactions = await Payment.countDocuments();
+
+    // 3️⃣ Fetch paginated data
     const transactions = await Payment.find()
-      .populate('courseIds', 'name price') 
-      .populate('userId', 'name email')
+      .populate("courseIds", "name price")
+      .populate("userId", "name email")
       .sort({ createdAt: -1 })
-      .lean(); // Use lean() for better performance
-console.log("Fetched Transactions:", transactions);
-    // Transform data to match Flutter expectations
-   const formattedTransactions = transactions.map(transaction => {
- const user = transaction.userId || {};
+      .skip(skip)
+      .limit(validLimit)
+      .lean();
 
+    console.log("Fetched Transactions:", transactions);
 
-  return {
-    _id: transaction._id,
-    paymentId: transaction.paymentId, // 🔧 typo fixed: "paymenId" → "paymentId"
-    orderId: transaction.orderId,
-    appUsed: transaction.appUsed,
-    paymentMode: transaction.paymentMode,
-    amount: transaction.amountInRupees || 0, // fallback to 0 if undefined
-    status: transaction.status,
+    // 4️⃣ Format data
+    const formattedTransactions = transactions.map(transaction => {
+      const user = transaction.userId || {};
 
-    courses: Array.isArray(transaction.courseIds)
-  ? transaction.courseIds.map(course => ({
-      _id: course._id || '',
-      name: course.name || 'Unknown Course',
-      price: course.price || 0
-    }))
-  : []
-,
-    user: {
-      _id: user._id || '',
-      name: user.name || 'Unknown User',
-      email: user.email || ''
-    },
+      return {
+        _id: transaction._id,
+        paymentId: transaction.paymentId,
+        orderId: transaction.orderId,
+        appUsed: transaction.appUsed,
+        paymentMode: transaction.paymentMode,
+        amount: transaction.amountInRupees || 0,
+        status: transaction.status,
 
-    createdAt: transaction.createdAt,
-    updatedAtIST: transaction.updatedAt || transaction.createdAt
-  };
-});
-console.log("Formatted Transactions:", formattedTransactions);
+        courses: Array.isArray(transaction.courseIds)
+          ? transaction.courseIds.map(course => ({
+            _id: course._id || "",
+            name: course.name || "Unknown Course",
+            price: course.price || 0
+          }))
+          : [],
+
+        user: {
+          _id: user._id || "",
+          name: user.name || "Unknown User",
+          email: user.email || ""
+        },
+
+        createdAt: transaction.createdAt,
+        updatedAtIST: transaction.updatedAt || transaction.createdAt
+      };
+    });
+
+    console.log("Formatted Transactions:", formattedTransactions);
+
+    // 5️⃣ Send paginated response
     res.json({
       success: true,
+      currentPage: validPage,
+      totalPages: Math.ceil(totalTransactions / validLimit),
+      totalTransactions,
       transactions: formattedTransactions
     });
+
   } catch (error) {
-    console.error('Get transactions error:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch transactions' });
+    console.error("Get transactions error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch transactions"
+    });
   }
 };
+
 
 export const getTransactionStats = async (req, res) => {
   try {
     const totalTransactions = await Payment.countDocuments();
     const successfulTransactions = await Payment.countDocuments({ status: 'paid' });
     const failedTransactions = totalTransactions - successfulTransactions;
-    
+
     const totalRevenue = await Payment.aggregate([
       { $match: { status: 'paid' } },
       { $group: { _id: null, total: { $sum: '$amountInRupees' } } } // Use amountInRupees
     ]);
-    
+
     const revenue = totalRevenue.length > 0 ? totalRevenue[0].total : 0;
 
     res.json({
@@ -81,3 +109,89 @@ export const getTransactionStats = async (req, res) => {
     res.status(500).json({ success: false, error: 'Failed to fetch transaction stats' });
   }
 }
+
+
+export const getAllInternshipPayments = async (req, res) => {
+  try {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const search = req.query.search || "";
+    const status = req.query.status;
+
+    const query = {
+      $or: [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { rollNumber: { $regex: search, $options: "i" } },
+        { domain: { $regex: search, $options: "i" } }
+      ],
+    };
+
+    if (status) {
+      query.status = status;
+    }
+
+    const [payments, total] = await Promise.all([
+      InternshipPayment.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+
+      InternshipPayment.countDocuments(query),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: payments,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error("Get payments error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch internship payments",
+    });
+  }
+};
+
+export const getCombinedPaymentStats = async (req, res) => {
+  try {
+    const [courseRevenue, internshipRevenue] = await Promise.all([
+      Payment.aggregate([
+        { $match: { status: "paid" } },
+        { $group: { _id: null, total: { $sum: "$amountInRupees" } } },
+      ]),
+
+      InternshipPayment.aggregate([
+        { $match: { status: "paid" } },
+        { $group: { _id: null, total: { $sum: "$amount" } } },
+      ]),
+    ]);
+
+    const courseTotal = courseRevenue[0]?.total || 0;
+    const internshipTotal = internshipRevenue[0]?.total || 0;
+
+    res.json({
+      success: true,
+      data: {
+        totalRevenue: courseTotal + internshipTotal,
+        courseRevenue: courseTotal,
+        internshipRevenue: internshipTotal,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch combined stats",
+    });
+  }
+};
+

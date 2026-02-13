@@ -3,11 +3,9 @@ import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import InternshipPayment from '../../models/InternshipPayment.js';
 import { sendEmail } from '../../utils/Email/sendEmail.js';
+import InternshipsDomain from '../../models/internshipsDomain.js';
 
-const Program = [
-    { id: '5days', name: '5 Days Program', days: 5, amount: 1000 },
-    { id: '15days', name: '15 Days Program', days: 15, amount: 2000 }
-];
+
 
 // Initialize Razorpay
 const razorpay = new Razorpay({
@@ -17,7 +15,7 @@ const razorpay = new Razorpay({
 
 // Create Razorpay order
 export const createOrder = async (req, res) => {
-    
+
     try {
         const { name, email, phone, department, semester, program, rollNumber, amount, collegeName, collegeCode, domain } = req.body;
         console.log('Received request:', req.body);
@@ -37,7 +35,7 @@ export const createOrder = async (req, res) => {
             program: program,
             collegeName,
             collegeCode,
-            status: { $nin: ['created','failed'] } // Only check non-failed payments
+            status: { $nin: ['created', 'failed'] } // Only check non-failed payments
         });
 
         if (existingPayment) {
@@ -55,10 +53,22 @@ export const createOrder = async (req, res) => {
             });
         }
 
-        const selectedCourse = Program.find(c => c.id === program);
-        console.log('Selected course:', selectedCourse);
+        // Find domain
+        const selectedDomain = await InternshipsDomain.findById(domain);
 
-        if (!selectedCourse) {
+        if (!selectedDomain) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid domain selected'
+            });
+        }
+
+        // Find duration
+        const selectedDuration = selectedDomain.durations.find(
+            (d) => String(d.days) === String(program)
+        );
+
+        if (!selectedDuration) {
             return res.status(400).json({
                 success: false,
                 message: 'Invalid program selected'
@@ -66,7 +76,7 @@ export const createOrder = async (req, res) => {
         }
 
         const options = {
-            amount: selectedCourse.amount * 100, // amount in paise
+            amount: selectedDuration.fee * 100,
             currency: 'INR',
             receipt: `receipt_${Date.now()}_${rollNumber}`,
             notes: {
@@ -76,12 +86,14 @@ export const createOrder = async (req, res) => {
                 department,
                 semester,
                 rollNumber,
-                program,
+                program: selectedDuration.days,
                 collegeName,
                 collegeCode,
-                domain
+                domain: selectedDomain.name,
+                domainId: domain
             }
         };
+
 
         // Create order in Razorpay
         const order = await razorpay.orders.create(options);
@@ -94,11 +106,12 @@ export const createOrder = async (req, res) => {
             department,
             semester,
             rollNumber,
-            amount: selectedCourse.amount, // Use the amount from program, not from request
-            program,
+            amount: selectedDuration.fee,
+            program: selectedDuration.days,
             collegeName,
             collegeCode,
-            domain,
+            domain: selectedDomain.name,
+            domainId: selectedDomain._id,
             razorpayOrderId: order.id,
             receipt: options.receipt,
             status: 'created'
@@ -196,7 +209,7 @@ export const verifyPayment = async (req, res) => {
                     programDetails,
                     paymentDetails
                 );
-                
+
 
                 await sendEmail({
                     to: paymentRecord.email,
@@ -261,7 +274,7 @@ export const handleWebhook = async (req, res) => {
 
             if (event === 'payment.captured') {
                 const paymentData = payload.payment.entity;
-                
+
                 // Update payment status in database
                 await InternshipPayment.findOneAndUpdate(
                     { razorpayOrderId: paymentData.order_id },
@@ -310,54 +323,3 @@ export const getPayment = async (req, res) => {
     }
 }
 
-
-export const getAllInternshipPayments = async (req, res) => {
-  try {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-
-    const search = req.query.search || "";
-    const status = req.query.status;
-
-    const query = {
-      $or: [
-        { name: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } },
-        { rollNumber: { $regex: search, $options: "i" } },
-        { domain: { $regex: search, $options: "i" } }
-      ],
-    };
-
-    if (status) {
-      query.status = status;
-    }
-
-    const [payments, total] = await Promise.all([
-      InternshipPayment.find(query)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-
-      InternshipPayment.countDocuments(query),
-    ]);
-
-    res.status(200).json({
-      success: true,
-      data: payments,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    });
-  } catch (error) {
-    console.error("Get payments error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch internship payments",
-    });
-  }
-};

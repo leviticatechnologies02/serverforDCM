@@ -1,5 +1,5 @@
 import express from 'express';
-import { createOrder, verifyPayment, handleWebhook, getPayment, getAllInternshipPayments } from '../../controllers/InternshipControllers/InternshipPaymentControllers.js'
+import { createOrder, verifyPayment, handleWebhook, getPayment, } from '../../controllers/InternshipControllers/InternshipPaymentControllers.js'
 import { getAllInternshipsDomains } from '../../controllers/admincontrollers/internshipsDomainControllers.js';
 
 const router = express.Router();
