@@ -188,7 +188,7 @@ export const verifyPayment = async (req, res) => {
                 const programDetails = {
                     domain: paymentRecord.domain,
                     program: paymentRecord.program,
-                    duration: paymentRecord.program === '5days' ? '5 Days' : '15 Days',
+                    duration: paymentRecord.program === '5' ? '5 Days' : '15 Days',
                     amount: paymentRecord.amount
                 };
 
