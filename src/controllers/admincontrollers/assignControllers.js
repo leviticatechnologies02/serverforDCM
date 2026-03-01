@@ -259,6 +259,7 @@ export const getAssignedEnrollments = async (req, res) => {
         }
       }
     ]);
+    console.log(enrollments,"iam from getassigedEnrollment")
 
     res.status(200).json({ enrollments });
   } catch (error) {

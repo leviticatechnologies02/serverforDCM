@@ -1,13 +1,13 @@
 import LiveClass from '../../models/LiveClass.js';
 
-import { createMeeting ,
+import {
+  createMeeting,
   getMeeting,
   getAllMeetings,
   updateMeeting,
   deleteMeeting,
   endMeeting,
-  updateMeetingTopic,
-  updateMeetingTime,
+  
   updateMeetingSettings,
   batchDeleteMeetings
 } from '../../service/zoomService.js';
@@ -15,15 +15,12 @@ import { io } from '../../socket.js';
 import { asyncHandler } from '../../middlewares/asyncHandler.js';
 
 export const createLiveClass = asyncHandler(async (req, res) => {
-  const { title, startTime, duration, courseId, batchId, hostEmail,recurrence,endDate } = req.body;
+  const { title, startTime, duration, courseId, batchId, hostEmail, recurrence, endDate } = req.body;
 
-  // RBAC example: only admin/instructor can create
-  if (!['admin', 'instructor'].includes(req.userAccount.user.role)) {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-console.log(req.body,"creating mett")
+
+  console.log(req.body, "creating mett")
   // Create Zoom meeting
- const startTimeUTC = new Date(startTime).toISOString();
+  const startTimeUTC = new Date(startTime).toISOString();
 
   const meeting = await createMeeting({
     topic: title,
@@ -33,19 +30,19 @@ console.log(req.body,"creating mett")
     recurrence,
     endDate
   });
-console.log(meeting,"iam meeting")
-const {data}=meeting
+  console.log(meeting, "iam meeting")
+  const { data } = meeting
   // Persist
   const liveClass = await LiveClass.create({
     title,
-    course:courseId,
-    batch:batchId,
+    course: courseId,
+    batch: batchId,
     startTime,
     duration,
     zoomMeetingId: String(data.id),
-    zoomJoinUrl:data.join_url,
+    zoomJoinUrl: data.join_url,
     zoomStartUrl: data.start_url,
-    hostEmail: instructorEmail
+    hostEmail: hostEmail
   });
 
   // Notify room
@@ -81,8 +78,8 @@ export const getAllLiveClasses = async (req, res) => {
         path: 'batch',
         select: 'batchName'
       })
-      .select('title startTime duration course batch status  hostEmail ');
-console.log(liveClasses,"iam live classes")
+      .select('title startTime duration course batch status  hostEmail zoomJoinUrl');
+    console.log(liveClasses, "iam live classes")
     res.json({ liveClasses });
   } catch (error) {
     console.error('Admin fetch live classes error:', error);
@@ -196,128 +193,59 @@ export const getAllMeetingsController = async (req, res) => {
 // @access  Private
 export const updateMeetingController = async (req, res) => {
   try {
-    const { meetingId } = req.params;
+    const { id } = req.params; // Mongo _id
     const updateData = req.body;
 
-    if (!meetingId) {
-      return res.status(400).json({
+    // 1️⃣ Find LiveClass first
+    const liveClass = await LiveClass.findById(id);
+
+    if (!liveClass) {
+      return res.status(404).json({
         success: false,
-        message: 'Meeting ID is required'
+        message: "Live class not found",
       });
     }
 
-    if (!updateData || Object.keys(updateData).length === 0) {
+    // 2️⃣ Get actual Zoom Meeting ID
+    const zoomMeetingId = liveClass.zoomMeetingId;
+
+    // 3️⃣ Update Zoom meeting
+    const zoomResult = await updateMeeting(
+      zoomMeetingId,
+      updateData
+    );
+
+    if (!zoomResult.success) {
       return res.status(400).json({
         success: false,
-        message: 'Update data is required'
+        message: "Zoom update failed",
+        error: zoomResult.error,
       });
     }
 
-    const result = await updateMeeting(meetingId, updateData);
+    // 4️⃣ Update MongoDB
+    liveClass.title = updateData.title || liveClass.title;
+    liveClass.startTime = updateData.startTime || liveClass.startTime;
+    liveClass.duration = updateData.duration || liveClass.duration;
+    liveClass.course = updateData.courseId || liveClass.course;
+    liveClass.batch = updateData.batchId || liveClass.batch;
 
-    if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: 'Failed to update meeting',
-        error: result.error
-      });
-    }
+    await liveClass.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: 'Meeting updated successfully',
-      data: result.data
+      message: "Meeting updated successfully",
     });
+
   } catch (error) {
-    console.error('Update meeting controller error:', error);
-    res.status(500).json({
+    console.error("Controller error:", error);
+    return res.status(500).json({
       success: false,
-      message: 'Internal server error',
-      error: error.message
+      message: "Internal server error",
+      error: error.message,
     });
   }
 };
-
-// @desc    Update meeting topic
-// @route   PATCH /api/meetings/:meetingId/topic
-// @access  Private
-export const updateMeetingTopicController = async (req, res) => {
-  try {
-    const { meetingId } = req.params;
-    const { topic } = req.body;
-
-    if (!meetingId || !topic) {
-      return res.status(400).json({
-        success: false,
-        message: 'Meeting ID and topic are required'
-      });
-    }
-
-    const result = await updateMeetingTopic(meetingId, topic);
-
-    if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: 'Failed to update meeting topic',
-        error: result.error
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: 'Meeting topic updated successfully',
-      data: result.data
-    });
-  } catch (error) {
-    console.error('Update meeting topic controller error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error',
-      error: error.message
-    });
-  }
-};
-
-// @desc    Update meeting time
-// @route   PATCH /api/meetings/:meetingId/time
-// @access  Private
-export const updateMeetingTimeController = async (req, res) => {
-  try {
-    const { meetingId } = req.params;
-    const { start_time, duration } = req.body;
-
-    if (!meetingId || !start_time) {
-      return res.status(400).json({
-        success: false,
-        message: 'Meeting ID and start_time are required'
-      });
-    }
-
-    const result = await updateMeetingTime(meetingId, start_time, duration);
-
-    if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: 'Failed to update meeting time',
-        error: result.error
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: 'Meeting time updated successfully',
-      data: result.data
-    });
-  } catch (error) {
-    console.error('Update meeting time controller error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error',
-      error: error.message
-    });
-  }
-};
-
 // @desc    Update meeting settings
 // @route   PATCH /api/meetings/:meetingId/settings
 // @access  Private
@@ -363,39 +291,57 @@ export const updateMeetingSettingsController = async (req, res) => {
 // @access  Private
 export const deleteMeetingController = async (req, res) => {
   try {
-    const { meetingId } = req.params;
+    const { id } = req.params; // Mongo _id
 
-    if (!meetingId) {
+    if (!id) {
       return res.status(400).json({
         success: false,
-        message: 'Meeting ID is required'
+        message: "LiveClass ID is required",
       });
     }
 
-    const result = await deleteMeeting(meetingId);
+    // 1️⃣ Find LiveClass in DB
+    const liveClass = await LiveClass.findById(id);
+
+    if (!liveClass) {
+      return res.status(404).json({
+        success: false,
+        message: "Live class not found",
+      });
+    }
+
+    // 2️⃣ Get Zoom Meeting ID
+    const zoomMeetingId = liveClass.zoomMeetingId;
+
+    // 3️⃣ Delete from Zoom
+    const result = await deleteMeeting(zoomMeetingId);
 
     if (!result.success) {
       return res.status(400).json({
         success: false,
-        message: 'Failed to delete meeting',
-        error: result.error
+        message: "Failed to delete Zoom meeting",
+        error: result.error,
       });
     }
 
-    res.status(200).json({
+    // 4️⃣ Delete from MongoDB
+    await liveClass.deleteOne();
+
+    return res.status(200).json({
       success: true,
-      message: 'Meeting deleted successfully'
+      message: "Meeting deleted successfully",
     });
+
   } catch (error) {
-    console.error('Delete meeting controller error:', error);
-    res.status(500).json({
+    console.error("Delete meeting controller error:", error);
+
+    return res.status(500).json({
       success: false,
-      message: 'Internal server error',
-      error: error.message
+      message: "Internal server error",
+      error: error.message,
     });
   }
 };
-
 // @desc    End an ongoing meeting
 // @route   POST /api/meetings/:meetingId/end
 // @access  Private

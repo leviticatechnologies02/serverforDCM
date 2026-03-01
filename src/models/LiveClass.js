@@ -1,18 +1,55 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 const { Schema } = mongoose;
 
-const LiveClassSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  course: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
-  batch: { type: Schema.Types.ObjectId, ref: 'Batch', required:true},
-  startTime: { type: Date, required: true },
-  duration: { type: Number, required: true }, // in minutes
-  zoomMeetingId: { type: String, required: true },
-  zoomJoinUrl: { type: String, required: true },
-  zoomStartUrl: { type: String, required: true },
-  hostEmail: { type: String, required: true },
-  recordingUrl: { type: String },
-  status: { type: String, enum: ['scheduled', 'ongoing', 'completed'], default: 'scheduled' }
-}, { timestamps: true });
+const LiveClassSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true },
 
-export default mongoose.model('LiveClass', LiveClassSchema);
+    course: {
+      type: Schema.Types.ObjectId,
+      ref: "Course",
+      required: true,
+    },
+
+    batch: {
+      type: Schema.Types.ObjectId,
+      ref: "Batch",
+      required: true,
+    },
+
+    startTime: { type: Date, required: true },
+
+    duration: { type: Number, required: true }, // in minutes
+
+    zoomMeetingId: { type: String, required: true },
+    zoomJoinUrl: { type: String, required: true },
+    zoomStartUrl: { type: String, required: true },
+
+    hostEmail: { type: String, required: true },
+
+    recordingUrl: { type: String },
+
+    status: {
+      type: String,
+      enum: ["scheduled", "ongoing", "completed"],
+      default: "scheduled",
+    },
+  },
+  { timestamps: true }
+);
+
+/* ================= INDEXES ================= */
+
+// 1️⃣ Index for course-based queries
+LiveClassSchema.index({ course: 1 });
+
+// 2️⃣ Index for batch-based queries
+LiveClassSchema.index({ batch: 1 });
+
+// 3️⃣ Compound index (VERY useful)
+LiveClassSchema.index({ course: 1, batch: 1 });
+
+// 4️⃣ Optional (if you query upcoming classes often)
+LiveClassSchema.index({ batch: 1, startTime: 1 });
+
+export default mongoose.model("LiveClass", LiveClassSchema);

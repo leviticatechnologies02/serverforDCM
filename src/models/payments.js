@@ -1,26 +1,49 @@
 import mongoose from 'mongoose';
-
 const paymentSchema = new mongoose.Schema({
   orderId: { type: String, required: true, unique: true },
   paymentId: { type: String, unique: true, sparse: true },
-  signature: { type: String }, // used for frontend verification
+  signature: { type: String },
   receipt: { type: String },
 
-  amountInRupees: { type: Number, required: true }, // for display
-  amount: { type: Number, required: true },         // raw amount from Razorpay
+  amountInRupees: { type: Number, required: true },
+  amount: { type: Number, required: true },
   currency: { type: String, default: 'INR' },
 
-  status: { type: String, enum: ['created', 'paid', 'failed', 'signature_invalid'], required: true  },
+  status: {
+    type: String,
+    enum: ['created', 'paid', 'failed', 'signature_invalid'],
+    required: true
+  },
 
-  paymentMode: { type: String,    enum: ['upi', 'card', 'wallet', 'netbanking', 'unknown'], default: 'unknown'},
+  isEnrolled: {
+    type: Boolean,
+    default: false
+  },
 
-  appUsed: { type: String }, // inferred from vpa, wallet, or card network
+  paymentMode: {
+    type: String,
+    enum: ['upi', 'card', 'wallet', 'netbanking', 'unknown'],
+    default: 'unknown'
+  },
 
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User',    required: true},
+  appUsed: { type: String },
 
-  courseIds: [{type: mongoose.Schema.Types.ObjectId,ref: 'Course'}  ],
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
 
-  meta: { type: Object }, // full webhook payload for audit/debug
+  courseIds: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Course'
+  }],
+
+  meta: { type: Object },
+
 }, { timestamps: true });
+
+paymentSchema.index({ userId: 1 });
+paymentSchema.index({ status: 1 });
 
 export default mongoose.model('Payment', paymentSchema);

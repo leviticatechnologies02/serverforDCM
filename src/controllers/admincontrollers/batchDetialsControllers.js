@@ -39,7 +39,7 @@ export const getAllBatches = async (req, res) => {
 
     // Apply status filter ONLY if provided
     if (status) {
-      filter.status = status; 
+      filter.status = status;
       // expected: active | completed | cancelled | inactive
     }
 
@@ -91,7 +91,7 @@ export const getBatchesByCourseId = async (req, res) => {
     const batches = await Batch.find(
       {
         courseId,
-        status:"active", //  only active batches
+        status: "active", //  only active batches
       },
       "_id batchName"
     )
@@ -204,17 +204,17 @@ export const updateBatch = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // ✅ Validate MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid batch ID" });
     }
 
     const {
       batchName,
-      courseId, 
+      courseId,
       startDate,
       endDate,
       status,
+      completedAt,
     } = req.body;
 
     const batch = await Batch.findById(id);
@@ -222,7 +222,7 @@ export const updateBatch = async (req, res) => {
       return res.status(404).json({ message: "Batch not found" });
     }
 
-    // ✅ Check unique batch name (if changed)
+    /* ================= UNIQUE NAME CHECK ================= */
     if (batchName && batchName !== batch.batchName) {
       const exists = await Batch.findOne({ batchName });
       if (exists) {
@@ -231,20 +231,35 @@ export const updateBatch = async (req, res) => {
       batch.batchName = batchName;
     }
 
-    // ✅ Update allowed fields
+    /* ================= BASIC FIELD UPDATES ================= */
     if (courseId) batch.courseId = courseId;
     if (startDate) batch.startDate = startDate;
     if (endDate) batch.endDate = endDate;
 
-    // ✅ Handle status logic
+    /* ================= STATUS LOGIC ================= */
     if (status && status !== batch.status) {
       batch.status = status;
 
+      // If marked completed
       if (status === "completed") {
-        batch.completedAt = new Date();
-      } else {
+        batch.completedAt = completedAt
+          ? new Date(completedAt)
+          : new Date();
+      }
+
+      // If moved away from completed
+      if (status !== "completed") {
         batch.completedAt = null;
       }
+    }
+
+    /* ================= SAFETY: IF ALREADY COMPLETED ================= */
+    if (
+      batch.status === "completed" &&
+      completedAt &&
+      !batch.completedAt
+    ) {
+      batch.completedAt = new Date(completedAt);
     }
 
     await batch.save();

@@ -88,7 +88,7 @@ console.log(tokenDocs)
 
 export async function changePassword(req, res) {
   const { currentPassword, newPassword } = req.body;
-  const userId = req.user._id; // Assuming user is attached to req from auth middleware
+  const userId = req.user.id; // Assuming user is attached to req from auth middleware
 
   if (!currentPassword || !newPassword) {
     return res.status(400).json({ message: 'Current password and new password are required' });
@@ -96,7 +96,7 @@ export async function changePassword(req, res) {
 
   try {
     // Find the user
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select('+password');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }

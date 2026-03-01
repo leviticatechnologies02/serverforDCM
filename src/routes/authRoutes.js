@@ -4,7 +4,7 @@ import { signup, login, verifyAuthToken, refreshToken } from '../controllers/aut
 import verifyToken from '../middlewares/authMiddleware.js';
 import upload from '../middlewares/uploadMiddleware.js'; //  Cloudinary upload middleware
 import { resendOTP, sendVerificationEmail, sendVerificationEmailOTP, verifyEmail, verifyEmailOTP } from '../controllers/admincontrollers/emailVerificationControllers.js';
-import { forgotPassword, forgotPasswordOTP, resetPassword, resetPasswordWithOTP } from '../controllers/studentcontrollers/forgotPasswordControllers.js';
+import { changePassword, forgotPassword, forgotPasswordOTP, resetPassword, resetPasswordWithOTP } from '../controllers/studentcontrollers/forgotPasswordControllers.js';
 
 const authRouter = express.Router();
 
@@ -29,5 +29,6 @@ authRouter.post('/forgot-password',forgotPassword)
 authRouter.post('/forgot-password-otp',forgotPasswordOTP)
 authRouter.post('/reset-password', resetPassword)
 authRouter.post('/reset-password-otp', resetPasswordWithOTP)
+authRouter.post('/change-password', verifyToken,changePassword)
 
 export default authRouter;

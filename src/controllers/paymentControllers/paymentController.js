@@ -4,7 +4,7 @@ import Payment from '../../models/payments.js';
 import Course from '../../models/courses.js';
 import Enrollment from '../../models/Enrollment.js';
 import { enrollInCourses } from '../studentcontrollers/coursesEnrollControllers.js';
-
+import mongoose from 'mongoose';
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -14,7 +14,7 @@ const razorpay = new Razorpay({
 export const createOrder = async (req, res) => {
   try {
     const { courseIds, userId } = req.body;
-
+    console.log(courseIds, userId, "create order hit")
     const courses = await Course.find({ _id: { $in: courseIds } }).lean();
     if (!courses.length) return res.status(404).json({ error: 'Courses not found' });
 
@@ -23,8 +23,29 @@ export const createOrder = async (req, res) => {
       alreadyEnrolled?.enrolledCourses?.map(ec => String(ec.course)) || []
     );
 
-    const filteredCourses = courses.filter(course => !enrolledIds.has(String(course._id)));
-    if (!filteredCourses.length) {
+    let filteredCourses = courses.filter(
+      course => !enrolledIds.has(String(course._id))
+    );
+
+    // ✅ Check if any paid course exists
+    const hasPaidCourse = filteredCourses.some(
+      c => Number(c.price) > 0
+    );
+
+    if (hasPaidCourse) {
+      // Find free course (price = 0)
+      const freeCourse = await Course.findOne({ price: 0 }).lean();
+
+      if (
+        freeCourse &&
+        !enrolledIds.has(String(freeCourse._id)) && // not already enrolled
+        !filteredCourses.some(
+          c => String(c._id) === String(freeCourse._id)
+        ) // not already added in this order
+      ) {
+        filteredCourses.push(freeCourse);
+      }
+    } if (!filteredCourses.length) {
       return res.status(400).json({ error: 'Already enrolled in all selected courses' });
     }
 
@@ -62,14 +83,16 @@ export const createOrder = async (req, res) => {
 
 
 export const verifyPayment = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
     const { razorpayOrderId, razorpayPaymentId, razorpaySignature, userId } = req.body;
 
     if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature || !userId) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
-      const body = `${razorpayOrderId}|${razorpayPaymentId}`;
- const expectedSignature = crypto
+    const body = `${razorpayOrderId}|${razorpayPaymentId}`;
+    const expectedSignature = crypto
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
       .update(body)
       .digest('hex');
@@ -77,35 +100,53 @@ export const verifyPayment = async (req, res) => {
     const isAuthentic = expectedSignature === razorpaySignature;
 
     const payment = await Payment.findOneAndUpdate(
-      { orderId: razorpayOrderId },
+      { orderId: razorpayOrderId, isEnrolled: false },
       {
         $set: {
           paymentId: razorpayPaymentId,
           signature: razorpaySignature,
-          status: isAuthentic ? 'paid' : 'signature_invalid'
+          status: isAuthentic ? 'paid' : 'signature_invalid',
+          isEnrolled: true
         }
       },
-      { upsert: false, new: true }
+      { new: true ,session }
     );
-
-    if (!payment) return res.status(404).json({ error: 'Payment record not found' });
-    if (!isAuthentic) return res.status(400).json({ error: 'Invalid signature' });
-
-    const alreadyEnrolled = await Enrollment.findOne({ user: userId }).lean();
-    const enrolledIds = new Set(alreadyEnrolled?.enrolledCourses?.map(ec => String(ec.course)) || []);
-    const toEnroll = payment.courseIds.filter(id => !enrolledIds.has(String(id)));
-
-    for (const courseId of toEnroll) {
-      await enrollInCourses({ paymentId: payment._id, userId, courseId });
+    if (!payment) {
+      await session.commitTransaction();
+      session.endSession();
+      return res.status(200).json({ success: true });
     }
 
-    await Payment.updateOne({ _id: payment._id }, { $set: { isEnrolled: true } });
+    if (!isAuthentic) {
+      await session.commitTransaction();
+      session.endSession();
+      return res.status(400).json({ error: 'Invalid signature' });
+    }
+
+    for (const courseId of payment.courseIds) {
+      await enrollInCourses({
+        paymentId: payment._id,
+        userId,
+        courseId,
+        session
+      });
+    }
+    await Payment.updateOne(
+      { _id: payment._id },
+      { $set: { isEnrolled: true } },
+      { session }
+    );
+    await session.commitTransaction();
+    session.endSession();
+
 
     console.log('✅ verifyPayment route hit');
     res.status(200).json({ success: true });
   } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
     console.error('❌ verifyPayment error:', err);
-    res.status(500).json({ error: 'Verification failed' });
+    return res.status(500).json({ error: 'Verification failed' });
   }
 };
 
@@ -117,17 +158,17 @@ export const webhook = async (req, res) => {
     if (!signature || !rawBody) {
       return res.status(400).send('Missing signature or body');
     }
- const expected = crypto
+    const expected = crypto
       .createHmac('sha256', process.env.RAZORPAY_WEBHOOK_SECRET)
       .update(rawBody.toString())
       .digest('hex');
-console.log("🔐 Received Signature:", signature);
-console.log("🔐 Expected Signature:", expected);
+    console.log("🔐 Received Signature:", signature);
+    console.log("🔐 Expected Signature:", expected);
     if (expected !== signature) {
-       console.warn('❌ Invalid webhook signature');
+      console.warn('❌ Invalid webhook signature');
       return res.status(400).send('Invalid webhook signature');
     }
-    
+
     const event = JSON.parse(rawBody.toString());
     const entity = event.payload.payment?.entity;
 
@@ -151,29 +192,28 @@ console.log("🔐 Expected Signature:", expected);
       }
 
       const payment = await Payment.findOneAndUpdate(
-        { orderId },
+        { orderId, isEnrolled: false }, //  only if not processed
         {
           $set: {
             paymentId,
             status: 'paid',
             paymentMode: method,
             appUsed,
-            meta: event
+            meta: event,
+            isEnrolled: true
           }
         },
-        { upsert: false, new: true }
+        { new: true }
       );
 
-      if (payment && !payment.isEnrolled) {
-        const alreadyEnrolled = await Enrollment.findOne({ user: payment.userId }).lean();
-        const enrolledIds = new Set(alreadyEnrolled?.enrolledCourses?.map(ec => String(ec.course)) || []);
-        const toEnroll = payment.courseIds.filter(id => !enrolledIds.has(String(id)));
-
-        for (const courseId of toEnroll) {
-          await enrollInCourses({ paymentId: payment._id, userId: payment.userId, courseId });
+      if (payment) {
+        for (const courseId of payment.courseIds) {
+          await enrollInCourses({
+            paymentId: payment._id,
+            userId: payment.userId,
+            courseId
+          });
         }
-
-        await Payment.updateOne({ _id: payment._id }, { $set: { isEnrolled: true } });
       }
 
       console.log(`✅ Webhook processed for payment ${paymentId}`);

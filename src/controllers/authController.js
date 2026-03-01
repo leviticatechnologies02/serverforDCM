@@ -4,20 +4,20 @@ import User from '../models/user.js'
 import { uploadToCloudinary } from '../utils/cloudinaryUtils.js';
 import mongoose from 'mongoose';
 
-
+// helpers function for finding user/admin
 const findAccountByEmail = async (email) => {
   const normalizedEmail = email.trim().toLowerCase();
 
-  const user = await User.findOne({ email: normalizedEmail });
+  const user = await User.findOne({ email: normalizedEmail }).select("+password");
   if (user) return { account: user, role: 'user' };
 
-  const admin = await Admin.findOne({ email: normalizedEmail });
+  const admin = await Admin.findOne({ email: normalizedEmail }).select("+password");
   if (admin) return { account: admin, role: 'admin' };
 
   return { account: null, role: null };
 };
 
- const findAccountById = async (id) => {
+const findAccountById = async (id) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return { account: null, role: null };
   }
@@ -31,8 +31,9 @@ const findAccountByEmail = async (email) => {
   return { account: null, role: null };
 };
 
+
 export const signup = async (req, res) => {
-  const { name, email, password, role = 'student',mobile } = req.body;
+  const { name, email, password, role = 'student', mobile } = req.body;
 
   try {
     const { account, role: source } = await findAccountByEmail(email);
@@ -49,7 +50,7 @@ export const signup = async (req, res) => {
     account.name = name;
     account.password = password; // Schema handles hashing
     account.role = role;
-    account.mobile=mobile
+    account.mobile = mobile
 
     // Optional profile image upload
     if (req.file?.path) {
@@ -108,18 +109,22 @@ export const login = async (req, res) => {
     const accessToken = jwt.sign(payload, ACCESS_SECRET, { expiresIn: '1h' });
     const refreshToken = jwt.sign(payload, REFRESH_SECRET, { expiresIn: '7d' });
 
-    res.cookie('auth_token', accessToken, {
+    const isProduction = process.env.NODE_ENV === "production";
+
+    const cookieOptions = {
       httpOnly: true,
-      secure: true,
-      sameSite: 'None',
-      maxAge: 60 * 60 * 1000,
+      secure: isProduction, // ✅ true in production (HTTPS only)
+      sameSite: isProduction ? "None" : "Lax", // ✅ None for prod, Lax for local
+    };
+
+    res.cookie("auth_token", accessToken, {
+      ...cookieOptions,
+      maxAge: 60 * 60 * 1000, // 1 hour
     });
 
-    res.cookie('refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'None',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+    res.cookie("refresh_token", refreshToken, {
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
 
@@ -129,7 +134,7 @@ export const login = async (req, res) => {
       user: payload,
       token: accessToken,
       refreshToken,
-      
+
     });
 
   } catch (err) {
@@ -143,13 +148,13 @@ export const verifyAuthToken = async (req, res) => {
   const ACCESS_SECRET = process.env.ACCESS_SECRET;
 
   const token = req.cookies.auth_token;
-  
+
   if (!token) return res.status(401).json({ verified: false });
 
   try {
     const decoded = jwt.verify(token, ACCESS_SECRET);
-  const { exp, iat, ...sanitizedUser } = decoded;
-    
+    const { exp, iat, ...sanitizedUser } = decoded;
+
     res.status(200).json({ verified: true, user: sanitizedUser });
   } catch (err) {
     res.status(401).json({ verified: false });
@@ -158,10 +163,10 @@ export const verifyAuthToken = async (req, res) => {
 
 export const refreshToken = async (req, res) => {
   const token = req.cookies.refresh_token || req.body.refresh_token;
-   const REFRESH_SECRET = process.env.REFRESH_SECRET;
-   const ACCESS_SECRET = process.env.ACCESS_SECRET;
-   console.log(req.cookies.refresh_token)
-   console.log(token,"imatoken in refresh")
+  const REFRESH_SECRET = process.env.REFRESH_SECRET;
+  const ACCESS_SECRET = process.env.ACCESS_SECRET;
+  console.log(req.cookies.refresh_token)
+  console.log(token, "imatoken in refresh")
 
   if (!token) {
     return res.status(401).json({ error: 'Missing refresh token' });
@@ -169,9 +174,9 @@ export const refreshToken = async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, REFRESH_SECRET);
-    console.log(decoded,"iam decoded")
-    const {account} = await findAccountById(decoded.id);
-console.log(account,"iam account")
+    console.log(decoded, "iam decoded")
+    const { account } = await findAccountById(decoded.id);
+    console.log(account, "iam account")
     if (!account) {
       return res.status(401).json({ error: 'Invalid refresh token' });
     }

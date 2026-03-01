@@ -11,6 +11,7 @@ import statsRouter from "./statsRoutes.js";
 import createUserRouter from "./createUserRoutes.js";
 import internshipsDomainRouter from "./internshipsRoutes.js";
 import studentReportsRouter from "./studentReportsRoutes.js";
+import downloadRouter from "../downloadRoute.js";
 
 const adminRouter = Router();
 
@@ -30,6 +31,7 @@ adminRouter.use("/enroll", assignRouter);
 adminRouter.use("/transactions", transactionRouter);
 adminRouter.use("/zoom", liveClassRouter);
 adminRouter.use("/stats", statsRouter);
+adminRouter.use('/download',downloadRouter)
 adminRouter.use("/student-reports", studentReportsRouter);
 adminRouter.use("/user", createUserRouter);
 adminRouter.use("/internshipsdomain", internshipsDomainRouter);

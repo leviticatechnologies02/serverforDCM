@@ -8,21 +8,51 @@ export const getCourses = async (req, res) => {
   console.log("GET COURSES")
   try {
     const courses = await Course.find().sort({ createdAt: -1 });
-    
+
     res.status(200).json(courses);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching courses', error });
   }
 };
 
+export const getFreeCourses = async (req, res) => {
+    console.log("🔥 getFreeCourses controller HIT");
+  try {
+    const freeCourses = await Course.find({ price: 0 })
+      .select("_id name price thumbnail ")
+      .lean();
+    console.log(freeCourses, 'iam')
+    return res.status(200).json({
+      success: true,
+      count: freeCourses.length,
+      data: freeCourses,
+    });
+
+  } catch (error) {
+    console.error("Get Free Courses Error:");
+    console.error(error);
+    console.error(error.message);
+    console.error(error.stack);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+
+
+};
+
+
 export const addCourse = async (req, res) => {
   try {
-    const { name, duration,price,category,thumbnail } = req.body;
+    const { name, duration, price, category, thumbnail,shortdescription } = req.body;
 
     const newCourse = new Course({
-      name, 
+      name,
       duration,
       category,
+      shortdescription,
       thumbnail,
       price
     });
@@ -37,15 +67,15 @@ export const addCourse = async (req, res) => {
 export const updateCourse = async (req, res) => {
   console.log("iam here ")
   try {
-    const { _id } = req.params;
+    const { id } = req.params;
     const incoming = req.body;
 
-    const existingCourse = await Course.findById(_id);
+    const existingCourse = await Course.findById(id);
     if (!existingCourse) {
       return res.status(404).json({ message: 'Course not found' });
     }
 
-    const fields = ['name', 'description', 'instructor', 'duration', 'price','category'];
+    const fields = ['name', 'shortdescription', 'instructor', 'duration', 'price', 'category'];
     const { payload, changes } = generateUpdatePayload(existingCourse, incoming, fields);
 
     if (Object.keys(payload).length === 0) {
@@ -55,10 +85,10 @@ export const updateCourse = async (req, res) => {
       });
     }
 
-    const updatedCourse = await Course.findByIdAndUpdate(_id, payload, { new: true });
+    const updatedCourse = await Course.findByIdAndUpdate(id, payload, { new: true });
 
     await CourseAudit.create({
-      courseId: _id,
+      courseId: id,
       updatedBy: req.user?.id || null,
       changes,
       context: 'manual update'

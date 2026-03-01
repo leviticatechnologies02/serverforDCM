@@ -6,118 +6,87 @@ import cookieParser from "cookie-parser";
 import http from "http";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
-import { v2 as cloudinary } from "cloudinary";
-
+import helmet from "helmet";
 import connectDB from "./src/database/connect.js";
 import { initSocket } from "./src/socket.js";
 import chatRouter from "./src/routes/chat.js";
-
-// Routes
 import authRouter from "./src/routes/authRoutes.js";
-
-import paymentRouter from "./src/routes/paymentRoutes/paymentRoutes.js";
 import studentRouter from "./src/routes/studentroutes/studentRoutes.js";
-import assignRouter from "./src/routes/adminroutes/assignRoutes.js";
+import adminRouter from "./src/routes/adminroutes/index.js";
+import sharedRouter from "./src/routes/sharedRoutes/index.js";
 import profileRoutes from "./src/routes/profileRoutes.js";
 import uploadRoutes from "./src/routes/uploadRoutes.js";
-import downloadRouter from "./src/routes/downloadRoute.js";
-import transactionRouter from "./src/routes/adminroutes/transactionRoutes.js";
-import studentEnrollRouter from "./src/routes/studentroutes/stundentenrollRoutes.js";
-
-import cartRouter from "./src/routes/studentroutes/cartRoutes.js";
-import liveClassRouter from "./src/routes/adminroutes/liveClassesRoutes.js";
-import studentLiveClassRouter from "./src/routes/studentroutes/liveClassStudentRoutes.js";
-import statsRouter from "./src/routes/adminroutes/statsRoutes.js";
-import createUserRouter from "./src/routes/adminroutes/createUserRoutes.js";
 import InternshipsRouter from "./src/routes/InternshipRoutes/InternshipPaymentRoutes.js";
 import { submitContactForm } from "./src/controllers/admincontrollers/contactUsMail.js";
-import internshipsDomainRouter from "./src/routes/adminroutes/internshipsRoutes.js";
-
-import adminRouter from "./src/routes/adminroutes/index.js";
-import { printRoutes, routesAsJson } from "./printRoutes.js";
-import sharedRouter from "./src/routes/sharedRoutes/index.js";
-
+import { printRoutes } from "./printRoutes.js";
+import { connectCloudinary } from "./src/config/cloudinary.js";
 
 // ================== CONFIG ==================
 dotenv.config();
 const app = express();
 app.set("trust proxy", 1);
 
+// ================== SECURITY ==================
+
+// Security headers
+app.use(helmet());
+
 // ================== MIDDLEWARE ==================
 
-// JSON parsing (DO NOT USE body-parser)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Logging
-app.use(morgan("dev"));
+// Logging only in development
+if (process.env.NODE_ENV !== "production") {
+  app.use(morgan("dev"));
+}
+
+// ================== CORS ==================
+
 const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'http://localhost:3002',
-  "https://designcareermetrics.com",
-  "https://dcm-platform.vercel.app",
-  'http://192.168.1.48:3000', // Your Flutter app might use this
+  process.env.FRONTEND_URL,
+  process.env.CLIENT_URL,
+].filter(Boolean);
 
-];
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.log(`❌ Blocked by CORS: ${origin}`);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 
-// CORS (SAFE DEBUG MODE)
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin) || origin === 'null' || allowedOrigins.includes('*')) {
-      callback(null, true);
-    } else {
-      console.log(`❌ Blocked by CORS: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-}));
+// ================== RATE LIMITING ==================
 
-// Rate limit
-const apiLimiter = rateLimit({
+// 🔐 Strict auth limiter
+const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 20,
+  message: "Too many login attempts. Try again later.",
 });
-app.use("/auth", apiLimiter);
-
-// Debug request logger
-app.use((req, res, next) => {
-  console.log("🔥 REQUEST:", req.method, req.url);
-  next();
-});
+app.use("/auth", authLimiter);
 
 // ================== ROUTES ==================
 
-// Chat
 app.use("/api/chat", chatRouter);
-
-
-// Contact
 app.post("/contact", submitContactForm);
 
-// Main Routers
 app.use("/auth", authRouter);
-
-// app.use("/api/notices", noticeRouter);
-// app.use("/api", studentRouter);
-// app.use("/tasks", taskRouter);
-app.use("/admin", adminRouter)
-app.use("/api",sharedRouter)
+app.use("/student", studentRouter);
+app.use("/admin", adminRouter);
+app.use("/api", sharedRouter);
 app.use("/api", profileRoutes);
-app.use("/internship", InternshipsRouter);
 app.use("/api", uploadRoutes);
-// app.use("/api/enrollments", downloadRouter);
+app.use("/internship", InternshipsRouter);
 
-// app.use("/api", categoriesRouter);
-app.use("/api/cart", cartRouter);
-
-app.use("/classes", studentLiveClassRouter);
-
-// ================== TEST & HEALTH ==================
+// ================== HEALTH ==================
 
 app.get("/", (req, res) => {
   res.json({
@@ -126,9 +95,6 @@ app.get("/", (req, res) => {
   });
 });
 
-app.get("/test", (req, res) => {
-  res.send("✅ SERVER TEST OK");
-});
 app.get("/health", (req, res) => {
   res.json({
     status: "ok",
@@ -137,44 +103,29 @@ app.get("/health", (req, res) => {
   });
 });
 
-/* ✅ REGISTER __routes FIRST */
+// Print routes in dev
 if (process.env.NODE_ENV !== "production") {
-  app.get("/__routes", (req, res) => {
-    const routes = routesAsJson(app);
-
-    res.json({
-      service: "DCM Server",
-      totalRoutes: routes.length,
-      routes,
-    });
-  });
+  printRoutes(app);
 }
 
-/* ✅ THEN PRINT */
-printRoutes(app);
-
 // ================== CLOUDINARY ==================
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
 
+connectCloudinary()
 // ================== DATABASE ==================
+
 connectDB(process.env.MONGO_URI);
 
 // ================== SERVER ==================
+
 const PORT = process.env.PORT || 7777;
 const server = http.createServer(app);
 
 server.listen(PORT, () => {
-  console.log(`🚀 Server running: http://localhost:${PORT}`);
-  console.log(`❤️ Health: http://localhost:${PORT}/health`);
-  console.log(`🧪 Test: http://localhost:${PORT}/test`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
 
-// ================== SOCKET (SAFE MODE) ==================
-// COMMENT this if it crashes
+// ================== SOCKET ==================
+
 try {
   initSocket(server);
 } catch (err) {
@@ -182,9 +133,13 @@ try {
 }
 
 // ================== ERROR HANDLER ==================
+
 app.use((err, req, res, next) => {
-  console.error("❌ ERROR:", err);
-  res.status(500).json({ error: err.message });
+  console.error("❌ ERROR:", err.message);
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+  });
 });
 
 export default app;

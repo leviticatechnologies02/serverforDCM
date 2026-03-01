@@ -1,5 +1,7 @@
 // controllers/adminControllers/transactionController.js
 import Payment from '../../models/payments.js';
+import ExcelJS from "exceljs";
+
 
 import InternshipPayment from '../../models/InternshipPayment.js';
 
@@ -195,3 +197,86 @@ export const getCombinedPaymentStats = async (req, res) => {
   }
 };
 
+
+
+
+export const downloadInternshipPaymentsExcel = async (req, res) => {
+  try {
+    const search = req.query.search || "";
+    const status = req.query.status;
+
+    const query = {
+      $or: [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { rollNumber: { $regex: search, $options: "i" } },
+        { domain: { $regex: search, $options: "i" } },
+      ],
+    };
+
+    if (status) {
+      query.status = status;
+    }
+
+    const payments = await InternshipPayment.find(query)
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Create Workbook
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Internship Payments");
+
+    // Define Columns
+    worksheet.columns = [
+      { header: "Name", key: "name", width: 20 },
+      { header: "Email", key: "email", width: 30 },
+      { header: "Roll Number", key: "rollNumber", width: 15 },
+      { header: "Domain", key: "domain", width: 20 },
+      { header: "Amount", key: "amount", width: 15 },
+      { header: "Payment ID", key: "paymentId", width: 25 },
+      { header: "Status", key: "status", width: 15 },
+      { header: "Date", key: "createdAt", width: 20 },
+    ];
+
+    // Style Header
+    worksheet.getRow(1).font = { bold: true };
+
+    // Add Rows
+    payments.forEach((payment) => {
+      worksheet.addRow({
+        name: payment.name,
+        email: payment.email,
+        rollNumber: payment.rollNumber,
+        domain: payment.domain,
+        amount: payment.amount,
+        paymentId: payment.paymentId,
+        status: payment.status,
+        createdAt: payment.createdAt
+          ? new Date(payment.createdAt).toLocaleString()
+          : "",
+      });
+    });
+
+    // Set Response Headers
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=internship-payments.xlsx"
+    );
+
+    // Send File
+    await workbook.xlsx.write(res);
+    res.end();
+
+  } catch (error) {
+    console.error("Download Excel error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to download internship payments",
+    });
+  }
+};

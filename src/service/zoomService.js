@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getZoomAccessToken } from './zoomAuth.js';
 
 export async function createMeeting({ topic, start_time, duration, hostEmail, timezone, recurrence, endDate }) {
-  const token = await getZoomAccessToken();
+  const zoomAuth = await getZoomAccessToken();
 
   // Base payload
   const payload = {
@@ -33,7 +33,7 @@ export async function createMeeting({ topic, start_time, duration, hostEmail, ti
     const { data } = await axios.post(
       `https://api.zoom.us/v2/users/${encodeURIComponent(hostEmail)}/meetings`,
       payload,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${zoomAuth.access_token}` } }
     );
 
     return { success: true, data };
@@ -44,12 +44,12 @@ export async function createMeeting({ topic, start_time, duration, hostEmail, ti
 }
 
 export async function getMeeting(meetingId) {
-  const token = await getZoomAccessToken();
+  const zoomAuth = await getZoomAccessToken();
 
   try {
     const { data } = await axios.get(
       `https://api.zoom.us/v2/meetings/${encodeURIComponent(meetingId)}`,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${zoomAuth.access_token}` } }
     );
 
     return { success: true, data };
@@ -60,7 +60,7 @@ export async function getMeeting(meetingId) {
 }
 
 export async function getAllMeetings(hostEmail, pageSize = 30, nextPageToken = null) {
-  const token = await getZoomAccessToken();
+  const zoomAuth = await getZoomAccessToken();
 
   try {
     const params = new URLSearchParams({
@@ -74,7 +74,7 @@ export async function getAllMeetings(hostEmail, pageSize = 30, nextPageToken = n
 
     const { data } = await axios.get(
       `https://api.zoom.us/v2/users/${encodeURIComponent(hostEmail)}/meetings?${params}`,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${zoomAuth.access_token}` } }
     );
 
     return { success: true, data };
@@ -83,48 +83,89 @@ export async function getAllMeetings(hostEmail, pageSize = 30, nextPageToken = n
     return { success: false, error: error.response?.data || error.message };
   }
 }
-
-export async function updateMeeting(meetingId, updateData) {
-  const token = await getZoomAccessToken();
-
+export async function updateMeeting(id, updateData) {
   try {
-    const { data } = await axios.patch(
-      `https://api.zoom.us/v2/meetings/${encodeURIComponent(meetingId)}`,
-      updateData,
-      { headers: { Authorization: `Bearer ${token}` } }
+    const zoomAuth = await getZoomAccessToken();
+
+    // Validate startTime
+    if (!updateData.startTime) {
+      throw new Error("startTime is required");
+    }
+
+    const parsedDate = new Date(updateData.startTime);
+
+    if (isNaN(parsedDate.getTime())) {
+      throw new Error("Invalid startTime format");
+    }
+
+    // ✅ Only send allowed Zoom fields
+    const payload = {
+      topic: updateData.title,              // Zoom uses topic
+      start_time: parsedDate.toISOString(), // Required format
+      duration: updateData.duration,
+    };
+
+    await axios.patch(
+      `${zoomAuth.api_url}/v2/meetings/${encodeURIComponent(id)}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${zoomAuth.access_token}`,
+          "Content-Type": "application/json",
+        },
+      }
     );
 
-    return { success: true, data };
+    return { success: true };
+
   } catch (error) {
-    console.error('Error updating meeting:', error.response?.data || error.message);
-    return { success: false, error: error.response?.data || error.message };
+    console.error(
+      "Error updating meeting:",
+      error.response?.data || error.message
+    );
+
+    return {
+      success: false,
+      error: error.response?.data || error.message,
+    };
   }
 }
-
-export async function deleteMeeting(meetingId) {
-  const token = await getZoomAccessToken();
-
+export async function deleteMeeting(zoomMeetingId) {
   try {
+    const zoomAuth = await getZoomAccessToken();
+
     await axios.delete(
-      `https://api.zoom.us/v2/meetings/${encodeURIComponent(meetingId)}`,
-      { headers: { Authorization: `Bearer ${token}` } }
+      `${zoomAuth.api_url}/v2/meetings/${encodeURIComponent(zoomMeetingId)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${zoomAuth.access_token}`,
+        },
+      }
     );
 
-    return { success: true, message: 'Meeting deleted successfully' };
+    return { success: true };
+
   } catch (error) {
-    console.error('Error deleting meeting:', error.response?.data || error.message);
-    return { success: false, error: error.response?.data || error.message };
+    console.error(
+      "Error deleting meeting:",
+      error.response?.data || error.message
+    );
+
+    return {
+      success: false,
+      error: error.response?.data || error.message,
+    };
   }
 }
 
 export async function endMeeting(meetingId) {
-  const token = await getZoomAccessToken();
+  const zoomAuth = await getZoomAccessToken();
 
   try {
     await axios.put(
-      `https://api.zoom.us/v2/meetings/${encodeURIComponent(meetingId)}/status`,
+      `${zoomAuth.api_url}/v2/meetings/${encodeURIComponent(meetingId)}/status`,
       { action: 'end' },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${zoomAuth.access_token}` } }
     );
 
     return { success: true, message: 'Meeting ended successfully' };
@@ -132,19 +173,6 @@ export async function endMeeting(meetingId) {
     console.error('Error ending meeting:', error.response?.data || error.message);
     return { success: false, error: error.response?.data || error.message };
   }
-}
-
-// Utility function to update specific meeting properties
-export async function updateMeetingTopic(meetingId, newTopic) {
-  return updateMeeting(meetingId, { topic: newTopic });
-}
-
-export async function updateMeetingTime(meetingId, newStartTime, newDuration) {
-  const updateData = { start_time: newStartTime };
-  if (newDuration) {
-    updateData.duration = newDuration;
-  }
-  return updateMeeting(meetingId, updateData);
 }
 
 export async function updateMeetingSettings(meetingId, settings) {
@@ -170,8 +198,6 @@ export default {
   updateMeeting,
   deleteMeeting,
   endMeeting,
-  updateMeetingTopic,
-  updateMeetingTime,
   updateMeetingSettings,
   batchDeleteMeetings
 };

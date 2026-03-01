@@ -1,12 +1,12 @@
 // routes/enrollmentRoutes.js
 import express from 'express';
-import {     getStudentEnrolledCourses, getStudentEnrollmentsById} from '../../controllers/studentcontrollers/coursesEnrollControllers.js';
+import {     getStudentEnrolledCourses, getStudentEnrollmentByCourseId,} from '../../controllers/studentcontrollers/coursesEnrollControllers.js';
 
 const studentEnrollRouter = express.Router();
 
 
-studentEnrollRouter.get("/get/:id",getStudentEnrollmentsById)
-studentEnrollRouter.get("/getcourses/:id",getStudentEnrolledCourses)
+studentEnrollRouter.get("/details/:courseId",getStudentEnrollmentByCourseId)
+studentEnrollRouter.get("/",getStudentEnrolledCourses)
 
 
 export default studentEnrollRouter;

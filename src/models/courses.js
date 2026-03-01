@@ -1,12 +1,13 @@
-// models/Course.js
+// models/course.js
 import mongoose from 'mongoose';
 
 const courseSchema = new mongoose.Schema(
     {
         name: { type: String, required: true, trim: true },
         thumbnail: { type: String },
-        category: { type: String, require: true },
+        category: { type: String, required: true },
         duration: { type: String },
+        shortdescription:{ type: String },
         price: { type: Number, required: true, min: 0, default: 0 },
         details: {
                   type: mongoose.Schema.Types.ObjectId,

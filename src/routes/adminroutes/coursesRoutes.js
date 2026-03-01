@@ -6,6 +6,7 @@ import {
   addCourseDetails,
   updateCurriculum,
   updateCourseDetails,
+
 } from "../../controllers/admincontrollers/coursesControllers.js";
 
 const router = Router();

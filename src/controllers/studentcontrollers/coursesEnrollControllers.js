@@ -5,6 +5,8 @@ import Payment from '../../models/payments.js';
 import Enrollment from '../../models/Enrollment.js';
 import User from '../../models/user.js';
 import mongoose from 'mongoose';
+import LiveClass from '../../models/LiveClass.js';
+
 
 
 
@@ -13,7 +15,7 @@ export const enrollInCourses = async ({ paymentId, userId, courseId, session }) 
   try {
     // Use findOneAndUpdate with upsert to atomically handle enrollment
     const result = await Enrollment.findOneAndUpdate(
-      { 
+      {
         user: userId,
         "enrolledCourses.course": { $ne: courseId } // Only if not already enrolled
       },
@@ -28,22 +30,22 @@ export const enrollInCourses = async ({ paymentId, userId, courseId, session }) 
           }
         }
       },
-      { 
+      {
         session,
         new: true,
         upsert: true, // Create if doesn't exist
-        setDefaultsOnInsert: true 
+        setDefaultsOnInsert: true
       }
     );
 
     // If the course was already enrolled, handle accordingly
     if (!result) {
       // This means the user was found but already enrolled in the course
-      const existingEnrollment = await Enrollment.findOne({ 
+      const existingEnrollment = await Enrollment.findOne({
         user: userId,
-        "enrolledCourses.course": courseId 
+        "enrolledCourses.course": courseId
       }).session(session);
-      
+
       if (existingEnrollment) {
         return existingEnrollment; // Already enrolled, return existing
       }
@@ -60,108 +62,159 @@ export const enrollInCourses = async ({ paymentId, userId, courseId, session }) 
     throw error;
   }
 };
-// Get enrollments by specific user ID with detailed population
-export const getStudentEnrollmentsById = async (req, res) => {
-  const { id } = req.params;
-  console.log(id);
-  
+
+// Get  only one enrollment by specific course ID with detailed population
+export const getStudentEnrollmentByCourseId = async (req, res) => {
+  const { courseId } = req.params;
+  const userId = req.user.id;
+
   try {
-    const enrollment = await Enrollment.findOne({ user: id })
+    // 1️⃣ Find enrollment document
+    const enrollment = await Enrollment.findOne({
+      user: userId,
+      "enrolledCourses.course": courseId,
+    })
       .populate({
-        path: 'enrolledCourses.course',
-        select: 'name description price duration instructor category thumbnail', // Add more course fields as needed
-        model: Course
+        path: "enrolledCourses.course",
+        select: "-__v",
+        populate: {
+          path: "details",
+          select: "-__v",
+        },
       })
       .populate({
-        path: 'enrolledCourses.batch',
-        select: 'batchName startDate endDate timing days capacity currentStrength', // Add more batch fields as needed
-        model: Batch
+        path: "enrolledCourses.batch",
+        select: "_id batchName startDate endDate status",
       })
       .populate({
-        path: 'enrolledCourses.paymentId',
-        select: 'orderId paymentId amountINRupees currency status createdAt', // Add more payment fields as needed
-        model: Payment
-      });
+        path: "enrolledCourses.paymentId",
+        select:
+          "status appUsed paymentMode paymentId amountInRupees createdAt",
+      })
+      .lean()
 
     if (!enrollment) {
       return res.status(404).json({
         success: false,
-        error: 'No enrollments found for this user'
+        message: "Course enrollment not found",
       });
     }
 
-    res.status(200).json({
+    // 2️⃣ Extract only the requested enrolled course
+    const enrolledCourse = enrollment.enrolledCourses.find(
+      (ec) => ec.course && ec.course._id.toString() === courseId
+    );
+
+    if (!enrolledCourse) {
+      return res.status(404).json({
+        success: false,
+        message: "Course not enrolled",
+      });
+    }
+
+    // 3️⃣ Get live classes only if batch exists
+    let liveClasses = [];
+
+    if (enrolledCourse.batch) {
+      liveClasses = await LiveClass.find({
+        course: courseId,
+        batch: enrolledCourse.batch._id,
+      }).select("title startTime zoomJoinUrl status")
+        .sort({ startTime: 1 })
+        .lean();
+    }
+
+    // 4️⃣ Return structured response
+    return res.status(200).json({
       success: true,
-     enrollment
+      data: {
+        courseId: enrolledCourse.course._id,
+        course: enrolledCourse.course,
+        batch: enrolledCourse.batch || null,
+        payment: enrolledCourse.paymentId || null,
+       
+        completed: enrolledCourse.completed,
+        enrolledAt: enrolledCourse.enrolledAt,
+        liveClasses,
+      },
     });
-  } catch (err) {
-    console.error('Error fetching enrollments:', err);
-    res.status(500).json({
+  } catch (error) {
+    console.error("Error fetching enrollment:", error);
+    return res.status(500).json({
       success: false,
-      error: 'Failed to fetch enrollments'
+      message: "Server error",
     });
   }
 };
+
 export const getStudentEnrolledCourses = async (req, res) => {
   try {
-    const { id} = req.params;
-    
-    // Validate userId
-    if (!id) {
-      return res.status(400).json({
-        success: false,
-        message: "User ID is required"
+    const userId = req.user.id;
+    const { type } = req.query;
+    // type = "ids" | "summary"
+
+    // 1️⃣ If only IDs requested
+    if (type === "ids") {
+      const enrollment = await Enrollment.findOne(
+        { user: userId },
+        { "enrolledCourses.course": 1, _id: 0 } // projection only
+      );
+
+      const courseIds =
+        enrollment?.enrolledCourses.map(item => item.course) || [];
+
+      return res.status(200).json({
+        success: true,
+        data: courseIds
       });
     }
 
-    // Check if user exists
-    const userExists = await User.findById(id);
-    if (!userExists) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
-      });
-    }
-
-    // Find enrollment and populate course details
-    const enrollment = await Enrollment.findOne({ user: id })
+    // 2️⃣ Default → summary (light populate only course basic info)
+    const enrollment = await Enrollment.findOne({ user: userId })
+      .select("enrolledCourses")
       .populate({
-        path: 'enrolledCourses.course',
-        select: 'name description price duration instructor category thumbnail',
-        model: Course
+        path: "enrolledCourses.course",
+        select: "name duration category thumbnail shortdescription"
       })
-     console.log(enrollment)
+      .populate({
+        path: "enrolledCourses.batch",
+        select: "name"
+      })
+      .lean();
 
-    // If no enrollment found
     if (!enrollment) {
       return res.status(200).json({
-        
-        message: "No enrolled courses found for this user"
+        success: true,
+        data: []
       });
     }
 
-    // Format the response data
-    const enrolledCourses = enrollment.enrolledCourses.map(item => ({
-      course: item.course,
+    const summary = enrollment.enrolledCourses.map(item => ({
+      _id: item.course._id,
+      courseName: item.course?.name,
+      shortDescription: item.course?.shortdescription,
+      thumbnail: item.course?.thumbnail,
+      duration: item.course?.duration,
+      category: item.course?.category,
+
+      batchName: item.batch?.name || null,
+
       enrolledAt: item.enrolledAt,
-      progress: item.progress || 0,
-      completed: item.completed || false,
-      lastAccessed: item.lastAccessed
+      completed: item.completed,
     }));
+
 
     return res.status(200).json({
       success: true,
-      message: "Enrolled courses retrieved successfully",
-      data: enrolledCourses,
-      totalCourses: enrolledCourses.length
+      data: summary,
+      totalCourses: summary.length
     });
 
   } catch (error) {
-    console.error("Error fetching enrolled courses:", error);
+    console.error("Error fetching enrollments:", error);
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
-      error: error.message
+      message: "Server error"
     });
   }
 };
