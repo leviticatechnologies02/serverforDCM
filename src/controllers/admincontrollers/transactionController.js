@@ -1,8 +1,6 @@
 // controllers/adminControllers/transactionController.js
 import Payment from '../../models/payments.js';
 import ExcelJS from "exceljs";
-
-
 import InternshipPayment from '../../models/InternshipPayment.js';
 
 export const getAllTransactions = async (req, res) => {
@@ -84,6 +82,95 @@ export const getAllTransactions = async (req, res) => {
 };
 
 
+
+
+
+export const getAllInternshipPayments = async (req, res) => {
+  try {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const search = req.query.search || "";
+    const status = req.query.status;
+
+    const query = {
+      $or: [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { rollNumber: { $regex: search, $options: "i" } },
+        { domain: { $regex: search, $options: "i" } },
+      ],
+    };
+
+    if (status) {
+      query.status = status;
+    }
+
+    const [payments, total] = await Promise.all([
+      InternshipPayment.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+
+      InternshipPayment.countDocuments(query),
+    ]);
+
+    // Format response for frontend table
+    const formattedPayments = payments.map((p) => {
+      const paymentEntity = p.meta?.payload?.payment?.entity || {};
+
+      return {
+        _id: p._id,
+
+        orderId: p.razorpayOrderId,
+        paymentId: p.razorpayPaymentId,
+
+        name: p.name,
+        email: p.email,
+        rollNumber: p.rollNumber,
+
+        title: p.domain,
+        type: "Internship",
+
+        amount: p.amount,
+        status: p.status,
+
+        paymentMode: p.paymentMode || "unknown",
+        appUsed: p.appUsed || "-",
+
+        // useful meta info
+        bank: paymentEntity.bank || null,
+        vpa: paymentEntity.vpa || null,
+        wallet: paymentEntity.wallet || null,
+
+        createdAt: p.createdAt,
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      data: formattedPayments,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+
+  } catch (error) {
+    console.error("Get internship payments error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch internship payments",
+    });
+  }
+};
+
+
 export const getTransactionStats = async (req, res) => {
   try {
     const totalTransactions = await Payment.countDocuments();
@@ -111,59 +198,6 @@ export const getTransactionStats = async (req, res) => {
     res.status(500).json({ success: false, error: 'Failed to fetch transaction stats' });
   }
 }
-
-
-export const getAllInternshipPayments = async (req, res) => {
-  try {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-
-    const search = req.query.search || "";
-    const status = req.query.status;
-
-    const query = {
-      $or: [
-        { name: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } },
-        { rollNumber: { $regex: search, $options: "i" } },
-        { domain: { $regex: search, $options: "i" } }
-      ],
-    };
-
-    if (status) {
-      query.status = status;
-    }
-
-    const [payments, total] = await Promise.all([
-      InternshipPayment.find(query)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-
-      InternshipPayment.countDocuments(query),
-    ]);
-
-    res.status(200).json({
-      success: true,
-      data: payments,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    });
-  } catch (error) {
-    console.error("Get payments error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch internship payments",
-    });
-  }
-};
-
 export const getCombinedPaymentStats = async (req, res) => {
   try {
     const [courseRevenue, internshipRevenue] = await Promise.all([
@@ -198,66 +232,100 @@ export const getCombinedPaymentStats = async (req, res) => {
 };
 
 
-
-
-export const downloadInternshipPaymentsExcel = async (req, res) => {
+export const downloadPaymentsExcel = async (req, res) => {
   try {
-    const search = req.query.search || "";
-    const status = req.query.status;
+    const [coursePayments, internshipPayments] = await Promise.all([
+      Payment.find()
+        .populate("courseIds", "name")
+        .populate("userId", "name email")
+        .lean(),
 
-    const query = {
-      $or: [
-        { name: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } },
-        { rollNumber: { $regex: search, $options: "i" } },
-        { domain: { $regex: search, $options: "i" } },
-      ],
-    };
+      InternshipPayment.find().lean(),
+    ]);
 
-    if (status) {
-      query.status = status;
-    }
-
-    const payments = await InternshipPayment.find(query)
-      .sort({ createdAt: -1 })
-      .lean();
-
-    // Create Workbook
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Internship Payments");
 
-    // Define Columns
-    worksheet.columns = [
-      { header: "Name", key: "name", width: 20 },
+    // =========================
+    // Sheet 1: Course Payments
+    // =========================
+    const courseSheet = workbook.addWorksheet("Course Payments");
+
+    courseSheet.columns = [
+      { header: "Order ID", key: "orderId", width: 22 },
+      { header: "Payment ID", key: "paymentId", width: 22 },
+      { header: "User", key: "name", width: 20 },
       { header: "Email", key: "email", width: 30 },
-      { header: "Roll Number", key: "rollNumber", width: 15 },
-      { header: "Domain", key: "domain", width: 20 },
-      { header: "Amount", key: "amount", width: 15 },
-      { header: "Payment ID", key: "paymentId", width: 25 },
-      { header: "Status", key: "status", width: 15 },
-      { header: "Date", key: "createdAt", width: 20 },
+      { header: "Course", key: "course", width: 25 },
+      { header: "Mode", key: "paymentMode", width: 12 },
+      { header: "App Used", key: "appUsed", width: 14 },
+      { header: "Amount", key: "amount", width: 12 },
+      { header: "Status", key: "status", width: 12 },
+      { header: "Date", key: "date", width: 22 },
     ];
 
-    // Style Header
-    worksheet.getRow(1).font = { bold: true };
+    coursePayments.forEach((p) => {
+      const user = p.userId || {};
 
-    // Add Rows
-    payments.forEach((payment) => {
-      worksheet.addRow({
-        name: payment.name,
-        email: payment.email,
-        rollNumber: payment.rollNumber,
-        domain: payment.domain,
-        amount: payment.amount,
-        paymentId: payment.paymentId,
-        status: payment.status,
-        createdAt: payment.createdAt
-          ? new Date(payment.createdAt).toLocaleString()
-          : "",
+      const courses = Array.isArray(p.courseIds)
+        ? p.courseIds.map((c) => c.name).join(", ")
+        : "";
+
+      courseSheet.addRow({
+        orderId: p.orderId,
+        paymentId: p.paymentId,
+        name: user.name,
+        email: user.email,
+        course: courses,
+        paymentMode: p.paymentMode,
+        appUsed: p.appUsed,
+        amount: p.amountInRupees,
+        status: p.status,
+        date: new Date(p.createdAt).toLocaleString("en-IN", {
+          timeZone: "Asia/Kolkata",
+        }),
       });
     });
 
-    // Set Response Headers
+    // =========================
+    // Sheet 2: Internship Payments
+    // =========================
+    const internshipSheet = workbook.addWorksheet("Internship Payments");
+
+    internshipSheet.columns = [
+      { header: "Order ID", key: "orderId", width: 22 },
+      { header: "Payment ID", key: "paymentId", width: 22 },
+      { header: "Name", key: "name", width: 20 },
+      { header: "Email", key: "email", width: 28 },
+      { header: "Domain", key: "domain", width: 20 },
+      { header: "Program", key: "program", width: 15 },
+      { header: "Mode", key: "paymentMode", width: 12 },
+      { header: "App Used", key: "appUsed", width: 14 },
+      { header: "Amount", key: "amount", width: 12 },
+      { header: "Status", key: "status", width: 12 },
+      { header: "Date", key: "date", width: 22 },
+    ];
+
+    internshipPayments.forEach((p) => {
+      internshipSheet.addRow({
+        orderId: p.razorpayOrderId,
+        paymentId: p.razorpayPaymentId,
+        name: p.name,
+        email: p.email,
+        domain: p.domain,
+        program: p.program,
+        paymentMode: p.paymentMode,
+        appUsed: p.appUsed,
+        amount: p.amount,
+        status: p.status,
+        date: new Date(p.createdAt).toLocaleString("en-IN", {
+          timeZone: "Asia/Kolkata",
+        }),
+      });
+    });
+
+    // =========================
+    // Send File
+    // =========================
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -265,18 +333,19 @@ export const downloadInternshipPaymentsExcel = async (req, res) => {
 
     res.setHeader(
       "Content-Disposition",
-      "attachment; filename=internship-payments.xlsx"
+      "attachment; filename=all_payments.xlsx"
     );
 
-    // Send File
     await workbook.xlsx.write(res);
+
     res.end();
 
   } catch (error) {
-    console.error("Download Excel error:", error);
+    console.error("Excel export error:", error);
+
     res.status(500).json({
       success: false,
-      message: "Failed to download internship payments",
+      message: "Failed to download payments",
     });
   }
 };

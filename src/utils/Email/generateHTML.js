@@ -399,3 +399,69 @@ export const getVerificationEmailHTMLOTP = (name, otp, email) => {
     </div>
   `;
 };
+
+export const getLiveClassScheduledEmailHTML = (
+  name,
+  title,
+  startTime,
+  duration,
+  joinUrl,
+  email
+) => {
+  return `
+    <div style="font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; padding: 0; margin: 0;">
+      
+      <!-- Header -->
+      <div style="background-color: #1e293b; padding: 20px; text-align: center;">
+        <img src="https://api.designcareermetrics.com/img/dcmlogotransperent.png" alt="Design Career Metric" style="height: 40px;" />
+        <h1 style="color: #ffffff; font-size: 20px; margin-top: 10px;">Design Career Metric</h1>
+      </div>
+
+      <!-- Body -->
+      <div style="padding: 40px; max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px;">
+        <h2 style="color: #222;">Hi ${name},</h2>
+
+        <p style="color: #555; font-size: 16px;">
+          A new <strong>Live Class</strong> has been scheduled for your course.
+        </p>
+
+        <div style="margin: 25px 0; padding: 20px; border: 1px solid #e5e7eb; border-radius: 6px; background-color: #f9fafb;">
+          
+          <p style="margin: 8px 0; font-size: 15px; color: #333;">
+            <strong>Class Title:</strong> ${title}
+          </p>
+
+          <p style="margin: 8px 0; font-size: 15px; color: #333;">
+            <strong>Start Time:</strong> ${startTime}
+          </p>
+
+          <p style="margin: 8px 0; font-size: 15px; color: #333;">
+            <strong>Duration:</strong> ${duration} minutes
+          </p>
+
+        </div>
+
+        <!-- Join Button -->
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${joinUrl}" 
+             style="background-color: #2563eb; color: #fff; padding: 14px 28px; border-radius: 6px; text-decoration: none; font-weight: 600;">
+            Join Live Class
+          </a>
+        </div>
+
+        <p style="font-size: 13px; color: #888;">
+          Please join the session on time to get the most out of the class.<br/>
+          This email was sent to <strong>${email}</strong>
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <div style="background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #666;">
+        &copy; ${new Date().getFullYear()} Design Career Metric. All rights reserved.<br/>
+        <a href="https://designcareermetrics.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
+        <a href="https://designcareermetrics.com/contact-us" style="color: #2563eb; text-decoration: none;">Contact Us</a>
+      </div>
+
+    </div>
+  `;
+};

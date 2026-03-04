@@ -149,155 +149,196 @@ export const createOrder = async (req, res) => {
 // Verify Payment
 
 
-
-// In your verifyPayment function, after successful payment:
 export const verifyPayment = async (req, res) => {
-    console.log("Received verification request:", req.body);
-    try {
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, formData } = req.body;
+  console.log("Received verification request:", req.body);
 
-        // Find payment record
-        const paymentRecord = await InternshipPayment.findOne({ razorpayOrderId: razorpay_order_id });
-        if (!paymentRecord) {
-            return res.status(404).json({
-                success: false,
-                message: 'Payment record not found'
-            });
-        }
+  try {
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature
+    } = req.body;
 
-        // Verify signature
-        const body = razorpay_order_id + "|" + razorpay_payment_id;
-        const expectedSignature = crypto
-            .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-            .update(body.toString())
-            .digest('hex');
+    const paymentRecord = await InternshipPayment.findOne({
+      razorpayOrderId: razorpay_order_id,
+    });
 
-        const isAuthentic = expectedSignature === razorpay_signature;
-
-        if (isAuthentic) {
-            // Update payment status
-            paymentRecord.razorpayPaymentId = razorpay_payment_id;
-            paymentRecord.razorpaySignature = razorpay_signature;
-            paymentRecord.status = 'paid';
-            await paymentRecord.save();
-
-            console.log('Payment verified successfully:', razorpay_payment_id);
-
-            // Send confirmation email
-            try {
-                const programDetails = {
-                    domain: paymentRecord.domain,
-                    program: paymentRecord.program,
-                    duration: paymentRecord.program === '5' ? '5 Days' : '15 Days',
-                    amount: paymentRecord.amount
-                };
-
-                const paymentDetails = {
-                    paymentId: razorpay_payment_id,
-                    orderId: razorpay_order_id,
-                    date: new Date().toLocaleDateString('en-IN', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    })
-                };
-
-                const emailHTML = getInternshipPaymentSuccessEmailHTML(
-                    paymentRecord.name,
-                    paymentRecord.email,
-                    programDetails,
-                    paymentDetails
-                );
-
-
-                await sendEmail({
-                    to: paymentRecord.email,
-                    subject: `🎉 Payment Successful - ${getProgramDisplayName(paymentRecord.program)} Internship`,
-                    html: emailHTML
-                });
-
-                console.log('Confirmation email sent to:', paymentRecord.email);
-            } catch (emailError) {
-                console.error('Failed to send confirmation email:', emailError);
-                // Don't fail the payment if email fails
-            }
-
-            res.json({
-                success: true,
-                message: 'Payment verified successfully!',
-                paymentId: razorpay_payment_id,
-                student: {
-                    name: paymentRecord.name,
-                    email: paymentRecord.email,
-                    rollNumber: paymentRecord.rollNumber,
-                    program: paymentRecord.program,
-                    amount: paymentRecord.amount
-                },
-                receipt: paymentRecord.receipt
-            });
-        } else {
-            paymentRecord.status = 'failed';
-            await paymentRecord.save();
-
-            console.log('Payment verification failed - invalid signature');
-
-            res.status(400).json({
-                success: false,
-                message: 'Payment verification failed - Invalid signature'
-            });
-        }
-    } catch (error) {
-        console.error('Error verifying payment:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error verifying payment',
-            error: error.message
-        });
+    if (!paymentRecord) {
+      return res.status(404).json({
+        success: false,
+        message: "Payment record not found",
+      });
     }
-};
 
-// Webhook handler
+    const body = `${razorpay_order_id}|${razorpay_payment_id}`;
+
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(body)
+      .digest("hex");
+
+    const isAuthentic = expectedSignature === razorpay_signature;
+
+    if (!isAuthentic) {
+      paymentRecord.status = "failed";
+      await paymentRecord.save();
+
+      return res.status(400).json({
+        success: false,
+        message: "Invalid signature",
+      });
+    }
+
+    // Update payment
+    paymentRecord.razorpayPaymentId = razorpay_payment_id;
+    paymentRecord.razorpaySignature = razorpay_signature;
+    paymentRecord.status = "paid";
+
+    await paymentRecord.save();
+
+    console.log("Payment verified successfully:", razorpay_payment_id);
+
+    // ================= Send Email =================
+
+    try {
+      const programDetails = {
+        domain: paymentRecord.domain,
+        program: paymentRecord.program,
+        duration:
+          paymentRecord.program === "5" ? "5 Days" : "15 Days",
+        amount: paymentRecord.amount,
+      };
+
+      const paymentDetails = {
+        paymentId: razorpay_payment_id,
+        orderId: razorpay_order_id,
+        date: new Date().toLocaleDateString("en-IN", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }),
+      };
+
+      const emailHTML = getInternshipPaymentSuccessEmailHTML(
+        paymentRecord.name,
+        paymentRecord.email,
+        programDetails,
+        paymentDetails
+      );
+
+      await sendEmail({
+        to: paymentRecord.email,
+        subject: `🎉 Payment Successful - ${getProgramDisplayName(
+          paymentRecord.program
+        )} Internship`,
+        html: emailHTML,
+      });
+
+      console.log("Confirmation email sent to:", paymentRecord.email);
+    } catch (emailError) {
+      console.error("Email sending failed:", emailError);
+    }
+
+    res.json({
+      success: true,
+      message: "Payment verified successfully!",
+      paymentId: razorpay_payment_id,
+      student: {
+        name: paymentRecord.name,
+        email: paymentRecord.email,
+        rollNumber: paymentRecord.rollNumber,
+        program: paymentRecord.program,
+        amount: paymentRecord.amount,
+      },
+      receipt: paymentRecord.receipt,
+    });
+  } catch (error) {
+    console.error("Error verifying payment:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Error verifying payment",
+    });
+  }
+};
 export const handleWebhook = async (req, res) => {
-    try {
-        const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
-        const signature = req.headers['x-razorpay-signature'];
+  try {
+    const signature = req.headers["x-razorpay-signature"];
+    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
 
-        // Verify webhook signature
-        const shasum = crypto.createHmac('sha256', secret);
-        shasum.update(JSON.stringify(req.body));
-        const digest = shasum.digest('hex');
+    const expected = crypto
+      .createHmac("sha256", secret)
+      .update(JSON.stringify(req.body))
+      .digest("hex");
 
-        if (digest === signature) {
-            const event = req.body.event;
-            const payload = req.body.payload;
-
-            if (event === 'payment.captured') {
-                const paymentData = payload.payment.entity;
-
-                // Update payment status in database
-                await InternshipPayment.findOneAndUpdate(
-                    { razorpayOrderId: paymentData.order_id },
-                    {
-                        razorpayPaymentId: paymentData.id,
-                        status: 'paid'
-                    }
-                );
-
-                console.log(`Payment captured for order: ${paymentData.order_id}`);
-            }
-
-            res.json({ status: 'ok' });
-        } else {
-            console.error('Webhook signature verification failed');
-            res.status(400).json({ status: 'error', message: 'Invalid signature' });
-        }
-    } catch (error) {
-        console.error('Webhook error:', error);
-        res.status(500).json({ status: 'error', message: 'Webhook processing failed' });
+    if (expected !== signature) {
+      console.error("Invalid webhook signature");
+      return res.status(400).json({ error: "Invalid signature" });
     }
-};
 
+    const event = req.body.event;
+    const entity = req.body.payload.payment?.entity;
+
+    if (!entity) {
+      return res.json({ status: "ignored" });
+    }
+
+    if (event === "payment.captured" || event === "order.paid") {
+      const orderId = entity.order_id;
+      const paymentId = entity.id;
+
+      const method = entity.method || "unknown";
+      const vpa = entity.vpa || null;
+      const wallet = entity.wallet || null;
+      const card = entity.card || null;
+
+      let appUsed = null;
+
+      if (method === "upi" && vpa) {
+        const suffix = vpa.split("@")[1];
+        appUsed = suffix?.toLowerCase();
+      } else if (method === "wallet" && wallet) {
+        appUsed = wallet.toLowerCase();
+      } else if (method === "card" && card?.network) {
+        appUsed = card.network.toLowerCase();
+      }
+
+      await InternshipPayment.findOneAndUpdate(
+        { razorpayOrderId: orderId },
+        {
+          razorpayPaymentId: paymentId,
+          status: "paid",
+          paymentMode: method,
+          appUsed,
+          meta: req.body
+        }
+      );
+
+      console.log(`Webhook processed for ${paymentId}`);
+    }
+
+    if (event === "payment.failed") {
+      const orderId = entity.order_id;
+
+      await InternshipPayment.findOneAndUpdate(
+        { razorpayOrderId: orderId },
+        {
+          status: "failed",
+          meta: req.body
+        }
+      );
+
+      console.log(`Payment failed for ${orderId}`);
+    }
+
+    res.json({ received: true });
+
+  } catch (error) {
+    console.error("Webhook error:", error);
+    res.status(500).json({ error: "Webhook processing failed" });
+  }
+};
 // Get payment by ID
 export const getPayment = async (req, res) => {
     try {

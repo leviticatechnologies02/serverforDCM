@@ -7,51 +7,109 @@ import {
   updateMeeting,
   deleteMeeting,
   endMeeting,
-  
+
   updateMeetingSettings,
   batchDeleteMeetings
 } from '../../service/zoomService.js';
 import { io } from '../../socket.js';
 import { asyncHandler } from '../../middlewares/asyncHandler.js';
+import mongoose from "mongoose";
+import Enrollment from '../../models/Enrollment.js';
+import { sendEmail } from '../../utils/Email/sendEmail.js';
+import { getLiveClassScheduledEmailHTML } from '../../utils/Email/generateHTML.js';
 
 export const createLiveClass = asyncHandler(async (req, res) => {
-  const { title, startTime, duration, courseId, batchId, hostEmail, recurrence, endDate } = req.body;
+  const session = await mongoose.startSession();
 
+  try {
+    session.startTransaction();
 
-  console.log(req.body, "creating mett")
-  // Create Zoom meeting
-  const startTimeUTC = new Date(startTime).toISOString();
+    const { title, startTime, duration, courseId, batchId, hostEmail, recurrence, endDate } = req.body;
 
-  const meeting = await createMeeting({
-    topic: title,
-    start_time: startTimeUTC, // ensure ISO 8601 string, e.g., "2025-09-11T10:30:00"
-    duration,
-    hostEmail,
-    recurrence,
-    endDate
-  });
-  console.log(meeting, "iam meeting")
-  const { data } = meeting
-  // Persist
-  const liveClass = await LiveClass.create({
-    title,
-    course: courseId,
-    batch: batchId,
-    startTime,
-    duration,
-    zoomMeetingId: String(data.id),
-    zoomJoinUrl: data.join_url,
-    zoomStartUrl: data.start_url,
-    hostEmail: hostEmail
-  });
+    const startTimeUTC = new Date(startTime).toISOString();
 
-  // Notify room
-  io.to(`batch_${batchId}`).emit('newLiveClass', {
-    message: 'New live class scheduled',
-    liveClass
-  });
+    /* ===== CREATE ZOOM MEETING ===== */
 
-  res.status(201).json({ message: 'Live class created successfully', liveClass });
+    const meeting = await createMeeting({
+      topic: title,
+      start_time: startTimeUTC,
+      duration,
+      hostEmail,
+      recurrence,
+      endDate
+    });
+
+    const { data } = meeting;
+
+    /* ===== SAVE LIVE CLASS ===== */
+
+    const liveClass = await LiveClass.create(
+      [
+        {
+          title,
+          course: courseId,
+          batch: batchId,
+          startTime,
+          duration,
+          zoomMeetingId: String(data.id),
+          zoomJoinUrl: data.join_url,
+          zoomStartUrl: data.start_url,
+          hostEmail
+        }
+      ],
+      { session }
+    );
+
+    /* ===== FIND ENROLLED USERS ===== */
+
+    const enrollments = await Enrollment.find({
+      enrolledCourses: { $elemMatch: { batch: batchId } }
+    })
+      .populate("user", "name email")
+      .session(session);
+
+    /* ===== SEND EMAILS (PARALLEL) ===== */
+
+    await Promise.all(
+      enrollments.map((u) =>
+        sendEmail({
+          to: u.user.email,
+          subject: "New Live Class Scheduled",
+          html: getLiveClassScheduledEmailHTML(
+            u.user.name,
+            title,
+            startTime,
+            duration,
+            data.join_url,
+            u.user.email
+          )
+        })
+      )
+    );
+    /* ===== COMMIT TRANSACTION ===== */
+
+    await session.commitTransaction();
+    session.endSession();
+
+    /* ===== SOCKET EVENT ===== */
+
+    io.to(`batch_${batchId}`).emit("newLiveClass", {
+      message: "New live class scheduled",
+      liveClass: liveClass[0]
+    });
+
+    res.status(201).json({
+      message: "Live class created successfully",
+      liveClass: liveClass[0]
+    });
+
+  } catch (error) {
+
+    await session.abortTransaction();
+    session.endSession();
+
+    throw error;
+  }
 });
 
 export const listLiveClasses = asyncHandler(async (req, res) => {

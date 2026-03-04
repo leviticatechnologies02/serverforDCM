@@ -15,11 +15,12 @@ import studentRouter from "./src/routes/studentroutes/studentRoutes.js";
 import adminRouter from "./src/routes/adminroutes/index.js";
 import sharedRouter from "./src/routes/sharedRoutes/index.js";
 import profileRoutes from "./src/routes/profileRoutes.js";
-import uploadRoutes from "./src/routes/uploadRoutes.js";
 import InternshipsRouter from "./src/routes/InternshipRoutes/InternshipPaymentRoutes.js";
 import { submitContactForm } from "./src/controllers/admincontrollers/contactUsMail.js";
 import { printRoutes } from "./printRoutes.js";
 import { connectCloudinary } from "./src/config/cloudinary.js";
+import { webhook } from "./src/controllers/paymentControllers/paymentController.js";
+import { handleWebhook } from "./src/controllers/InternshipControllers/InternshipPaymentControllers.js";
 
 // ================== CONFIG ==================
 dotenv.config();
@@ -32,9 +33,15 @@ app.set("trust proxy", 1);
 app.use(helmet());
 
 // RAZORPAY WEBHOOK 
-app.use(
+app.post(
   "/api/payments/webhook",
-  express.raw({ type: "application/json" })
+  express.raw({ type: "application/json" }),
+  webhook
+);
+app.post(
+  "/api/internship/webhook",
+  express.raw({ type: "application/json" }),
+  handleWebhook
 );
 
 // ================== MIDDLEWARE ==================
@@ -90,7 +97,7 @@ app.use("/student", studentRouter);
 app.use("/admin", adminRouter);
 app.use("/api", sharedRouter);
 app.use("/api", profileRoutes);
-app.use("/api", uploadRoutes);
+// app.use("/api", uploadRoutes);
 app.use("/internship", InternshipsRouter);
 
 // ================== HEALTH ==================

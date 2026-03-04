@@ -178,7 +178,7 @@ export const getStudentEnrolledCourses = async (req, res) => {
       })
       .populate({
         path: "enrolledCourses.batch",
-        select: "name"
+        select: "batchName"
       })
       .lean();
 
@@ -197,7 +197,7 @@ export const getStudentEnrolledCourses = async (req, res) => {
       duration: item.course?.duration,
       category: item.course?.category,
 
-      batchName: item.batch?.name || null,
+      batchName: item.batch?.batchName || null,
 
       enrolledAt: item.enrolledAt,
       completed: item.completed,
@@ -215,6 +215,63 @@ export const getStudentEnrolledCourses = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Server error"
+    });
+  }
+};
+
+
+export const getUserEnrollments = async (req, res) => {
+  try {
+    let userId;
+
+    // Role check
+    if (req.user.role === "admin" || req.user.role === "superadmin") {
+      userId = req.params.userId || req.user.id;
+    } else {
+      userId = req.user.id;
+    }
+
+    /* -------- Get user -------- */
+    const user = await User.findById(userId).select(
+      "name email role mobile profileImage emailVerified"
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    /* -------- Get enrollments -------- */
+    const enrollments = await Enrollment.findOne({ user: userId })
+      .populate({
+        path: "enrolledCourses.course",
+        select: "name thumbnail price category shortdescription duration",
+      })
+      .populate({
+        path: "enrolledCourses.batch",
+        select: "batchName startDate endDate status",
+      })
+      .populate({
+        path: "enrolledCourses.paymentId",
+        select: "amountInRupees status paymentMethod createdAt",
+      });
+
+    /* -------- Return even if empty -------- */
+    return res.status(200).json({
+      success: true,
+      data: {
+        user,
+        enrolledCourses: enrollments?.enrolledCourses || [],
+      },
+    });
+  } catch (error) {
+    console.error("Get enrollments error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
     });
   }
 };
