@@ -262,6 +262,7 @@ export const verifyPayment = async (req, res) => {
     });
   }
 };
+
 export const handleWebhook = async (req, res) => {
     console.log("internships webhoook hittdeok")
   try {
@@ -270,7 +271,7 @@ export const handleWebhook = async (req, res) => {
 
     const expected = crypto
       .createHmac("sha256", secret)
-      .update(JSON.stringify(req.body))
+      .update(req.body)
       .digest("hex");
 
     if (expected !== signature) {

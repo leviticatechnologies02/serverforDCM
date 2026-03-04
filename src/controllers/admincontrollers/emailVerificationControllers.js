@@ -146,6 +146,7 @@ export const sendVerificationEmailOTP = async (req, res) => {
 
 export const verifyEmailOTP = async (req, res) => {
   const { userId, otp } = req.body;
+  console.log(userId,otp)
 
   try {
     const isValid = await verifyOTP({
