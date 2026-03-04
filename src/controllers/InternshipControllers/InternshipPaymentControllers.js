@@ -263,6 +263,7 @@ export const verifyPayment = async (req, res) => {
   }
 };
 export const handleWebhook = async (req, res) => {
+    console.log("internships webhoook hittdeok")
   try {
     const signature = req.headers["x-razorpay-signature"];
     const secret = process.env.RAZORPAY_WEBHOOK_SECRET;

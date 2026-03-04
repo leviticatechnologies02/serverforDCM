@@ -109,7 +109,7 @@ export const verifyPayment = async (req, res) => {
           isEnrolled: true
         }
       },
-      { new: true ,session }
+      { new: true, session }
     );
     if (!payment) {
       await session.commitTransaction();
