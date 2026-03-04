@@ -31,6 +31,12 @@ app.set("trust proxy", 1);
 // Security headers
 app.use(helmet());
 
+// RAZORPAY WEBHOOK 
+app.use(
+  "/api/payments/webhook",
+  express.raw({ type: "application/json" })
+);
+
 // ================== MIDDLEWARE ==================
 
 app.use(express.json());
@@ -71,6 +77,7 @@ const authLimiter = rateLimit({
   max: 20,
   message: "Too many login attempts. Try again later.",
 });
+
 app.use("/auth", authLimiter);
 
 // ================== ROUTES ==================

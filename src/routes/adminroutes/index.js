@@ -12,6 +12,7 @@ import createUserRouter from "./createUserRoutes.js";
 import internshipsDomainRouter from "./internshipsRoutes.js";
 import studentReportsRouter from "./studentReportsRoutes.js";
 import downloadRouter from "../downloadRoute.js";
+import createAdminRouter from "./createAdminRoutes.js";
 
 const adminRouter = Router();
 
@@ -35,5 +36,6 @@ adminRouter.use('/download',downloadRouter)
 adminRouter.use("/student-reports", studentReportsRouter);
 adminRouter.use("/user", createUserRouter);
 adminRouter.use("/internshipsdomain", internshipsDomainRouter);
+adminRouter.use("/admins",  createAdminRouter);
 
 export default adminRouter;

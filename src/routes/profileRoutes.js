@@ -1,14 +1,39 @@
-// src/routes/profileRoutes.js
-import express from 'express';
-import verifyToken from '../middlewares/authMiddleware.js';  // same as enrollment
-import { getStudentProfile, getAdminProfile } from '../controllers/profileController.js';
+import express from "express";
+import verifyToken from "../middlewares/authMiddleware.js";
+import {
+    getProfile,
+    
+    deleteProfileImage,
+    updateProfileInfo,
+    updateProfileImage,
+} from "../controllers/profileController.js";
+import { upload } from "../middlewares/upload.js";
 
 const profileRouter = express.Router();
 
-// 👩‍🎓 Student profile (protected by token)
-profileRouter.get('/student/profile', verifyToken, getStudentProfile);
+// 🔐 Get Profile
+profileRouter.get("/profile", verifyToken, getProfile);
 
-// 👨‍💼 Admin profile (protected by token, you can also add verifyAdmin if needed)
-profileRouter.get('/admin/profile', verifyToken, getAdminProfile);
+// ✏️ Update Profile (with optional image)
+profileRouter.patch(
+    "/profile",
+    verifyToken,
+
+    updateProfileInfo
+);
+profileRouter.put(
+    "/profile/image",
+    verifyToken,
+    upload.single("profileImage"),
+    updateProfileImage
+);
+
+
+// 🗑 Delete profile image only
+profileRouter.delete(
+    "/profile/image",
+    verifyToken,
+    deleteProfileImage
+);
 
 export default profileRouter;

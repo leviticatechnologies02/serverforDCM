@@ -1,62 +1,39 @@
 import jwt from 'jsonwebtoken';
-import Admin from '../models/admin.js';
 import User from '../models/user.js'
 import { uploadToCloudinary } from '../utils/cloudinaryUtils.js';
-import mongoose from 'mongoose';
 
-// helpers function for finding user/admin
-const findAccountByEmail = async (email) => {
-  const normalizedEmail = email.trim().toLowerCase();
 
-  const user = await User.findOne({ email: normalizedEmail }).select("+password");
-  if (user) return { account: user, role: 'user' };
-
-  const admin = await Admin.findOne({ email: normalizedEmail }).select("+password");
-  if (admin) return { account: admin, role: 'admin' };
-
-  return { account: null, role: null };
-};
-
-const findAccountById = async (id) => {
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return { account: null, role: null };
-  }
-
-  const user = await User.findById(id);
-  if (user) return { account: user, role: 'user' };
-
-  const admin = await Admin.findById(id);
-  if (admin) return { account: admin, role: 'admin' };
-
-  return { account: null, role: null };
-};
 
 
 export const signup = async (req, res) => {
-  const { name, email, password, role = 'student', mobile } = req.body;
+  const { name, email, password, mobile } = req.body;
 
   try {
-    const { account, role: source } = await findAccountByEmail(email);
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
 
-    if (!account || !account.emailVerified) {
+
+    if (!user.emailVerified) {
       return res.status(403).json({ error: 'Email not verified or user not found' });
     }
 
-    if (account.password) {
+    if (user.password) {
       return res.status(409).json({ error: 'User already signed up' });
     }
 
     // Finalize account setup
-    account.name = name;
-    account.password = password; // Schema handles hashing
-    account.role = role;
-    account.mobile = mobile
+    user.name = name;
+    user.password = password; // Schema handles hashing
+    user.role = 'student';
+    user.mobile = mobile
 
     // Optional profile image upload
     if (req.file?.path) {
       try {
-        const result = await uploadToCloudinary(req.file.path, `${role}_profiles`);
-        account.profileImage = {
+        const result = await uploadToCloudinary(req.file.path, `${user.role}_profiles`);
+        user.profileImage = {
           url: result.secure_url,
           publicId: result.public_id,
         };
@@ -65,16 +42,16 @@ export const signup = async (req, res) => {
       }
     }
 
-    await account.save();
+    await user.save();
 
     res.status(201).json({
-      message: `${role} account created successfully`,
+      message: `${user.role} account created successfully`,
       user: {
-        id: account._id,
-        name: account.name,
-        email: account.email,
-        role: account.role,
-        profileImage: account.profileImage?.url || null,
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        profileImage: user.profileImage?.url || null,
       },
     });
   } catch (err) {
@@ -84,26 +61,27 @@ export const signup = async (req, res) => {
 };
 
 
-
-
-
 export const login = async (req, res) => {
   const ACCESS_SECRET = process.env.ACCESS_SECRET;
   const REFRESH_SECRET = process.env.REFRESH_SECRET;
   const { email, password } = req.body;
 
   try {
-    const { account, role } = await findAccountByEmail(email);
-    if (!account) return res.status(401).json({ error: 'Invalid credentials' });
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
-    const isValid = await account.comparePassword(password);
+    const isValid = await user.comparePassword(password);
     if (!isValid) return res.status(401).json({ error: 'Invalid credentials' });
 
+
+
+
     const payload = {
-      id: account._id.toString(),
-      email: account.email,
-      role: account.role,
-      name: account.name,
+      id: user._id.toString(),
+      email: user.email,
+      role: user.role,
+      name: user.name,
+      image: user.profileImage?.url || null,
     };
 
     const accessToken = jwt.sign(payload, ACCESS_SECRET, { expiresIn: '1h' });
@@ -154,6 +132,7 @@ export const verifyAuthToken = async (req, res) => {
   try {
     const decoded = jwt.verify(token, ACCESS_SECRET);
     const { exp, iat, ...sanitizedUser } = decoded;
+    
 
     res.status(200).json({ verified: true, user: sanitizedUser });
   } catch (err) {
@@ -165,8 +144,6 @@ export const refreshToken = async (req, res) => {
   const token = req.cookies.refresh_token || req.body.refresh_token;
   const REFRESH_SECRET = process.env.REFRESH_SECRET;
   const ACCESS_SECRET = process.env.ACCESS_SECRET;
-  console.log(req.cookies.refresh_token)
-  console.log(token, "imatoken in refresh")
 
   if (!token) {
     return res.status(401).json({ error: 'Missing refresh token' });
@@ -174,9 +151,9 @@ export const refreshToken = async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, REFRESH_SECRET);
-    console.log(decoded, "iam decoded")
-    const { account } = await findAccountById(decoded.id);
-    console.log(account, "iam account")
+
+    const account = await User.findById(decoded.id);
+
     if (!account) {
       return res.status(401).json({ error: 'Invalid refresh token' });
     }
@@ -188,15 +165,15 @@ export const refreshToken = async (req, res) => {
       name: account.name,
     };
 
-    const newAccessToken = jwt.sign(payload, ACCESS_SECRET, { expiresIn: '3h' });
+    const newAccessToken = jwt.sign(payload, ACCESS_SECRET, {
+      expiresIn: '3h',
+    });
 
     const isMobile = req.headers['user-agent']?.includes('Mobile');
 
     if (isMobile) {
-      // 📱 Mobile: send token in response
       return res.status(200).json({ accessToken: newAccessToken });
     } else {
-      // 🖥️ Web: set token in cookie
       res.cookie('auth_token', newAccessToken, {
         httpOnly: true,
         secure: true,
@@ -204,10 +181,14 @@ export const refreshToken = async (req, res) => {
         maxAge: 15 * 60 * 1000,
       });
 
-      return res.status(200).json({ message: 'Access token refreshed' });
+      return res.status(200).json({
+        message: 'Access token refreshed',
+      });
     }
   } catch (err) {
     console.error('❌ Refresh error:', err.message);
-    return res.status(401).json({ error: 'Invalid or expired refresh token' });
+    return res.status(401).json({
+      error: 'Invalid or expired refresh token',
+    });
   }
 };
