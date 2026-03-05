@@ -170,6 +170,47 @@ export const verifyPayment = async (req, res) => {
       });
     }
     if (paymentRecord.status === "paid") {
+
+
+      try {
+        const programDetails = {
+          domain: paymentRecord.domain,
+          program: paymentRecord.program === "5" ? "5 Days program" : "15 Days program",
+          duration:
+            paymentRecord.program === "5" ? "5 Days" : "15 Days",
+          amount: paymentRecord.amount,
+        };
+
+        const paymentDetails = {
+          paymentId: razorpay_payment_id,
+          orderId: razorpay_order_id,
+          date: new Date().toLocaleDateString("en-IN", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }),
+        };
+
+        const emailHTML = getInternshipPaymentSuccessEmailHTML(
+          paymentRecord.name,
+          paymentRecord.email,
+          programDetails,
+          paymentDetails
+        );
+
+        await sendEmail({
+          to: paymentRecord.email,
+          subject: `🎉 Payment Successful - ${getProgramDisplayName(
+            paymentRecord.program
+          )} days Internship`,
+          html: emailHTML,
+        });
+
+        console.log("Confirmation email sent to:", paymentRecord.email);
+      } catch (emailError) {
+        console.error("Email sending failed:", emailError);
+      }
       return res.json({
         success: true,
         message: "Payment already verified",
@@ -222,45 +263,6 @@ export const verifyPayment = async (req, res) => {
 
     // ================= Send Email =================
 
-    try {
-      const programDetails = {
-        domain: paymentRecord.domain,
-        program: paymentRecord.program === "5" ? "5 Days program" : "15 Days program",
-        duration:
-          paymentRecord.program === "5" ? "5 Days" : "15 Days",
-        amount: paymentRecord.amount,
-      };
-
-      const paymentDetails = {
-        paymentId: razorpay_payment_id,
-        orderId: razorpay_order_id,
-        date: new Date().toLocaleDateString("en-IN", {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        }),
-      };
-
-      const emailHTML = getInternshipPaymentSuccessEmailHTML(
-        paymentRecord.name,
-        paymentRecord.email,
-        programDetails,
-        paymentDetails
-      );
-
-      await sendEmail({
-        to: paymentRecord.email,
-        subject: `🎉 Payment Successful - ${getProgramDisplayName(
-          paymentRecord.program
-        )} days Internship`,
-        html: emailHTML,
-      });
-
-      console.log("Confirmation email sent to:", paymentRecord.email);
-    } catch (emailError) {
-      console.error("Email sending failed:", emailError);
-    }
 
     res.json({
       success: true,
@@ -365,7 +367,7 @@ export const handleWebhook = async (req, res) => {
     if (event === "payment.captured" || event === "order.paid") {
 
       const updatedPayment = await InternshipPayment.findOneAndUpdate(
-        { razorpayOrderId: orderId, status: { $ne: "paid" } }, // idempotency protection
+        { razorpayOrderId: orderId, status: { $ne: "paid" } },
         {
           razorpayPaymentId: paymentId,
           status: "paid",
@@ -377,12 +379,54 @@ export const handleWebhook = async (req, res) => {
       );
 
       if (updatedPayment) {
-        console.log(
-          `✅ Payment updated: ${paymentId} | Method: ${method} | App: ${appUsed}`
-        );
-      } else {
-        console.log(`⚠️ Payment already processed or order not found: ${orderId}`);
+
+        console.log(`✅ Payment updated: ${paymentId}`);
+
+        // respond immediately
+        res.json({ received: true });
+
+        // send email AFTER response
+        try {
+
+          const programDetails = {
+            domain: updatedPayment.domain,
+            program: updatedPayment.program === "5"
+              ? "5 Days program"
+              : "15 Days program",
+            duration: updatedPayment.program === "5" ? "5 Days" : "15 Days",
+            amount: updatedPayment.amount
+          };
+
+          const paymentDetails = {
+            paymentId,
+            orderId,
+            date: new Date().toLocaleDateString("en-IN")
+          };
+
+          const emailHTML = getInternshipPaymentSuccessEmailHTML(
+            updatedPayment.name,
+            updatedPayment.email,
+            programDetails,
+            paymentDetails
+          );
+
+          await sendEmail({
+            to: updatedPayment.email,
+            subject: "Payment Successful 🎉",
+            html: emailHTML
+          });
+
+          console.log("Email sent");
+
+        } catch (err) {
+
+          console.error("Email failed but payment already saved", err);
+
+        }
+
       }
+
+      return;
     }
 
     if (event === "payment.failed") {
