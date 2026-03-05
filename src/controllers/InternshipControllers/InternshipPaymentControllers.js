@@ -169,6 +169,28 @@ export const verifyPayment = async (req, res) => {
         message: "Payment record not found",
       });
     }
+    if (paymentRecord.status === "paid") {
+      return res.json({
+        success: true,
+        message: "Payment already verified",
+        paymentId: paymentRecord.razorpayPaymentId,
+        student: {
+          name: paymentRecord.name,
+          email: paymentRecord.email,
+          rollNumber: paymentRecord.rollNumber,
+          program: paymentRecord.program,
+          amount: paymentRecord.amount,
+        },
+        receipt: paymentRecord.receipt,
+      });
+    }
+
+    if (paymentRecord.status !== "pending") {
+      return res.json({
+        success: true,
+        message: "Payment already processed",
+      });
+    }
 
     const body = `${razorpay_order_id}|${razorpay_payment_id}`;
 
