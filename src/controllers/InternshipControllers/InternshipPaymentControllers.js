@@ -203,7 +203,7 @@ export const verifyPayment = async (req, res) => {
     try {
       const programDetails = {
         domain: paymentRecord.domain,
-        program: paymentRecord.program,
+        program: paymentRecord.program === "5" ? "5 Days program" : "15 Days program",
         duration:
           paymentRecord.program === "5" ? "5 Days" : "15 Days",
         amount: paymentRecord.amount,
