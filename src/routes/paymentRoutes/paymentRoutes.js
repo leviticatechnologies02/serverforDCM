@@ -10,5 +10,5 @@ paymentRouter.get('/config', (req,res)=>{
 paymentRouter.post('/order', createOrder)
 paymentRouter.post('/verify', verifyPayment)
 paymentRouter.get('/my',getMyPayments)
-paymentRouter.post('/webhook', webhook)
+// paymentRouter.post('/webhook', webhook)
 export default paymentRouter

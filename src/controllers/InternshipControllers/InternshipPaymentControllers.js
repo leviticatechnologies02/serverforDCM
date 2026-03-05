@@ -9,141 +9,141 @@ import InternshipsDomain from '../../models/internshipsDomain.js';
 
 // Initialize Razorpay
 const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
 // Create Razorpay order
 export const createOrder = async (req, res) => {
 
-    try {
-        const { name, email, phone, department, semester, program, rollNumber, amount, collegeName, collegeCode, domain } = req.body;
-        console.log('Received request:', req.body);
+  try {
+    const { name, email, phone, department, semester, program, rollNumber, amount, collegeName, collegeCode, domain } = req.body;
+    console.log('Received request:', req.body);
 
-        // Validate required fields
-        if (!name || !email || !phone || !department || !semester || !rollNumber || !program || !amount || !collegeName || !collegeCode || !domain) {
-            return res.status(400).json({
-                success: false,
-                message: 'All fields are required'
-            });
-        }
-
-        // Check for existing payment
-        const existingPayment = await InternshipPayment.findOne({
-            email,
-            rollNumber,
-            program: program,
-            collegeName,
-            collegeCode,
-            status: { $nin: ['created', 'failed'] } // Only check non-failed payments
-        });
-
-        if (existingPayment) {
-            return res.status(409).json({
-                success: false,
-                message: 'Payment already exists for this program'
-            });
-        }
-
-        // Validate amount
-        if (amount <= 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Valid amount is required'
-            });
-        }
-
-        // Find domain
-        const selectedDomain = await InternshipsDomain.findById(domain);
-
-        if (!selectedDomain) {
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid domain selected'
-            });
-        }
-
-        // Find duration
-        const selectedDuration = selectedDomain.durations.find(
-            (d) => String(d.days) === String(program)
-        );
-
-        if (!selectedDuration) {
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid program selected'
-            });
-        }
-
-        const options = {
-            amount: selectedDuration.fee * 100,
-            currency: 'INR',
-            receipt: `receipt_${Date.now()}_${rollNumber}`,
-            notes: {
-                name,
-                email,
-                phone,
-                department,
-                semester,
-                rollNumber,
-                program: selectedDuration.days,
-                collegeName,
-                collegeCode,
-                domain: selectedDomain.name,
-                domainId: domain
-            }
-        };
-
-
-        // Create order in Razorpay
-        const order = await razorpay.orders.create(options);
-
-        // Save payment record in database - USE DIFFERENT VARIABLE NAME
-        const paymentRecord = new InternshipPayment({
-            name,
-            email,
-            phone,
-            department,
-            semester,
-            rollNumber,
-            amount: selectedDuration.fee,
-            program: selectedDuration.days,
-            collegeName,
-            collegeCode,
-            domain: selectedDomain.name,
-            domainId: selectedDomain._id,
-            razorpayOrderId: order.id,
-            receipt: options.receipt,
-            status: 'created'
-        });
-
-        await paymentRecord.save();
-        console.log('Payment record saved:', paymentRecord._id);
-
-        res.json({
-            success: true,
-            message: 'Order created successfully',
-            order: {
-                id: order.id,
-                amount: order.amount,
-                currency: order.currency,
-                receipt: order.receipt
-            },
-            key: process.env.RAZORPAY_KEY_ID,
-            student: {
-                name,
-                email,
-                rollNumber,
-            }
-        });
-    } catch (error) {
-        console.error('Error creating order:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error creating order',
-            error: error.message
-        });
+    // Validate required fields
+    if (!name || !email || !phone || !department || !semester || !rollNumber || !program || !amount || !collegeName || !collegeCode || !domain) {
+      return res.status(400).json({
+        success: false,
+        message: 'All fields are required'
+      });
     }
+
+    // Check for existing payment
+    const existingPayment = await InternshipPayment.findOne({
+      email,
+      rollNumber,
+      program: program,
+      collegeName,
+      collegeCode,
+      status: { $nin: ['created', 'failed'] } // Only check non-failed payments
+    });
+
+    if (existingPayment) {
+      return res.status(409).json({
+        success: false,
+        message: 'Payment already exists for this program'
+      });
+    }
+
+    // Validate amount
+    if (amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid amount is required'
+      });
+    }
+
+    // Find domain
+    const selectedDomain = await InternshipsDomain.findById(domain);
+
+    if (!selectedDomain) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid domain selected'
+      });
+    }
+
+    // Find duration
+    const selectedDuration = selectedDomain.durations.find(
+      (d) => String(d.days) === String(program)
+    );
+
+    if (!selectedDuration) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid program selected'
+      });
+    }
+
+    const options = {
+      amount: selectedDuration.fee * 100,
+      currency: 'INR',
+      receipt: `receipt_${Date.now()}_${rollNumber}`,
+      notes: {
+        name,
+        email,
+        phone,
+        department,
+        semester,
+        rollNumber,
+        program: selectedDuration.days,
+        collegeName,
+        collegeCode,
+        domain: selectedDomain.name,
+        domainId: domain
+      }
+    };
+
+
+    // Create order in Razorpay
+    const order = await razorpay.orders.create(options);
+
+    // Save payment record in database - USE DIFFERENT VARIABLE NAME
+    const paymentRecord = new InternshipPayment({
+      name,
+      email,
+      phone,
+      department,
+      semester,
+      rollNumber,
+      amount: selectedDuration.fee,
+      program: selectedDuration.days,
+      collegeName,
+      collegeCode,
+      domain: selectedDomain.name,
+      domainId: selectedDomain._id,
+      razorpayOrderId: order.id,
+      receipt: options.receipt,
+      status: 'created'
+    });
+
+    await paymentRecord.save();
+    console.log('Payment record saved:', paymentRecord._id);
+
+    res.json({
+      success: true,
+      message: 'Order created successfully',
+      order: {
+        id: order.id,
+        amount: order.amount,
+        currency: order.currency,
+        receipt: order.receipt
+      },
+      key: process.env.RAZORPAY_KEY_ID,
+      student: {
+        name,
+        email,
+        rollNumber,
+      }
+    });
+  } catch (error) {
+    console.error('Error creating order:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error creating order',
+      error: error.message
+    });
+  }
 };
 
 // Verify Payment
@@ -263,106 +263,151 @@ export const verifyPayment = async (req, res) => {
   }
 };
 
+
 export const handleWebhook = async (req, res) => {
-    console.log("internships webhoook hittdeok")
+  console.log("Webhook received");
+
   try {
     const signature = req.headers["x-razorpay-signature"];
     const secret = process.env.RAZORPAY_INTERNSHIP_WEBHOOK_SECRET;
 
-    const expected = crypto
+    const expectedSignature = crypto
       .createHmac("sha256", secret)
       .update(req.body)
       .digest("hex");
 
-    if (expected !== signature) {
+    if (signature !== expectedSignature) {
       console.error("Invalid webhook signature");
-      return res.status(400).json({ error: "Invalid signature" });
+      return res.status(400).send("Invalid signature");
     }
 
-    const event = req.body.event;
-    const entity = req.body.payload.payment?.entity;
+    const payload = JSON.parse(req.body);
+
+    const event = payload.event;
+    const entity = payload?.payload?.payment?.entity;
 
     if (!entity) {
-      return res.json({ status: "ignored" });
+      console.log("No payment entity. Event:", event);
+      return res.json({ received: true });
+    }
+
+    const orderId = entity?.order_id;
+    const paymentId = entity?.id;
+
+    if (!orderId || !paymentId) {
+      console.log("Invalid payment payload");
+      return res.json({ received: true });
+    }
+
+    const method = entity.method || "unknown";
+    const vpa = entity.vpa || null;
+    const wallet = entity.wallet || null;
+    const card = entity.card || null;
+    const bank = entity.bank || null;
+
+    let appUsed = null;
+
+    // UPI app mapping
+    const upiMap = {
+      okaxis: "googlepay",
+      ybl: "phonepe",
+      paytm: "paytm",
+      oksbi: "googlepay",
+      okhdfcbank: "googlepay",
+      axl: "amazonpay"
+    };
+
+    // Detect payment source
+    if (method === "upi" && vpa) {
+      const suffix = vpa.split("@")[1];
+      appUsed = upiMap[suffix] || suffix || "upi";
+    }
+    else if (method === "wallet" && wallet) {
+      appUsed = wallet.toLowerCase();
+    }
+    else if (method === "card" && card?.network) {
+      appUsed = card.network.toLowerCase();
+    }
+    else if (method === "netbanking" && bank) {
+      appUsed = bank.toLowerCase();
+    }
+
+    // Only process important events
+    const allowedEvents = ["payment.captured", "order.paid", "payment.failed"];
+
+    if (!allowedEvents.includes(event)) {
+      console.log("Ignored event:", event);
+      return res.json({ received: true });
     }
 
     if (event === "payment.captured" || event === "order.paid") {
-      const orderId = entity.order_id;
-      const paymentId = entity.id;
 
-      const method = entity.method || "unknown";
-      const vpa = entity.vpa || null;
-      const wallet = entity.wallet || null;
-      const card = entity.card || null;
-
-      let appUsed = null;
-
-      if (method === "upi" && vpa) {
-        const suffix = vpa.split("@")[1];
-        appUsed = suffix?.toLowerCase();
-      } else if (method === "wallet" && wallet) {
-        appUsed = wallet.toLowerCase();
-      } else if (method === "card" && card?.network) {
-        appUsed = card.network.toLowerCase();
-      }
-
-      await InternshipPayment.findOneAndUpdate(
-        { razorpayOrderId: orderId },
+      const updatedPayment = await InternshipPayment.findOneAndUpdate(
+        { razorpayOrderId: orderId, status: { $ne: "paid" } }, // idempotency protection
         {
           razorpayPaymentId: paymentId,
           status: "paid",
           paymentMode: method,
           appUsed,
-          meta: req.body
-        }
+          meta: payload
+        },
+        { new: true }
       );
 
-      console.log(`Webhook processed for ${paymentId}`);
+      if (updatedPayment) {
+        console.log(
+          `✅ Payment updated: ${paymentId} | Method: ${method} | App: ${appUsed}`
+        );
+      } else {
+        console.log(`⚠️ Payment already processed or order not found: ${orderId}`);
+      }
     }
 
     if (event === "payment.failed") {
-      const orderId = entity.order_id;
 
       await InternshipPayment.findOneAndUpdate(
         { razorpayOrderId: orderId },
         {
           status: "failed",
-          meta: req.body
+          paymentMode: method,
+          appUsed,
+          meta: payload
         }
       );
 
-      console.log(`Payment failed for ${orderId}`);
+      console.log(`❌ Payment failed for order: ${orderId}`);
     }
 
     res.json({ received: true });
 
   } catch (error) {
     console.error("Webhook error:", error);
-    res.status(500).json({ error: "Webhook processing failed" });
+    res.status(500).send("Webhook error");
   }
 };
+
 // Get payment by ID
 export const getPayment = async (req, res) => {
-    try {
-        const paymentRecord = await InternshipPayment.findOne({ razorpayOrderId: req.params.orderId });
-        if (!paymentRecord) {
-            return res.status(404).json({
-                success: false,
-                message: 'Payment not found'
-            });
-        }
-
-        res.json({
-            success: true,
-            data: paymentRecord
-        });
-    } catch (error) {
-        console.error('Error fetching payment:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error fetching payment',
-            error: error.message
-        });
+  try {
+    const paymentRecord = await InternshipPayment.findOne({ razorpayOrderId: req.params.orderId });
+    if (!paymentRecord) {
+      return res.status(404).json({
+        success: false,
+        message: 'Payment not found'
+      });
     }
+
+    res.json({
+      success: true,
+      data: paymentRecord
+    });
+  } catch (error) {
+    console.error('Error fetching payment:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching payment',
+      error: error.message
+    });
+  }
 }
 
