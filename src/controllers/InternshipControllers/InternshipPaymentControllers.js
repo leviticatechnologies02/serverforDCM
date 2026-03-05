@@ -231,7 +231,7 @@ export const verifyPayment = async (req, res) => {
         to: paymentRecord.email,
         subject: `🎉 Payment Successful - ${getProgramDisplayName(
           paymentRecord.program
-        )} Internship`,
+        )} days Internship`,
         html: emailHTML,
       });
 

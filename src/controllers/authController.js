@@ -91,7 +91,7 @@ export const login = async (req, res) => {
 
     const cookieOptions = {
       httpOnly: true,
-      secure: isProduction, // ✅ true in production (HTTPS only)
+      secure: true, 
       sameSite: isProduction ? "None" : "Lax", // ✅ None for prod, Lax for local
     };
 
