@@ -28,12 +28,6 @@ const TokenSchema = new mongoose.Schema(
   { strict: false, timestamps: true }
 );
 
-// Hash token before saving (so DB leak can't expose it)
-TokenSchema.pre('save', function (next) {
-  if (this.isModified('token')) {
-    this.token = crypto.createHash('sha256').update(this.token).digest('hex');
-  }
-  next();
-});
+
 
 export default mongoose.models.Token || mongoose.model('Token', TokenSchema);

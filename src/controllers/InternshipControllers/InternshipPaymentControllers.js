@@ -267,7 +267,7 @@ export const handleWebhook = async (req, res) => {
     console.log("internships webhoook hittdeok")
   try {
     const signature = req.headers["x-razorpay-signature"];
-    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    const secret = process.env.RAZORPAY_INTERNSHIP_WEBHOOK_SECRET;
 
     const expected = crypto
       .createHmac("sha256", secret)

@@ -126,6 +126,7 @@ export const sendVerificationEmailOTP = async (req, res) => {
       type: 'emailVerification',
       ttlMin: 10,
     });
+    console.log(otp,"from create otp")
 
     await sendEmail({
       to: email,
@@ -154,6 +155,7 @@ export const verifyEmailOTP = async (req, res) => {
       otp,
       type: 'emailVerification',
     });
+    console.log(isValid,'iam valid checkinv')
 
     if (!isValid) {
       return res.status(400).json({ error: 'Invalid or expired OTP' });
