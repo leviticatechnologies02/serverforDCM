@@ -1,6 +1,6 @@
 import express from 'express';
 import Notice from '../../models/Notice.js';
-import { verifyAdmin } from '../../middlewares/verifyadminMiddleware.js';
+import { verifyAdmin } from '../../middlewares/verifyMiddleware.js';
 import verifyToken from '../../middlewares/authMiddleware.js';
  
 const noticeRouter = express.Router();
