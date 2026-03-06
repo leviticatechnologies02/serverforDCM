@@ -12,13 +12,8 @@ export const createUser = async (req, res) => {
   session.startTransaction();
 
   try {
-    // Only admins can create users
-    if (req.user?.role !== "admin") {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied. Admin privileges required."
-      });
-    }
+   
+   
 
     const { username, email, password, role, enrolledCourses } = req.body;
 

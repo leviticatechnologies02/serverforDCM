@@ -4,7 +4,7 @@ import {
   getBatchDetails,
   addBatch,
 
-  getIdAndBatchNames,
+  
   getBatchesByCourseId,
   getAllBatches,
   updateBatch
