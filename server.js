@@ -21,6 +21,7 @@ import { printRoutes } from "./printRoutes.js";
 import { connectCloudinary } from "./src/config/cloudinary.js";
 import { webhook } from "./src/controllers/paymentControllers/paymentController.js";
 import { handleWebhook } from "./src/controllers/InternshipControllers/InternshipPaymentControllers.js";
+import { sendStartupTestEmail } from "./src/utils/Email/sendEmail.js";
 
 // ================== CONFIG ==================
 dotenv.config();
@@ -110,6 +111,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/health", (req, res) => {
+  sendStartupTestEmail()
   res.json({
     status: "ok",
     service: "DCM Server",

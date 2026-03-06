@@ -171,46 +171,6 @@ export const verifyPayment = async (req, res) => {
     }
     if (paymentRecord.status === "paid") {
 
-
-      try {
-        const programDetails = {
-          domain: paymentRecord.domain,
-          program: paymentRecord.program === "5" ? "5 Days program" : "15 Days program",
-          duration:
-            paymentRecord.program === "5" ? "5 Days" : "15 Days",
-          amount: paymentRecord.amount,
-        };
-
-        const paymentDetails = {
-          paymentId: razorpay_payment_id,
-          orderId: razorpay_order_id,
-          date: new Date().toLocaleDateString("en-IN", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          }),
-        };
-
-        const emailHTML = getInternshipPaymentSuccessEmailHTML(
-          paymentRecord.name,
-          paymentRecord.email,
-          programDetails,
-          paymentDetails
-        );
-
-        await sendEmail({
-          to: paymentRecord.email,
-          subject: `🎉 Payment Successful - ${getProgramDisplayName(
-            paymentRecord.program
-          )} days Internship`,
-          html: emailHTML,
-        });
-
-        console.log("Confirmation email sent to:", paymentRecord.email);
-      } catch (emailError) {
-        console.error("Email sending failed:", emailError);
-      }
       return res.json({
         success: true,
         message: "Payment already verified",
@@ -220,6 +180,7 @@ export const verifyPayment = async (req, res) => {
           email: paymentRecord.email,
           rollNumber: paymentRecord.rollNumber,
           program: paymentRecord.program,
+          domain: paymentRecord.domain,
           amount: paymentRecord.amount,
         },
         receipt: paymentRecord.receipt,
@@ -273,6 +234,7 @@ export const verifyPayment = async (req, res) => {
         email: paymentRecord.email,
         rollNumber: paymentRecord.rollNumber,
         program: paymentRecord.program,
+        domain: paymentRecord.domain,
         amount: paymentRecord.amount,
       },
       receipt: paymentRecord.receipt,
