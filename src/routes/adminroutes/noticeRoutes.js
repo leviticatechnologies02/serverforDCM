@@ -34,7 +34,7 @@ noticeRouter.post(
         noticeType,
         priority,
         targetAudience,
-        createdBy: req.userAccount.user.id,
+        createdBy: req.user?.id,
         status: 'published',
         publishedAt: new Date(),
       });
