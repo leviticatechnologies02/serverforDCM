@@ -323,6 +323,158 @@ export const getInternshipPaymentSuccessEmailHTML = (name, email, programDetails
   `;
 };
 
+
+export const getCoursePaymentSuccessEmailHTML = (
+  name,
+  email,
+  courseDetails,
+  paymentDetails
+) => {
+
+  const { courses, amount } = courseDetails;
+  const { paymentId, orderId, date } = paymentDetails;
+
+  const courseList = courses
+    .map(
+      (course) => `
+      <li style="margin:6px 0;">
+        <strong style="color:#059669;">${course}</strong>
+      </li>
+    `
+    )
+    .join("");
+
+  return `
+  <div style="font-family:'Segoe UI',Roboto,sans-serif;background-color:#f9fafb;margin:0;padding:0;">
+
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#6366f1 0%,#4f46e5 100%);padding:30px 20px;text-align:center;">
+      <img src="https://api.designcareermetrics.com/img/dcmlogotransperent.png" style="height:50px;" />
+      <h1 style="color:#ffffff;font-size:24px;margin-top:15px;">Payment Successful!</h1>
+      <p style="color:#e0e7ff;font-size:16px;margin-top:8px;">
+        Course Enrollment Confirmed
+      </p>
+    </div>
+
+    <!-- Body -->
+    <div style="padding:40px;max-width:600px;margin:auto;background-color:#ffffff;border-radius:8px;">
+
+      <h2 style="color:#1f2937;margin-bottom:20px;">Hi ${name},</h2>
+
+      <p style="color:#6b7280;font-size:16px;line-height:1.6;margin-bottom:25px;">
+        Thank you for your payment! Your course enrollment has been successfully confirmed.
+        You now have access to the course content and resources.
+      </p>
+
+      <!-- Course Details -->
+      <div style="margin:25px 0;padding:25px;border:2px solid #e0e7ff;border-radius:8px;background:linear-gradient(135deg,#f8fafc 0%,#eef2ff 100%);">
+
+        <h3 style="color:#4338ca;font-size:18px;margin-bottom:15px;">
+          📚 Enrolled Courses
+        </h3>
+
+        <ul style="padding-left:18px;color:#374151;font-size:14px;">
+          ${courseList}
+        </ul>
+
+        <p style="margin-top:15px;font-size:14px;color:#374151;">
+          <strong>Total Amount Paid:</strong>
+          <span style="color:#059669;font-weight:600;"> ₹${amount}</span>
+        </p>
+
+      </div>
+
+      <!-- Payment Info -->
+      <div style="margin:25px 0;padding:20px;border:1px solid #e5e7eb;border-radius:6px;background:#f8fafc;">
+
+        <h3 style="color:#374151;font-size:16px;margin-bottom:15px;">
+          💰 Payment Information
+        </h3>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+
+          <p style="font-size:13px;color:#6b7280;">
+            <strong>Payment ID</strong><br/>
+            <span style="font-family:monospace;color:#374151;">${paymentId}</span>
+          </p>
+
+          <p style="font-size:13px;color:#6b7280;">
+            <strong>Order ID</strong><br/>
+            <span style="font-family:monospace;color:#374151;">${orderId}</span>
+          </p>
+
+          <p style="font-size:13px;color:#6b7280;">
+            <strong>Date</strong><br/>
+            <span style="color:#374151;">${date}</span>
+          </p>
+
+          <p style="font-size:13px;color:#6b7280;">
+            <strong>Status</strong><br/>
+            <span style="color:#059669;font-weight:600;">✅ Paid</span>
+          </p>
+
+        </div>
+
+      </div>
+
+      <!-- Next Steps -->
+      <div style="margin:25px 0;padding:20px;border-left:4px solid #3b82f6;background:#eff6ff;">
+        <h3 style="color:#1e40af;margin-bottom:10px;">📋 What's Next?</h3>
+
+        <ul style="color:#374151;font-size:14px;line-height:1.6;margin:0;padding-left:20px;">
+          <li>Login to your account</li>
+          <li>Access the enrolled course materials</li>
+          <li>Start learning and complete lessons</li>
+        </ul>
+      </div>
+
+      <!-- CTA -->
+      <div style="text-align:center;margin:30px 0;">
+        <a href="https://designcareermetrics.com/dashboard"
+           style="background:linear-gradient(135deg,#6366f1 0%,#4f46e5 100%);
+           color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px;">
+          Go to My Courses
+        </a>
+      </div>
+
+      <!-- Support -->
+      <div style="margin-top:25px;padding:15px;background:#fef3c7;border-radius:6px;border:1px solid #f59e0b;">
+        <p style="color:#92400e;font-size:14px;text-align:center;margin:0;">
+          <strong>Need Help?</strong> Contact us at
+          <a href="mailto:support@designcareermetrics.com"
+          style="color:#dc2626;text-decoration:none;">
+          support@designcareermetrics.com
+          </a>
+        </p>
+      </div>
+
+      <p style="font-size:13px;color:#9ca3af;margin-top:25px;">
+        This email was sent to <strong>${email}</strong>.
+      </p>
+
+    </div>
+
+    <!-- Footer -->
+    <div style="background:#1e293b;padding:25px;text-align:center;font-size:12px;color:#cbd5e1;">
+
+      <p>© ${new Date().getFullYear()} Design Career Metrics</p>
+
+      <p>
+        <a href="https://designcareermetrics.com/privacy" style="color:#60a5fa;text-decoration:none;">Privacy Policy</a> |
+        <a href="https://designcareermetrics.com/terms" style="color:#60a5fa;text-decoration:none;">Terms</a> |
+        <a href="https://designcareermetrics.com/contact-us" style="color:#60a5fa;text-decoration:none;">Contact</a>
+      </p>
+
+      <p style="color:#94a3b8;">
+        Design Career Metrics<br/>
+        Empowering students with industry-relevant skills
+      </p>
+
+    </div>
+
+  </div>
+  `;
+};
 // Helper functions for display names
 const getDomainDisplayName = (domainId) => {
   const domains = {

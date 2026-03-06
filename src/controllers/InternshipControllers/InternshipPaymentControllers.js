@@ -249,7 +249,6 @@ export const verifyPayment = async (req, res) => {
   }
 };
 
-
 export const handleWebhook = async (req, res) => {
   console.log("Webhook received");
 
@@ -293,7 +292,6 @@ export const handleWebhook = async (req, res) => {
 
     let appUsed = null;
 
-    // UPI app mapping
     const upiMap = {
       okaxis: "googlepay",
       ybl: "phonepe",
@@ -303,7 +301,6 @@ export const handleWebhook = async (req, res) => {
       axl: "amazonpay"
     };
 
-    // Detect payment source
     if (method === "upi" && vpa) {
       const suffix = vpa.split("@")[1];
       appUsed = upiMap[suffix] || suffix || "upi";
@@ -318,7 +315,6 @@ export const handleWebhook = async (req, res) => {
       appUsed = bank.toLowerCase();
     }
 
-    // Only process important events
     const allowedEvents = ["payment.captured", "order.paid", "payment.failed"];
 
     if (!allowedEvents.includes(event)) {
@@ -344,51 +340,50 @@ export const handleWebhook = async (req, res) => {
 
         console.log(`✅ Payment updated: ${paymentId}`);
 
-        // respond immediately
+        // respond immediately to Razorpay
         res.json({ received: true });
 
-        // send email AFTER response
-        try {
+        // send email asynchronously
+        (async () => {
+          try {
 
-          const programDetails = {
-            domain: updatedPayment.domain,
-            program: updatedPayment.program === "5"
-              ? "5 Days program"
-              : "15 Days program",
-            duration: updatedPayment.program === "5" ? "5 Days" : "15 Days",
-            amount: updatedPayment.amount
-          };
+            const programDetails = {
+              domain: updatedPayment.domain,
+              program: updatedPayment.program === "5"
+                ? "5 Days program"
+                : "15 Days program",
+              duration: updatedPayment.program === "5" ? "5 Days" : "15 Days",
+              amount: updatedPayment.amount
+            };
 
-          const paymentDetails = {
-            paymentId,
-            orderId,
-            date: new Date().toLocaleDateString("en-IN")
-          };
+            const paymentDetails = {
+              paymentId,
+              orderId,
+              date: new Date().toLocaleDateString("en-IN")
+            };
 
-          const emailHTML = getInternshipPaymentSuccessEmailHTML(
-            updatedPayment.name,
-            updatedPayment.email,
-            programDetails,
-            paymentDetails
-          );
+            const emailHTML = getInternshipPaymentSuccessEmailHTML(
+              updatedPayment.name,
+              updatedPayment.email,
+              programDetails,
+              paymentDetails
+            );
 
-          await sendEmail({
-            to: updatedPayment.email,
-            subject: "Payment Successful 🎉",
-            html: emailHTML
-          });
+            await sendEmail({
+              to: updatedPayment.email,
+              subject: "Payment Successful 🎉",
+              html: emailHTML
+            });
 
-          console.log("Email sent");
+            console.log("Email sent");
 
-        } catch (err) {
+          } catch (err) {
+            console.error("Email failed but payment already saved", err);
+          }
+        })();
 
-          console.error("Email failed but payment already saved", err);
-
-        }
-
+        return;
       }
-
-      return;
     }
 
     if (event === "payment.failed") {

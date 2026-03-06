@@ -5,6 +5,7 @@ import Course from '../../models/courses.js';
 import Enrollment from '../../models/Enrollment.js';
 import { enrollInCourses } from '../studentcontrollers/coursesEnrollControllers.js';
 import mongoose from 'mongoose';
+import User from '../../models/user.js';
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -148,23 +149,30 @@ export const verifyPayment = async (req, res) => {
     console.error('❌ verifyPayment error:', err);
     return res.status(500).json({ error: 'Verification failed' });
   }
-};
+}; 
+
 
 export const webhook = async (req, res) => {
-  console.log("webhook hitted")
+
+  console.log("webhook hitted");
+
   try {
+
     const signature = req.headers['x-razorpay-signature'];
     const rawBody = req.body;
 
     if (!signature || !rawBody) {
       return res.status(400).send('Missing signature or body');
     }
+
     const expected = crypto
       .createHmac('sha256', process.env.RAZORPAY_WEBHOOK_SECRET)
       .update(rawBody.toString())
       .digest('hex');
+
     console.log("🔐 Received Signature:", signature);
     console.log("🔐 Expected Signature:", expected);
+
     if (expected !== signature) {
       console.warn('❌ Invalid webhook signature');
       return res.status(400).send('Invalid webhook signature');
@@ -173,30 +181,41 @@ export const webhook = async (req, res) => {
     const event = JSON.parse(rawBody.toString());
     const entity = event.payload.payment?.entity;
 
+    if (!entity) {
+      return res.json({ received: true });
+    }
+
+    const orderId = entity?.order_id || event.payload.order?.entity?.id;
+    const paymentId = entity?.id;
+
+    const method = entity?.method || 'unknown';
+    const vpa = entity?.vpa || null;
+    const wallet = entity?.wallet || null;
+    const card = entity?.card || null;
+
+    let appUsed = null;
+
+    if (method === 'upi' && vpa) {
+      const suffix = vpa.split('@')[1];
+      appUsed = suffix?.toLowerCase();
+    }
+    else if (method === 'wallet' && wallet) {
+      appUsed = wallet.toLowerCase();
+    }
+    else if (method === 'card' && card?.network) {
+      appUsed = card.network.toLowerCase();
+    }
+
+    /* ---------------- PAYMENT SUCCESS ---------------- */
+
     if (event.event === 'order.paid' || event.event === 'payment.captured') {
-      const orderId = entity?.order_id || event.payload.order?.entity?.id;
-      const paymentId = entity?.id;
-
-      const method = entity?.method || 'unknown';
-      const vpa = entity?.vpa || null;
-      const wallet = entity?.wallet || null;
-      const card = entity?.card || null;
-
-      let appUsed = null;
-      if (method === 'upi' && vpa) {
-        const suffix = vpa.split('@')[1];
-        appUsed = suffix?.toLowerCase();
-      } else if (method === 'wallet' && wallet) {
-        appUsed = wallet.toLowerCase();
-      } else if (method === 'card' && card?.network) {
-        appUsed = card.network.toLowerCase();
-      }
 
       const payment = await Payment.findOneAndUpdate(
-        { orderId, isEnrolled: false }, //  only if not processed
+        { orderId, isEnrolled: false },
         {
           $set: {
             paymentId,
+            signature,
             status: 'paid',
             paymentMode: method,
             appUsed,
@@ -208,6 +227,9 @@ export const webhook = async (req, res) => {
       );
 
       if (payment) {
+
+        /* enroll courses */
+
         for (const courseId of payment.courseIds) {
           await enrollInCourses({
             paymentId: payment._id,
@@ -215,30 +237,85 @@ export const webhook = async (req, res) => {
             courseId
           });
         }
+
+        console.log(`✅ Webhook processed for payment ${paymentId}`);
+
+        /* send response immediately */
+        res.json({ received: true });
+
+        /* ---------- SEND EMAIL IN BACKGROUND ---------- */
+
+        (async () => {
+          try {
+
+            const user = await User.findById(payment.userId).select("name email");
+
+            const courses = await Course.find({
+              _id: { $in: payment.courseIds }
+            }).select("name");
+
+            const courseTitles = courses.map(c => c.name);
+
+            const emailHTML = getCoursePaymentSuccessEmailHTML(
+              user.name,
+              user.email,
+              {
+                courses: courseTitles,
+                amount: payment.amount
+              },
+              {
+                paymentId,
+                orderId,
+                date: new Date().toLocaleDateString("en-IN")
+              }
+            );
+
+            await sendEmail({
+              to: user.email,
+              subject: "Course Payment Successful 🎉",
+              html: emailHTML
+            });
+
+            console.log("📧 Confirmation email sent");
+
+          } catch (emailError) {
+
+            console.error("Email failed but payment already saved", emailError);
+
+          }
+        })();
+
+        return;
       }
 
-      console.log(`✅ Webhook processed for payment ${paymentId}`);
     }
 
+    /* ---------------- PAYMENT FAILED ---------------- */
+
     if (event.event === 'payment.failed') {
-      const orderId = event.payload.payment?.entity?.order_id;
+
       await Payment.findOneAndUpdate(
         { orderId },
         {
           $set: {
             status: 'failed',
-            paymentMode: event.payload.payment?.entity?.method || 'unknown',
+            paymentMode: entity?.method || 'unknown',
             appUsed: null,
             meta: event
           }
         }
       );
+
       console.warn(`⚠️ Payment failed for order ${orderId}`);
     }
 
     res.json({ received: true });
+
   } catch (err) {
+
     console.error('❌ Webhook error:', err);
     res.status(500).send('Webhook processing error');
+
   }
+
 };

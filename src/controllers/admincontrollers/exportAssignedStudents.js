@@ -11,7 +11,7 @@ export const downloadBatchStudents = async (req, res) => {
     }
 
     // Get batch details for naming
-    const batch = await Batch.findById(batchId).select("name");
+    const batch = await Batch.findById(batchId).select("batchName");
     if (!batch) {
       return res.status(404).json({ error: "Batch not found" });
     }
@@ -55,7 +55,7 @@ export const downloadBatchStudents = async (req, res) => {
           userEmail: "$user.email",
           courseName: "$enrolledCourses.course.name",
           enrolledAt: "$enrolledCourses.enrolledAt",
-          batch: batch.name
+          batch: batch.batchName
         }
       }
     ]);
