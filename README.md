@@ -1,6 +1,6 @@
 # serverforDCM
 
-A Node.js/Express backend for Design Career Metrics (DCM).
+A Node.js/Express backend for Levitica Technologies (DCM).
 
 ## 🚀 Quick Setup
 

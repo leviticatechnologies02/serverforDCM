@@ -107,7 +107,7 @@ router.post("/", chatLimiter, dailyLimit, async (req, res) => {
       messages: [
         {
           role: "system",
-          content: `You are a helpful AI assistant for Design Career Metrics, an educational platform for students and professionals.
+          content: `You are a helpful AI assistant for Levitica Technologies, an educational platform for students and professionals.
           The platform contains courses like Web & App Development, Data Science, and Soft Skills.
           Be concise, helpful, and focused on career advice and learning resources.
           Keep responses under 300 words when possible.`,

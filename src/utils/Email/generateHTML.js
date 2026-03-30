@@ -196,7 +196,7 @@ export const getInternshipPaymentSuccessEmailHTML = (name, email, programDetails
     <div style="font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; padding: 0; margin: 0;">
       <!-- Header -->
       <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px 20px; text-align: center;">
-        <img src="https://api.designcareermetrics.com/img/dcmlogotransperent.png" alt="Design Career Metrics" style="height: 50px;" />
+        <img src="https://api.designcareermetrics.com/img/dcmlogotransperent.png" alt="Levitica Technologies" style="height: 50px;" />
         <h1 style="color: #ffffff; font-size: 24px; margin-top: 15px; font-weight: 700;">Payment Successful!</h1>
         <p style="color: #d1fae5; font-size: 16px; margin-top: 8px;">Internship Program Registration Confirmed</p>
       </div>
@@ -287,7 +287,7 @@ export const getInternshipPaymentSuccessEmailHTML = (name, email, programDetails
         <div style="text-align: center; margin: 30px 0;">
           <a href="https://designcareermetrics.com" 
              style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; display: inline-block;">
-            Visit Design Career Metrics
+            Visit Levitica Technologies
           </a>
         </div>
 
@@ -307,7 +307,7 @@ export const getInternshipPaymentSuccessEmailHTML = (name, email, programDetails
       <!-- Footer -->
       <div style="background-color: #1e293b; padding: 25px; text-align: center; font-size: 12px; color: #cbd5e1;">
         <p style="margin: 0 0 10px 0;">
-          &copy; ${new Date().getFullYear()} Design Career Metrics. All rights reserved.
+          &copy; ${new Date().getFullYear()} Levitica Technologies. All rights reserved.
         </p>
         <p style="margin: 8px 0;">
           <a href="https://designcareermetrics.com/privacy" style="color: #60a5fa; text-decoration: none; margin: 0 10px;">Privacy Policy</a> |
@@ -315,7 +315,7 @@ export const getInternshipPaymentSuccessEmailHTML = (name, email, programDetails
           <a href="https://designcareermetrics.com/contact-us" style="color: #60a5fa; text-decoration: none; margin: 0 10px;">Contact Us</a>
         </p>
         <p style="margin: 8px 0; color: #94a3b8;">
-          Design Career Metrics<br/>
+          Levitica Technologies<br/>
           Empowering students with industry-relevant skills
         </p>
       </div>
@@ -457,7 +457,7 @@ export const getCoursePaymentSuccessEmailHTML = (
     <!-- Footer -->
     <div style="background:#1e293b;padding:25px;text-align:center;font-size:12px;color:#cbd5e1;">
 
-      <p>© ${new Date().getFullYear()} Design Career Metrics</p>
+      <p>© ${new Date().getFullYear()} Levitica Technologies</p>
 
       <p>
         <a href="https://designcareermetrics.com/privacy" style="color:#60a5fa;text-decoration:none;">Privacy Policy</a> |
@@ -466,7 +466,7 @@ export const getCoursePaymentSuccessEmailHTML = (
       </p>
 
       <p style="color:#94a3b8;">
-        Design Career Metrics<br/>
+        Levitica Technologies<br/>
         Empowering students with industry-relevant skills
       </p>
 

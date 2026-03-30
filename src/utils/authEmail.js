@@ -14,7 +14,7 @@ export const sendPasswordResetEmail = async ({to, name, resetUrl}) => {
     name,
     email: to,
     resetUrl,
-    appName: 'Design Career Metrics aka DCM',
+    appName: 'Levitica Technologies',
     year: new Date().getFullYear(),
     expiresIn: '1 hour'
   });

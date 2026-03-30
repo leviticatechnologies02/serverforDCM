@@ -105,7 +105,7 @@ app.use("/internship", InternshipsRouter);
 
 app.get("/", (req, res) => {
   res.json({
-    message: "Hello! Welcome to Design Career Metrics",
+    message: "Hello! Welcome to Levitica Technologies",
     timestamp: new Date().toISOString(),
   });
 });

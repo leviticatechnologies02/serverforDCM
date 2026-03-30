@@ -6,7 +6,7 @@ export const sendEmail = async ({ to, subject, html, replyTo }) => {
   try {
 
     const info = await transporter.sendMail({
-      from: `Design Career Metrics <${process.env.SMTP_USER}>`,
+      from: `Levitica Technologies <${process.env.SMTP_USER}>`,
       to,
       subject,
       html,

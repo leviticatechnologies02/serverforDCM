@@ -38,7 +38,7 @@ export async function forgotPassword(req, res) {
       html:getPasswordResetEmailHTML({name:user.name,
         email:email,
         resetUrl,
-        appName:'Design Career Metrics aka DCM',
+        appName:'Levitica Technologies',
         year:new Date().getFullYear(),
         expiresIn:`${RESET_TTL_MIN} minutes`})
     });

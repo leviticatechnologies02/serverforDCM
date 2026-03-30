@@ -1,7 +1,7 @@
 import express from 'express';
 import { AddItemToCart, DeleteCart, GetCartItems, RemoveItem } from '../../controllers/studentcontrollers/cartControllers.js';
 
-import verifyToken from '../../middlewares/authMiddleware.js';
+
 
 
 const cartRouter = express.Router();
