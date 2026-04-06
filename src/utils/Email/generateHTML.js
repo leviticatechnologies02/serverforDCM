@@ -153,7 +153,7 @@ export const getBatchAssignmentEmailHTML = (name, courseTitle, batchName, email)
   };
 
 // Helper functions for internship payment
-const getDomainDisplayName = (domainId) => {
+ export const getDomainDisplayName = (domainId) => {
   const domains = {
     'java-fullstack': 'Java Full Stack Development',
     'python-ai': 'Python Full Stack + Generative AI',
@@ -165,7 +165,7 @@ const getDomainDisplayName = (domainId) => {
   return domains[domainId] || domainId;
 };
 
-const getProgramDisplayName = (programId) => {
+export const getProgramDisplayName = (programId) => {
   const programs = {
     '5days': '5 Days Intensive Program',
     '15days': '15 Days Comprehensive Program'
