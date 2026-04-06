@@ -1,38 +1,38 @@
 export const getVerificationEmailHTML = (name, verifyUrl, email) => {
   return `
-    <div style="font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; padding: 0; margin: 0;">
-      <!-- Header -->
-      <div style="background-color: #036481; padding: 20px; text-align: center;">
-        <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies Pvt Ltd" style="height: 40px;" />
-        <h1 style="color: #ffffff; font-size: 20px; margin-top: 10px;">Levitica Technologies Pvt Ltd</h1>
-      </div>
-
-      <!-- Body -->
-      <div style="padding: 40px; max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px;">
-        <h2 style="color: #222;">Hi ${name},</h2>
-        <p style="color: #555; font-size: 16px;">
-          Thanks for signing up! Click the button below to verify your email and activate your account.
-        </p>
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${verifyUrl}" style="background-color: #2563eb; color: #fff; padding: 14px 28px; border-radius: 6px; text-decoration: none; font-weight: 600;">
-            Verify Email
-          </a>
+    <div style="max-width:580px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+      <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
+        <div style="padding:24px 28px 12px; text-align:center; border-bottom:1px solid #f0f0f0;">
+          <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height:52px; width:auto; margin-bottom:8px;" />
+          <h1 style="font-size:24px; margin:12px 0 4px; font-weight:700; background:linear-gradient(135deg, #166c8c 0%, #3b36db 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
+            Levitica Technologies Pvt Ltd
+          </h1>
+          <p style="font-size:13px; color:#6c86a3; margin-top:6px;">Secure Platform</p>
         </div>
-        <p style="font-size: 13px; color: #888;">
-          If you didn’t request this, you can safely ignore it.<br/>
-          This email was sent to <strong>${email}</strong>
-        </p>
-      </div>
-
-      <!-- Footer -->
-      <div style="background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #666;">
-        &copy; ${new Date().getFullYear()} Levitica Technologies Pvt Ltd. All rights reserved.<br/>
-        <a href="https://leviticatechnologies.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
-        <a href="https://leviticatechnologies.com/contact-us" style="color: #2563eb; text-decoration: none;">Contact Us</a>
+        <div style="background:linear-gradient(98deg, #4f46e5 0%, #6366f1 100%); padding:18px 24px; text-align:center;">
+          <span style="background:rgba(255,255,255,0.12); padding:6px 18px; border-radius:60px; color:#fff; font-weight:600; font-size:15px;">📧 Verify Your Email Address</span>
+        </div>
+        <div style="padding:32px 32px 28px; color:#1f2937; font-size:15px; line-height:1.55;">
+          <p style="margin-top:0; margin-bottom:18px; font-size:16px;">Hi <strong style="color:#1e3a8a;">${name}</strong>,</p>
+          <p style="margin-bottom:16px;">Thanks for signing up! Click the button below to verify your email and activate your account.</p>
+          <div style="text-align:center; margin:30px 0;">
+            <a href="${verifyUrl}" style="background:#4f46e5; color:#ffffff; padding:14px 32px; border-radius:44px; text-decoration:none; font-weight:600; display:inline-block; box-shadow:0 6px 14px rgba(79,70,229,0.25);">Verify Email</a>
+          </div>
+          <div style="background:#fef9f0; border-radius:16px; padding:12px 20px; margin:20px 0; border:1px solid #ffedd5;">
+            <p style="margin:0; font-size:13.5px; color:#92400e;">🔒 This link expires in 24 hours. If you didn't request this, please ignore this email.</p>
+          </div>
+          <p style="font-size:13px; color:#6c757d; margin-top:20px;">This email was sent to <strong>${email}</strong></p>
+          <p style="margin-top:24px; border-top:1px solid #edf2f7; padding-top:20px;">Thanks,<br /><strong>The Levitica Team</strong></p>
+        </div>
+        <div style="background:#f9fafb; padding:20px 24px; text-align:center; font-size:12px; color:#6c757d; border-top:1px solid #eef2f6;">
+          <p style="margin:0 0 6px 0;">© ${new Date().getFullYear()} Levitica Technologies Pvt Ltd. All rights reserved.</p>
+          <p style="margin:0;"><a href="https://leviticatechnologies.com/privacy" style="color:#6c86a3; text-decoration:none;">Privacy Policy</a> | <a href="https://leviticatechnologies.com/contact-us" style="color:#6c86a3; text-decoration:none;">Contact Us</a></p>
+        </div>
       </div>
     </div>
   `;
 };
+
 export const getPasswordResetEmailHTML = ({
   name,
   email,
@@ -42,440 +42,117 @@ export const getPasswordResetEmailHTML = ({
   expiresIn
 }) => {
   return `
-  <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Verify to Reset Password</title>
-</head>
-<body style="margin:0; padding:0; background-color:#f4f4f4; font-family:Arial, sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f4; padding:20px 0;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
-          
-          <!-- Header -->
-          <tr>
-            <td style="background-color:#4f46e5; padding:20px; text-align:center; color:#ffffff; font-size:24px; font-weight:bold;">
-              Verify to Reset Your Password
-            </td>
-          </tr>
-
-          <!-- Body -->
-          <tr>
-            <td style="padding:30px; color:#333333; font-size:16px; line-height:1.5;">
-              <p>Hi <strong>${name}</strong>,</p>
-              <p>We received a request to reset the password for your account:</p>
-              <p style="background-color:#f9f9f9; padding:10px; border-radius:4px; font-family:monospace; font-size:14px;">
-                ${email}
-              </p>
-              <p>Before you can reset your password, please verify this request by clicking the button below.</p>
-              <p>This link will expire in <strong>${expiresIn}</strong> for security reasons.</p>
-
-              <!-- CTA Button -->
-              <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin:30px auto;">
-                <tr>
-                  <td align="center" bgcolor="#4f46e5" style="border-radius:5px;">
-                    <a href="${resetUrl}" target="_blank" 
-                       style="display:inline-block; padding:12px 24px; font-size:16px; color:#ffffff; text-decoration:none; font-weight:bold;">
-                      Verify & Reset Password
-                    </a>
-                  </td>
-                </tr>
-              </table>
-
-              <p>If you did not request a password reset, you can safely ignore this email — your password will remain unchanged.</p>
-              <p>Thanks,<br>The ${appName} Team</p>
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style="background-color:#f4f4f4; padding:15px; text-align:center; font-size:12px; color:#888888;">
-              &copy; ${year} ${appName}. All rights reserved.
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
+    <div style="max-width:580px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+      <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
+        <div style="padding:24px 28px 12px; text-align:center; border-bottom:1px solid #f0f0f0;">
+          <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height:52px; width:auto; margin-bottom:8px;" />
+          <h1 style="font-size:24px; margin:12px 0 4px; font-weight:700; background:linear-gradient(135deg, #166c8c 0%, #3b36db 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
+            Levitica Technologies Pvt Ltd
+          </h1>
+          <p style="font-size:13px; color:#6c86a3; margin-top:6px;">Enterprise Security</p>
+        </div>
+        <div style="background:linear-gradient(98deg, #4f46e5 0%, #6366f1 100%); padding:18px 24px; text-align:center;">
+          <span style="background:rgba(255,255,255,0.12); padding:6px 18px; border-radius:60px; color:#fff; font-weight:600; font-size:15px;">🔐 Verify to Reset Your Password</span>
+        </div>
+        <div style="padding:32px 32px 28px; color:#1f2937; font-size:15px; line-height:1.55;">
+          <p style="margin-top:0; margin-bottom:18px; font-size:16px;">Hi <strong style="color:#1e3a8a;">${name}</strong>,</p>
+          <p style="margin-bottom:16px;">We received a request to reset the password associated with your Levitica account. To keep your account secure, please use the verification below.</p>
+          <div style="background:#f8fafc; border-left:4px solid #4f46e5; padding:12px 18px; border-radius:14px; margin:20px 0;">
+            <span style="font-weight:600; color:#334155;">📧 Account:</span> <span style="font-family:monospace; letter-spacing:0.3px;">${email}</span>
+          </div>
+          <div style="background:#fff7e5; border-radius:16px; padding:8px 16px; display:inline-block; margin:8px 0 10px 0;">
+            <span style="font-size:13px; font-weight:500; color:#b45309;">⏱️ Link expires in <strong>${expiresIn}</strong></span>
+          </div>
+          <div style="text-align:center; margin:32px 0 28px 0;">
+            <a href="${resetUrl}" style="background:#4f46e5; color:#ffffff; padding:14px 32px; border-radius:44px; text-decoration:none; font-weight:600; display:inline-block; box-shadow:0 6px 14px rgba(79,70,229,0.25);">✓ Verify & Reset Password</a>
+          </div>
+          <div style="background:#fef9f0; border-radius:16px; padding:12px 20px; margin:20px 0; border:1px solid #ffedd5;">
+            <p style="margin:0; font-size:13.5px; color:#92400e;">🛡️ If you didn't request a password reset, please ignore this email. Your account remains secure.</p>
+          </div>
+          <p style="margin-top:24px; border-top:1px solid #edf2f7; padding-top:20px;">Thanks,<br /><strong>The ${appName} Team</strong></p>
+          <div style="margin-top:12px;"><span style="font-size:12px; color:#94a3b8;">🔒 Secure & encrypted request</span></div>
+        </div>
+        <div style="background:#f9fafb; padding:20px 24px; text-align:center; font-size:12.5px; color:#6c757d; border-top:1px solid #eef2f6;">
+          <p style="margin:0 0 6px 0;">© ${year} ${appName}. All rights reserved.</p>
+          <p style="margin:0; font-size:12px;">Levitica Technologies Pvt Ltd — Innovating enterprise solutions</p>
+          <div style="margin-top:12px;"><a href="#" style="color:#6c86a3; text-decoration:none; margin:0 8px;">Privacy Policy</a> <span style="color:#d1d9e8;">|</span> <a href="#" style="color:#6c86a3; text-decoration:none; margin:0 8px;">Support Center</a></div>
+        </div>
+      </div>
+      <div style="text-align:center; font-size:11px; color:#9aaebf; margin-top:24px; padding:0 16px;">This is an automated transactional message from Levitica Technologies. If you received this by mistake, no further action is required.</div>
+    </div>
+  `;
 };
 
-export const getBatchAssignmentEmailHTML = (name, courseTitle, batchName,email) => {
+export const getBatchAssignmentEmailHTML = (name, courseTitle, batchName, email) => {
   return `
-    <div style="font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; padding: 0; margin: 0;">
-      <!-- Header -->
-      <div style="background-color: #036481; padding: 20px; text-align: center;">
-        <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies Pvt Ltd" style="height: 40px;" />
-        <h1 style="color: #ffffff; font-size: 20px; margin-top: 10px;">Levitica Technologies Pvt Ltd</h1>
-      </div>
-
-      <!-- Body -->
-      <div style="padding: 40px; max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px;">
-        <h2 style="color: #222;">Hi ${name},</h2>
-        <p style="color: #555; font-size: 16px;">
-          Great news! You’ve been successfully assigned to a batch for your course <strong>${courseTitle}</strong>.
-        </p>
-
-        <div style="margin: 25px 0; padding: 20px; border: 1px solid #e5e7eb; border-radius: 6px; background-color: #f9fafb;">
-          <p style="margin: 8px 0; font-size: 15px; color: #333;">
-            <strong>Batch:</strong> ${batchName}
-          </p>
-         
+    <div style="max-width:580px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+      <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
+        <div style="padding:24px 28px 12px; text-align:center; border-bottom:1px solid #f0f0f0;">
+          <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height:52px; width:auto; margin-bottom:8px;" />
+          <h1 style="font-size:24px; margin:12px 0 4px; font-weight:700; background:linear-gradient(135deg, #166c8c 0%, #3b36db 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
+            Levitica Technologies Pvt Ltd
+          </h1>
+          <p style="font-size:13px; color:#6c86a3; margin-top:6px;">Learning Management System</p>
         </div>
-
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="https://yourdomain.com/dashboard" 
-             style="background-color: #2563eb; color: #fff; padding: 14px 28px; border-radius: 6px; text-decoration: none; font-weight: 600;">
-            Go to Dashboard
-          </a>
+        <div style="background:linear-gradient(98deg, #4f46e5 0%, #6366f1 100%); padding:18px 24px; text-align:center;">
+          <span style="background:rgba(255,255,255,0.12); padding:6px 18px; border-radius:60px; color:#fff; font-weight:600; font-size:15px;">🎓 Batch Assignment Confirmed</span>
         </div>
-
-        <p style="font-size: 13px; color: #888;">
-          You can view your course schedule and resources in your dashboard.<br/>
-          This email was sent to <strong>${email}</strong>
-        </p>
-      </div>
-
-      <!-- Footer -->
-      <div style="background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #666;">
-        &copy; ${new Date().getFullYear()} Levitica Technologies Pvt Ltd. All rights reserved.<br/>
-        <a href="https://leviticatechnologies.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
-        <a href="https://leviticatechnologies.com/contact-us" style="color: #2563eb; text-decoration: none;">Contact Us</a>
+        <div style="padding:32px 32px 28px; color:#1f2937; font-size:15px; line-height:1.55;">
+          <p style="margin-top:0; margin-bottom:18px; font-size:16px;">Hi <strong style="color:#1e3a8a;">${name}</strong>,</p>
+          <p style="margin-bottom:16px;">Great news! You've been successfully assigned to a batch for your course <strong>${courseTitle}</strong>.</p>
+          <div style="background:#f8fafc; border-left:4px solid #4f46e5; padding:12px 18px; border-radius:14px; margin:20px 0;">
+            <p style="margin:8px 0; font-size:15px;"><strong>📚 Batch Name:</strong> ${batchName}</p>
+          </div>
+          <div style="text-align:center; margin:30px 0;">
+            <a href="https://leviticatechnologies.com/dashboard" style="background:#4f46e5; color:#ffffff; padding:14px 32px; border-radius:44px; text-decoration:none; font-weight:600; display:inline-block; box-shadow:0 6px 14px rgba(79,70,229,0.25);">Go to Dashboard</a>
+          </div>
+          <p style="margin-bottom:16px;">You can view your course schedule and resources in your dashboard.</p>
+          <p style="font-size:13px; color:#6c757d;">This email was sent to <strong>${email}</strong></p>
+          <p style="margin-top:24px; border-top:1px solid #edf2f7; padding-top:20px;">Thanks,<br /><strong>The Levitica Team</strong></p>
+        </div>
+        <div style="background:#f9fafb; padding:20px 24px; text-align:center; font-size:12px; color:#6c757d; border-top:1px solid #eef2f6;">
+          <p style="margin:0 0 6px 0;">© ${new Date().getFullYear()} Levitica Technologies Pvt Ltd. All rights reserved.</p>
+          <p style="margin:0;"><a href="https://leviticatechnologies.com/privacy" style="color:#6c86a3; text-decoration:none;">Privacy Policy</a> | <a href="https://leviticatechnologies.com/contact-us" style="color:#6c86a3; text-decoration:none;">Contact Us</a></p>
+        </div>
       </div>
     </div>
   `;
 };
 
-export const getContactEmailHTML = (name, email, message,mobile) => {
-  return `
-    <div style="font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; padding: 0; margin: 0;">
-      <!-- Header -->
-      <div style="background-color: #036481; padding: 20px; text-align: center;">
-        <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies Pvt Ltd" style="height: 40px;" />
-        <h1 style="color: #ffffff; font-size: 20px; margin-top: 10px;">Levitica Technologies Pvt Ltd</h1>
-      </div>
-
-      <!-- Body -->
-      <div style="padding: 40px; max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px;">
-        <h2 style="color: #222;">New Contact Form Submission</h2>
-        <p style="color: #555; font-size: 16px;">
-          You’ve received a new message via the website contact form.
-        </p>
-        <div style="margin: 20px 0;">
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Mobile Number:</strong> ${mobile}</p>
-          <p><strong>Message:</strong><br/>${message}</p>
-        </div>
-        <p style="font-size: 13px; color: #888;">
-          You can reply directly to <strong>${email}</strong> to continue the conversation.
-        </p>
-        
-      </div>
-
-      <!-- Footer -->
-      <div style="background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #666;">
-        &copy; ${new Date().getFullYear()} Levitica Technologies Pvt Ltd. All rights reserved.<br/>
-        <a href="https://leviticatechnologies.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
-        <a href="https://leviticatechnologies.com/contact-us" style="color: #2563eb; text-decoration: none;">Contact Us</a>
-      </div>
-    </div>
-  `;
-};
-
-export const getInternshipPaymentSuccessEmailHTML = (name, email, programDetails, paymentDetails) => {
-  const { domain, program, duration, amount } = programDetails;
-  const { paymentId, orderId, date } = paymentDetails;
-
-  return `
-    <div style="font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; padding: 0; margin: 0;">
-      <!-- Header -->
-      <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px 20px; text-align: center;">
-        <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height: 50px;" />
-        <h1 style="color: #ffffff; font-size: 24px; margin-top: 15px; font-weight: 700;">Payment Successful!</h1>
-        <p style="color: #d1fae5; font-size: 16px; margin-top: 8px;">Internship Program Registration Confirmed</p>
-      </div>
-
-      <!-- Body -->
-      <div style="padding: 40px; max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px;">
-        <h2 style="color: #1f2937; font-size: 20px; margin-bottom: 20px;">Hi ${name},</h2>
-        
-        <p style="color: #6b7280; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">
-          Thank you for your payment! Your registration for the internship program has been successfully confirmed. 
-          We're excited to have you onboard for this learning journey.
-        </p>
-
-        <!-- Program Details Card -->
-        <div style="margin: 25px 0; padding: 25px; border: 2px solid #d1fae5; border-radius: 8px; background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);">
-          <h3 style="color: #065f46; font-size: 18px; margin-bottom: 15px; font-weight: 600;">🎯 Program Details</h3>
-          
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            <div>
-              <p style="margin: 8px 0; font-size: 14px; color: #374151;">
-                <strong style="color: #065f46;">Internship Domain:</strong><br/>
-                <span style="color: #059669; font-weight: 600;">${getDomainDisplayName(domain)}</span>
-              </p>
+  export const getContactEmailHTML = (name, email, message, mobile) => {
+    return `
+      <div style="max-width:580px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+        <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
+          <div style="padding:24px 28px 12px; text-align:center; border-bottom:1px solid #f0f0f0;">
+            <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height:52px; width:auto; margin-bottom:8px;" />
+            <h1 style="font-size:24px; margin:12px 0 4px; font-weight:700; background:linear-gradient(135deg, #166c8c 0%, #3b36db 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
+              Levitica Technologies Pvt Ltd
+            </h1>
+          </div>
+          <div style="background:linear-gradient(98deg, #4f46e5 0%, #6366f1 100%); padding:18px 24px; text-align:center;">
+            <span style="background:rgba(255,255,255,0.12); padding:6px 18px; border-radius:60px; color:#fff; font-weight:600; font-size:15px;">📬 New Contact Form Submission</span>
+          </div>
+          <div style="padding:32px 32px 28px; color:#1f2937; font-size:15px; line-height:1.55;">
+            <h2 style="color:#1f2937; font-size:20px; margin-bottom:20px;">New message from ${name}</h2>
+            <div style="background:#f8fafc; border-radius:16px; padding:20px; margin:20px 0; border-left:4px solid #4f46e5;">
+              <p style="margin:8px 0;"><strong>Name:</strong> ${name}</p>
+              <p style="margin:8px 0;"><strong>Email:</strong> ${email}</p>
+              <p style="margin:8px 0;"><strong>Mobile Number:</strong> ${mobile}</p>
+              <p style="margin:8px 0;"><strong>Message:</strong><br/>${message}</p>
             </div>
-            <div>
-              <p style="margin: 8px 0; font-size: 14px; color: #374151;">
-                <strong style="color: #065f46;">Program:</strong><br/>
-                <span style="color: #059669; font-weight: 600;">${getProgramDisplayName(program)}</span>
-              </p>
-            </div>
-            <div>
-              <p style="margin: 8px 0; font-size: 14px; color: #374151;">
-                <strong style="color: #065f46;">Duration:</strong><br/>
-                <span style="color: #059669; font-weight: 600;">${duration}</span>
-              </p>
-            </div>
-            <div>
-              <p style="margin: 8px 0; font-size: 14px; color: #374151;">
-                <strong style="color: #065f46;">Amount Paid:</strong><br/>
-                <span style="color: #059669; font-weight: 600;">₹${amount}</span>
-              </p>
-            </div>
+            <p style="margin-top:20px;">You can reply directly to <strong>${email}</strong> to continue the conversation.</p>
+            <p style="margin-top:24px; border-top:1px solid #edf2f7; padding-top:20px;">Best regards,<br /><strong>Levitica Support Team</strong></p>
+          </div>
+          <div style="background:#f9fafb; padding:20px 24px; text-align:center; font-size:12px; color:#6c757d; border-top:1px solid #eef2f6;">
+            <p style="margin:0 0 6px 0;">© ${new Date().getFullYear()} Levitica Technologies Pvt Ltd. All rights reserved.</p>
+            <p style="margin:0;"><a href="https://leviticatechnologies.com/privacy" style="color:#6c86a3; text-decoration:none;">Privacy Policy</a> | <a href="https://leviticatechnologies.com/contact-us" style="color:#6c86a3; text-decoration:none;">Contact Us</a></p>
           </div>
         </div>
-
-        <!-- Payment Information -->
-        <div style="margin: 25px 0; padding: 20px; border: 1px solid #e5e7eb; border-radius: 6px; background-color: #f8fafc;">
-          <h3 style="color: #374151; font-size: 16px; margin-bottom: 15px; font-weight: 600;">💰 Payment Information</h3>
-          
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div>
-              <p style="margin: 6px 0; font-size: 13px; color: #6b7280;">
-                <strong>Payment ID:</strong><br/>
-                <span style="color: #374151; font-family: monospace;">${paymentId}</span>
-              </p>
-            </div>
-            <div>
-              <p style="margin: 6px 0; font-size: 13px; color: #6b7280;">
-                <strong>Order ID:</strong><br/>
-                <span style="color: #374151; font-family: monospace;">${orderId}</span>
-              </p>
-            </div>
-            <div>
-              <p style="margin: 6px 0; font-size: 13px; color: #6b7280;">
-                <strong>Payment Date:</strong><br/>
-                <span style="color: #374151;">${date}</span>
-              </p>
-            </div>
-            <div>
-              <p style="margin: 6px 0; font-size: 13px; color: #6b7280;">
-                <strong>Status:</strong><br/>
-                <span style="color: #059669; font-weight: 600;">✅ Paid</span>
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Next Steps -->
-        <div style="margin: 25px 0; padding: 20px; border-left: 4px solid #3b82f6; background-color: #eff6ff;">
-          <h3 style="color: #1e40af; font-size: 16px; margin-bottom: 12px; font-weight: 600;">📋 What's Next?</h3>
-          <ul style="color: #374151; font-size: 14px; line-height: 1.6; padding-left: 20px; margin: 0;">
-            <li>Prepare your development environment as per requirements</li>
-
-          </ul>
-        </div>
-
-        <!-- CTA Button -->
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="https://leviticatechnologies.com" 
-             style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; display: inline-block;">
-            Visit Levitica Technologies
-          </a>
-        </div>
-
-        <!-- Support Info -->
-        <div style="margin-top: 25px; padding: 15px; background-color: #fef3c7; border-radius: 6px; border: 1px solid #f59e0b;">
-          <p style="color: #92400e; font-size: 14px; margin: 0; text-align: center;">
-            <strong>Need Help?</strong> Contact our support team at 
-            <a href="mailto:support@designcareermetrics.com" style="color: #dc2626; text-decoration: none;">support@designcareermetrics.com</a>
-          </p>
-        </div>
-
-        <p style="font-size: 13px; color: #9ca3af; margin-top: 25px;">
-          This email was sent to <strong>${email}</strong>. Please do not reply to this automated message.
-        </p>
       </div>
+    `;
+  };
 
-      <!-- Footer -->
-      <div style="background-color: #036481; padding: 25px; text-align: center; font-size: 12px; color: #cbd5e1;">
-        <p style="margin: 0 0 10px 0;">
-          &copy; ${new Date().getFullYear()} Levitica Technologies. All rights reserved.
-        </p>
-        <p style="margin: 8px 0;">
-          <a href="https://leviticatechnologies.com/privacy" style="color: #60a5fa; text-decoration: none; margin: 0 10px;">Privacy Policy</a> |
-          <a href="https://leviticatechnologies.com/terms" style="color: #60a5fa; text-decoration: none; margin: 0 10px;">Terms of Service</a> |
-          <a href="https://leviticatechnologies.com/contact-us" style="color: #60a5fa; text-decoration: none; margin: 0 10px;">Contact Us</a>
-        </p>
-        <p style="margin: 8px 0; color: #94a3b8;">
-          Levitica Technologies<br/>
-          Empowering students with industry-relevant skills
-        </p>
-      </div>
-    </div>
-  `;
-};
-
-
-export const getCoursePaymentSuccessEmailHTML = (
-  name,
-  email,
-  courseDetails,
-  paymentDetails
-) => {
-
-  const { courses, amount } = courseDetails;
-  const { paymentId, orderId, date } = paymentDetails;
-
-  const courseList = courses
-    .map(
-      (course) => `
-      <li style="margin:6px 0;">
-        <strong style="color:#059669;">${course}</strong>
-      </li>
-    `
-    )
-    .join("");
-
-  return `
-  <div style="font-family:'Segoe UI',Roboto,sans-serif;background-color:#f9fafb;margin:0;padding:0;">
-
-    <!-- Header -->
-    <div style="background:linear-gradient(135deg,#6366f1 0%,#4f46e5 100%);padding:30px 20px;text-align:center;">
-      <img src="https://leviticatechnologies.com/img/leviticalogo.png" style="height:50px;" />
-      <h1 style="color:#ffffff;font-size:24px;margin-top:15px;">Payment Successful!</h1>
-      <p style="color:#e0e7ff;font-size:16px;margin-top:8px;">
-        Course Enrollment Confirmed
-      </p>
-    </div>
-
-    <!-- Body -->
-    <div style="padding:40px;max-width:600px;margin:auto;background-color:#ffffff;border-radius:8px;">
-
-      <h2 style="color:#1f2937;margin-bottom:20px;">Hi ${name},</h2>
-
-      <p style="color:#6b7280;font-size:16px;line-height:1.6;margin-bottom:25px;">
-        Thank you for your payment! Your course enrollment has been successfully confirmed.
-        You now have access to the course content and resources.
-      </p>
-
-      <!-- Course Details -->
-      <div style="margin:25px 0;padding:25px;border:2px solid #e0e7ff;border-radius:8px;background:linear-gradient(135deg,#f8fafc 0%,#eef2ff 100%);">
-
-        <h3 style="color:#4338ca;font-size:18px;margin-bottom:15px;">
-          📚 Enrolled Courses
-        </h3>
-
-        <ul style="padding-left:18px;color:#374151;font-size:14px;">
-          ${courseList}
-        </ul>
-
-        <p style="margin-top:15px;font-size:14px;color:#374151;">
-          <strong>Total Amount Paid:</strong>
-          <span style="color:#059669;font-weight:600;"> ₹${amount}</span>
-        </p>
-
-      </div>
-
-      <!-- Payment Info -->
-      <div style="margin:25px 0;padding:20px;border:1px solid #e5e7eb;border-radius:6px;background:#f8fafc;">
-
-        <h3 style="color:#374151;font-size:16px;margin-bottom:15px;">
-          💰 Payment Information
-        </h3>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-
-          <p style="font-size:13px;color:#6b7280;">
-            <strong>Payment ID</strong><br/>
-            <span style="font-family:monospace;color:#374151;">${paymentId}</span>
-          </p>
-
-          <p style="font-size:13px;color:#6b7280;">
-            <strong>Order ID</strong><br/>
-            <span style="font-family:monospace;color:#374151;">${orderId}</span>
-          </p>
-
-          <p style="font-size:13px;color:#6b7280;">
-            <strong>Date</strong><br/>
-            <span style="color:#374151;">${date}</span>
-          </p>
-
-          <p style="font-size:13px;color:#6b7280;">
-            <strong>Status</strong><br/>
-            <span style="color:#059669;font-weight:600;">✅ Paid</span>
-          </p>
-
-        </div>
-
-      </div>
-
-      <!-- Next Steps -->
-      <div style="margin:25px 0;padding:20px;border-left:4px solid #3b82f6;background:#eff6ff;">
-        <h3 style="color:#1e40af;margin-bottom:10px;">📋 What's Next?</h3>
-
-        <ul style="color:#374151;font-size:14px;line-height:1.6;margin:0;padding-left:20px;">
-          <li>Login to your account</li>
-          <li>Access the enrolled course materials</li>
-          <li>Start learning and complete lessons</li>
-        </ul>
-      </div>
-
-      <!-- CTA -->
-      <div style="text-align:center;margin:30px 0;">
-        <a href="https://leviticatechnologies.com/dashboard"
-           style="background:linear-gradient(135deg,#6366f1 0%,#4f46e5 100%);
-           color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px;">
-          Go to My Courses
-        </a>
-      </div>
-
-      <!-- Support -->
-      <div style="margin-top:25px;padding:15px;background:#fef3c7;border-radius:6px;border:1px solid #f59e0b;">
-        <p style="color:#92400e;font-size:14px;text-align:center;margin:0;">
-          <strong>Need Help?</strong> Contact us at
-          <a href="mailto:support@designcareermetrics.com"
-          style="color:#dc2626;text-decoration:none;">
-          support@designcareermetrics.com
-          </a>
-        </p>
-      </div>
-
-      <p style="font-size:13px;color:#9ca3af;margin-top:25px;">
-        This email was sent to <strong>${email}</strong>.
-      </p>
-
-    </div>
-
-    <!-- Footer -->
-    <div style="background:#036481;padding:25px;text-align:center;font-size:12px;color:#cbd5e1;">
-
-      <p>© ${new Date().getFullYear()} Levitica Technologies</p>
-
-      <p>
-        <a href="https://leviticatechnologies.com/privacy" style="color:#60a5fa;text-decoration:none;">Privacy Policy</a> |
-        <a href="https://leviticatechnologies.com/terms" style="color:#60a5fa;text-decoration:none;">Terms</a> |
-        <a href="https://leviticatechnologies.com/contact-us" style="color:#60a5fa;text-decoration:none;">Contact</a>
-      </p>
-
-      <p style="color:#94a3b8;">
-        Levitica Technologies<br/>
-        Empowering students with industry-relevant skills
-      </p>
-
-    </div>
-
-  </div>
-  `;
-};
-// Helper functions for display names
+// Helper functions for internship payment
 const getDomainDisplayName = (domainId) => {
   const domains = {
     'java-fullstack': 'Java Full Stack Development',
@@ -488,7 +165,7 @@ const getDomainDisplayName = (domainId) => {
   return domains[domainId] || domainId;
 };
 
- export const getProgramDisplayName = (programId) => {
+const getProgramDisplayName = (programId) => {
   const programs = {
     '5days': '5 Days Intensive Program',
     '15days': '15 Days Comprehensive Program'
@@ -496,124 +173,217 @@ const getDomainDisplayName = (domainId) => {
   return programs[programId] || programId;
 };
 
-export const getVerificationEmailHTMLOTP = (name, otp, email) => {
+export const getInternshipPaymentSuccessEmailHTML = (name, email, programDetails, paymentDetails) => {
+  const { domain, program, duration, amount } = programDetails;
+  const { paymentId, orderId, date } = paymentDetails;
+
   return `
-    <div style="font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; padding: 0; margin: 0;">
-      <!-- Header -->
-      <div style="background-color: #036481; padding: 20px; text-align: center;">
-        <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies Pvt Ltd" style="height: 40px;" />
-        <h1 style="color: #ffffff; font-size: 20px; margin-top: 10px;">Levitica Technologies Pvt Ltd</h1>
-      </div>
-
-      <!-- Body -->
-      <div style="padding: 40px; max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px;">
-        <h2 style="color: #222;">Hi ${name},</h2>
-        <p style="color: #555; font-size: 16px;">
-          Thanks for signing up! Use the OTP below to verify your email and activate your account.
-        </p>
-        
-        <!-- OTP Display -->
-        <div style="text-align: center; margin: 30px 0;">
-          <div style="background: #f8fafc; border: 2px dashed #cbd5e1; padding: 20px; border-radius: 8px; display: inline-block;">
-            <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">YOUR VERIFICATION CODE</div>
-            <div style="font-size: 32px; font-weight: bold; color: #036481; letter-spacing: 8px; font-family: monospace;">
-              ${otp}
-            </div>
-          </div>
+    <div style="max-width:580px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+      <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
+        <div style="padding:24px 28px 12px; text-align:center; border-bottom:1px solid #f0f0f0;">
+          <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height:52px; width:auto; margin-bottom:8px;" />
+          <h1 style="font-size:24px; margin:12px 0 4px; font-weight:700; background:linear-gradient(135deg, #166c8c 0%, #3b36db 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
+            Levitica Technologies Pvt Ltd
+          </h1>
+          <p style="font-size:13px; color:#6c86a3; margin-top:6px;">Internship Program</p>
         </div>
-
-        <div style="background: #fffbeb; border: 1px solid #fef3c7; padding: 16px; border-radius: 6px; margin: 20px 0;">
-          <div style="display: flex; align-items: start; gap: 12px;">
-            <div style="color: #d97706; font-size: 18px;">⚠️</div>
-            <div>
-              <strong style="color: #92400e;">Important:</strong>
-              <ul style="color: #92400e; margin: 8px 0; padding-left: 20px;">
-                <li>This OTP is valid for <strong>10 minutes</strong> only</li>
-                <li>Do not share this code with anyone</li>
-                <li>Enter this code in the verification page to complete your registration</li>
-              </ul>
-            </div>
-          </div>
+        <div style="background:linear-gradient(98deg, #10b981 0%, #059669 100%); padding:18px 24px; text-align:center;">
+          <span style="background:rgba(255,255,255,0.12); padding:6px 18px; border-radius:60px; color:#fff; font-weight:600; font-size:15px;">✅ Payment Successful – Internship Confirmed</span>
         </div>
-
-        <p style="font-size: 13px; color: #888;">
-          If you didn't request this, you can safely ignore it.<br/>
-          This email was sent to <strong>${email}</strong>
-        </p>
-      </div>
-
-      <!-- Footer -->
-      <div style="background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #666;">
-        &copy; ${new Date().getFullYear()} Levitica Technologies Pvt Ltd. All rights reserved.<br/>
-        <a href="https://leviticatechnologies.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
-        <a href="https://leviticatechnologies.com/contact-us" style="color: #2563eb; text-decoration: none;">Contact Us</a>
+        <div style="padding:32px 32px 28px; color:#1f2937; font-size:15px; line-height:1.55;">
+          <p style="margin-top:0; margin-bottom:18px; font-size:16px;">Hi <strong style="color:#1e3a8a;">${name}</strong>,</p>
+          <p style="margin-bottom:16px;">Thank you for your payment! Your registration for the internship program has been successfully confirmed. We're excited to have you onboard for this learning journey.</p>
+          
+          <div style="background:#f0fdf4; border-radius:16px; padding:20px; margin:20px 0; border:1px solid #d1fae5;">
+            <h3 style="color:#065f46; font-size:18px; margin-bottom:15px;">🎯 Program Details</h3>
+            <p style="margin:8px 0;"><strong style="color:#065f46;">Internship Domain:</strong> ${getDomainDisplayName(domain)}</p>
+            <p style="margin:8px 0;"><strong style="color:#065f46;">Program:</strong> ${getProgramDisplayName(program)}</p>
+            <p style="margin:8px 0;"><strong style="color:#065f46;">Duration:</strong> ${duration}</p>
+            <p style="margin:8px 0;"><strong style="color:#065f46;">Amount Paid:</strong> ₹${amount}</p>
+          </div>
+          
+          <div style="background:#f8fafc; border-radius:16px; padding:20px; margin:20px 0; border-left:4px solid #4f46e5;">
+            <h3 style="color:#374151; font-size:16px; margin-bottom:15px;">💰 Payment Information</h3>
+            <p style="margin:6px 0;"><strong>Payment ID:</strong> ${paymentId}</p>
+            <p style="margin:6px 0;"><strong>Order ID:</strong> ${orderId}</p>
+            <p style="margin:6px 0;"><strong>Payment Date:</strong> ${date}</p>
+            <p style="margin:6px 0;"><strong>Status:</strong> ✅ Paid</p>
+          </div>
+          
+          <div style="background:#eff6ff; border-radius:16px; padding:20px; margin:20px 0; border-left:4px solid #3b82f6;">
+            <h3 style="color:#1e40af; font-size:16px; margin-bottom:12px;">📋 What's Next?</h3>
+            <ul style="margin:0; padding-left:20px;">
+              <li>Prepare your development environment as per requirements</li>
+              <li>You will receive orientation details within 24 hours</li>
+              <li>Check your dashboard for project guidelines</li>
+            </ul>
+          </div>
+          
+          <div style="text-align:center; margin:30px 0;">
+            <a href="https://leviticatechnologies.com" style="background:#10b981; color:#ffffff; padding:14px 32px; border-radius:44px; text-decoration:none; font-weight:600; display:inline-block;">Visit Levitica Technologies</a>
+          </div>
+          
+          <div style="background:#fef3c7; border-radius:16px; padding:15px; margin:20px 0; border:1px solid #f59e0b;">
+            <p style="margin:0; color:#92400e; text-align:center;"><strong>Need Help?</strong> Contact our support team at <a href="mailto:info@leviticatechnologies.com" style="color:#dc2626; text-decoration:none;">info@leviticatechnologies.com</a></p>
+          </div>
+          
+          <p style="font-size:13px; color:#9ca3af; margin-top:25px;">This email was sent to <strong>${email}</strong>. Please do not reply to this automated message.</p>
+          <p style="margin-top:24px; border-top:1px solid #edf2f7; padding-top:20px;">Thanks,<br /><strong>The Levitica Team</strong></p>
+        </div>
+        <div style="background:#f9fafb; padding:20px 24px; text-align:center; font-size:12px; color:#6c757d; border-top:1px solid #eef2f6;">
+          <p style="margin:0 0 6px 0;">© ${new Date().getFullYear()} Levitica Technologies Pvt Ltd. All rights reserved.</p>
+          <p style="margin:0;">Levitica Technologies — Empowering students with industry-relevant skills</p>
+        </div>
       </div>
     </div>
   `;
 };
 
-export const getLiveClassScheduledEmailHTML = (
-  name,
-  title,
-  startTime,
-  duration,
-  joinUrl,
-  email
-) => {
+export const getCoursePaymentSuccessEmailHTML = (name, email, courseDetails, paymentDetails) => {
+  const { courses, amount } = courseDetails;
+  const { paymentId, orderId, date } = paymentDetails;
+
+  const courseList = courses.map(course => `<li style="margin:6px 0;"><strong style="color:#059669;">${course}</strong></li>`).join("");
+
   return `
-    <div style="font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; padding: 0; margin: 0;">
-      
-      <!-- Header -->
-      <div style="background-color: #036481; padding: 20px; text-align: center;">
-        <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies Pvt Ltd" style="height: 40px;" />
-        <h1 style="color: #ffffff; font-size: 20px; margin-top: 10px;">Levitica Technologies Pvt Ltd</h1>
-      </div>
-
-      <!-- Body -->
-      <div style="padding: 40px; max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px;">
-        <h2 style="color: #222;">Hi ${name},</h2>
-
-        <p style="color: #555; font-size: 16px;">
-          A new <strong>Live Class</strong> has been scheduled for your course.
-        </p>
-
-        <div style="margin: 25px 0; padding: 20px; border: 1px solid #e5e7eb; border-radius: 6px; background-color: #f9fafb;">
+    <div style="max-width:580px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+      <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
+        <div style="padding:24px 28px 12px; text-align:center; border-bottom:1px solid #f0f0f0;">
+          <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height:52px; width:auto; margin-bottom:8px;" />
+          <h1 style="font-size:24px; margin:12px 0 4px; font-weight:700; background:linear-gradient(135deg, #166c8c 0%, #3b36db 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
+            Levitica Technologies Pvt Ltd
+          </h1>
+          <p style="font-size:13px; color:#6c86a3; margin-top:6px;">Course Enrollment</p>
+        </div>
+        <div style="background:linear-gradient(98deg, #6366f1 0%, #4f46e5 100%); padding:18px 24px; text-align:center;">
+          <span style="background:rgba(255,255,255,0.12); padding:6px 18px; border-radius:60px; color:#fff; font-weight:600; font-size:15px;">📚 Payment Successful – Course Enrollment Confirmed</span>
+        </div>
+        <div style="padding:32px 32px 28px; color:#1f2937; font-size:15px; line-height:1.55;">
+          <p style="margin-top:0; margin-bottom:18px; font-size:16px;">Hi <strong style="color:#1e3a8a;">${name}</strong>,</p>
+          <p style="margin-bottom:16px;">Thank you for your payment! Your course enrollment has been successfully confirmed. You now have access to the course content and resources.</p>
           
-          <p style="margin: 8px 0; font-size: 15px; color: #333;">
-            <strong>Class Title:</strong> ${title}
-          </p>
-
-          <p style="margin: 8px 0; font-size: 15px; color: #333;">
-            <strong>Start Time:</strong> ${startTime}
-          </p>
-
-          <p style="margin: 8px 0; font-size: 15px; color: #333;">
-            <strong>Duration:</strong> ${duration} minutes
-          </p>
-
+          <div style="background:#eef2ff; border-radius:16px; padding:20px; margin:20px 0; border:1px solid #e0e7ff;">
+            <h3 style="color:#4338ca; font-size:18px; margin-bottom:15px;">📚 Enrolled Courses</h3>
+            <ul style="margin:0; padding-left:20px;">${courseList}</ul>
+            <p style="margin-top:15px;"><strong>Total Amount Paid:</strong> <span style="color:#059669; font-weight:600;">₹${amount}</span></p>
+          </div>
+          
+          <div style="background:#f8fafc; border-radius:16px; padding:20px; margin:20px 0; border-left:4px solid #4f46e5;">
+            <h3 style="color:#374151; font-size:16px; margin-bottom:15px;">💰 Payment Information</h3>
+            <p style="margin:6px 0;"><strong>Payment ID:</strong> ${paymentId}</p>
+            <p style="margin:6px 0;"><strong>Order ID:</strong> ${orderId}</p>
+            <p style="margin:6px 0;"><strong>Date:</strong> ${date}</p>
+            <p style="margin:6px 0;"><strong>Status:</strong> ✅ Paid</p>
+          </div>
+          
+          <div style="background:#eff6ff; border-radius:16px; padding:20px; margin:20px 0; border-left:4px solid #3b82f6;">
+            <h3 style="color:#1e40af; margin-bottom:10px;">📋 What's Next?</h3>
+            <ul style="margin:0; padding-left:20px;">
+              <li>Login to your account</li>
+              <li>Access the enrolled course materials</li>
+              <li>Start learning and complete lessons</li>
+            </ul>
+          </div>
+          
+          <div style="text-align:center; margin:30px 0;">
+            <a href="https://leviticatechnologies.com/dashboard" style="background:#4f46e5; color:#ffffff; padding:14px 32px; border-radius:44px; text-decoration:none; font-weight:600; display:inline-block;">Go to My Courses</a>
+          </div>
+          
+          <div style="background:#fef3c7; border-radius:16px; padding:15px; margin:20px 0; border:1px solid #f59e0b;">
+            <p style="margin:0; color:#92400e; text-align:center;"><strong>Need Help?</strong> Contact us at <a href="mailto:info@leviticatechnologies.com" style="color:#dc2626; text-decoration:none;">info@leviticatechnologies.com</a></p>
+          </div>
+          
+          <p style="font-size:13px; color:#9ca3af; margin-top:25px;">This email was sent to <strong>${email}</strong>.</p>
+          <p style="margin-top:24px; border-top:1px solid #edf2f7; padding-top:20px;">Thanks,<br /><strong>The Levitica Team</strong></p>
         </div>
-
-        <!-- Join Button -->
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${joinUrl}" 
-             style="background-color: #2563eb; color: #fff; padding: 14px 28px; border-radius: 6px; text-decoration: none; font-weight: 600;">
-            Join Live Class
-          </a>
+        <div style="background:#f9fafb; padding:20px 24px; text-align:center; font-size:12px; color:#6c757d; border-top:1px solid #eef2f6;">
+          <p style="margin:0 0 6px 0;">© ${new Date().getFullYear()} Levitica Technologies Pvt Ltd. All rights reserved.</p>
+          <p style="margin:0;">Levitica Technologies — Empowering students with industry-relevant skills</p>
         </div>
-
-        <p style="font-size: 13px; color: #888;">
-          Please join the session on time to get the most out of the class.<br/>
-          This email was sent to <strong>${email}</strong>
-        </p>
       </div>
+    </div>
+  `;
+};
 
-      <!-- Footer -->
-      <div style="background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #666;">
-        &copy; ${new Date().getFullYear()} Levitica Technologies Pvt Ltd. All rights reserved.<br/>
-        <a href="https://leviticatechnologies.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
-        <a href="https://leviticatechnologies.com/contact-us" style="color: #2563eb; text-decoration: none;">Contact Us</a>
+export const getVerificationEmailHTMLOTP = (name, otp, email) => {
+  return `
+    <div style="max-width:580px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+      <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
+        <div style="padding:24px 28px 12px; text-align:center; border-bottom:1px solid #f0f0f0;">
+          <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height:52px; width:auto; margin-bottom:8px;" />
+          <h1 style="font-size:24px; margin:12px 0 4px; font-weight:700; background:linear-gradient(135deg, #166c8c 0%, #3b36db 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
+            Levitica Technologies Pvt Ltd
+          </h1>
+          <p style="font-size:13px; color:#6c86a3; margin-top:6px;">Secure Verification</p>
+        </div>
+        <div style="background:linear-gradient(98deg, #4f46e5 0%, #6366f1 100%); padding:18px 24px; text-align:center;">
+          <span style="background:rgba(255,255,255,0.12); padding:6px 18px; border-radius:60px; color:#fff; font-weight:600; font-size:15px;">🔑 Email Verification OTP</span>
+        </div>
+        <div style="padding:32px 32px 28px; color:#1f2937; font-size:15px; line-height:1.55;">
+          <p style="margin-top:0; margin-bottom:18px; font-size:16px;">Hi <strong style="color:#1e3a8a;">${name}</strong>,</p>
+          <p style="margin-bottom:16px;">Thanks for signing up! Use the OTP below to verify your email and activate your account.</p>
+          
+          <div style="background:#f1f5f9; text-align:center; padding:24px; margin:24px 0; border-radius:16px;">
+            <div style="font-size:36px; font-weight:bold; letter-spacing:8px; font-family:monospace; color:#1e293b;">${otp}</div>
+            <p style="margin:12px 0 0; font-size:12px; color:#64748b;">Valid for 10 minutes</p>
+          </div>
+          
+          <div style="background:#fef9f0; border-radius:16px; padding:12px 20px; margin:20px 0; border:1px solid #ffedd5;">
+            <p style="margin:0; font-size:13.5px; color:#92400e;">⚠️ Do not share this OTP with anyone. This code is for your verification only.</p>
+          </div>
+          
+          <p style="font-size:13px; color:#6c757d;">This email was sent to <strong>${email}</strong></p>
+          <p style="margin-top:24px; border-top:1px solid #edf2f7; padding-top:20px;">Thanks,<br /><strong>The Levitica Team</strong></p>
+        </div>
+        <div style="background:#f9fafb; padding:20px 24px; text-align:center; font-size:12px; color:#6c757d; border-top:1px solid #eef2f6;">
+          <p style="margin:0 0 6px 0;">© ${new Date().getFullYear()} Levitica Technologies Pvt Ltd. All rights reserved.</p>
+          <p style="margin:0;"><a href="https://leviticatechnologies.com/privacy" style="color:#6c86a3; text-decoration:none;">Privacy Policy</a> | <a href="https://leviticatechnologies.com/contact-us" style="color:#6c86a3; text-decoration:none;">Contact Us</a></p>
+        </div>
       </div>
+    </div>
+  `;
+};
 
+export const getLiveClassScheduledEmailHTML = (name, title, startTime, duration, joinUrl, email) => {
+  return `
+    <div style="max-width:580px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+      <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
+        <div style="padding:24px 28px 12px; text-align:center; border-bottom:1px solid #f0f0f0;">
+          <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height:52px; width:auto; margin-bottom:8px;" />
+          <h1 style="font-size:24px; margin:12px 0 4px; font-weight:700; background:linear-gradient(135deg, #166c8c 0%, #3b36db 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
+            Levitica Technologies Pvt Ltd
+          </h1>
+          <p style="font-size:13px; color:#6c86a3; margin-top:6px;">Live Learning</p>
+        </div>
+        <div style="background:linear-gradient(98deg, #4f46e5 0%, #6366f1 100%); padding:18px 24px; text-align:center;">
+          <span style="background:rgba(255,255,255,0.12); padding:6px 18px; border-radius:60px; color:#fff; font-weight:600; font-size:15px;">🎥 Live Class Scheduled</span>
+        </div>
+        <div style="padding:32px 32px 28px; color:#1f2937; font-size:15px; line-height:1.55;">
+          <p style="margin-top:0; margin-bottom:18px; font-size:16px;">Hi <strong style="color:#1e3a8a;">${name}</strong>,</p>
+          <p style="margin-bottom:16px;">A new <strong>Live Class</strong> has been scheduled for your course.</p>
+          
+          <div style="background:#f8fafc; border-left:4px solid #4f46e5; padding:20px; border-radius:14px; margin:20px 0;">
+            <p style="margin:8px 0;"><strong>Class Title:</strong> ${title}</p>
+            <p style="margin:8px 0;"><strong>Start Time:</strong> ${startTime}</p>
+            <p style="margin:8px 0;"><strong>Duration:</strong> ${duration} minutes</p>
+          </div>
+          
+          <div style="text-align:center; margin:30px 0;">
+            <a href="${joinUrl}" style="background:#4f46e5; color:#ffffff; padding:14px 32px; border-radius:44px; text-decoration:none; font-weight:600; display:inline-block; box-shadow:0 6px 14px rgba(79,70,229,0.25);">Join Live Class</a>
+          </div>
+          
+          <div style="background:#eff6ff; border-radius:16px; padding:12px 20px; margin:20px 0;">
+            <p style="margin:0; font-size:13.5px; color:#1e40af;">💡 Please join the session on time to get the most out of the class. Make sure your microphone and camera are ready.</p>
+          </div>
+          
+          <p style="font-size:13px; color:#6c757d;">This email was sent to <strong>${email}</strong></p>
+          <p style="margin-top:24px; border-top:1px solid #edf2f7; padding-top:20px;">Thanks,<br /><strong>The Levitica Team</strong></p>
+        </div>
+        <div style="background:#f9fafb; padding:20px 24px; text-align:center; font-size:12px; color:#6c757d; border-top:1px solid #eef2f6;">
+          <p style="margin:0 0 6px 0;">© ${new Date().getFullYear()} Levitica Technologies Pvt Ltd. All rights reserved.</p>
+          <p style="margin:0;"><a href="https://leviticatechnologies.com/privacy" style="color:#6c86a3; text-decoration:none;">Privacy Policy</a> | <a href="https://leviticatechnologies.com/contact-us" style="color:#6c86a3; text-decoration:none;">Contact Us</a></p>
+        </div>
+      </div>
     </div>
   `;
 };
