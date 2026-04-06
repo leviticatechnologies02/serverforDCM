@@ -2,9 +2,9 @@ export const getVerificationEmailHTML = (name, verifyUrl, email) => {
   return `
     <div style="font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; padding: 0; margin: 0;">
       <!-- Header -->
-      <div style="background-color: #1e293b; padding: 20px; text-align: center;">
-        <img src="https://api.designcareermetrics.com/img/dcmlogotransperent.png" alt="Design Career Metric" style="height: 40px;" />
-        <h1 style="color: #ffffff; font-size: 20px; margin-top: 10px;">Design Career Metric</h1>
+      <div style="background-color: #036481; padding: 20px; text-align: center;">
+        <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies Pvt Ltd" style="height: 40px;" />
+        <h1 style="color: #ffffff; font-size: 20px; margin-top: 10px;">Levitica Technologies Pvt Ltd</h1>
       </div>
 
       <!-- Body -->
@@ -26,9 +26,9 @@ export const getVerificationEmailHTML = (name, verifyUrl, email) => {
 
       <!-- Footer -->
       <div style="background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #666;">
-        &copy; ${new Date().getFullYear()} Design Career Metric. All rights reserved.<br/>
-        <a href="https://designcareermetrics.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
-        <a href="https://designcareermetrics.com/contact-us" style="color: #2563eb; text-decoration: none;">Contact Us</a>
+        &copy; ${new Date().getFullYear()} Levitica Technologies Pvt Ltd. All rights reserved.<br/>
+        <a href="https://leviticatechnologies.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
+        <a href="https://leviticatechnologies.com/contact-us" style="color: #2563eb; text-decoration: none;">Contact Us</a>
       </div>
     </div>
   `;
@@ -109,9 +109,9 @@ export const getBatchAssignmentEmailHTML = (name, courseTitle, batchName,email) 
   return `
     <div style="font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; padding: 0; margin: 0;">
       <!-- Header -->
-      <div style="background-color: #1e293b; padding: 20px; text-align: center;">
-        <img src="https://api.designcareermetrics.com/img/dcmlogotransperent.png" alt="Design Career Metric" style="height: 40px;" />
-        <h1 style="color: #ffffff; font-size: 20px; margin-top: 10px;">Design Career Metric</h1>
+      <div style="background-color: #036481; padding: 20px; text-align: center;">
+        <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies Pvt Ltd" style="height: 40px;" />
+        <h1 style="color: #ffffff; font-size: 20px; margin-top: 10px;">Levitica Technologies Pvt Ltd</h1>
       </div>
 
       <!-- Body -->
@@ -143,9 +143,9 @@ export const getBatchAssignmentEmailHTML = (name, courseTitle, batchName,email) 
 
       <!-- Footer -->
       <div style="background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #666;">
-        &copy; ${new Date().getFullYear()} Design Career Metric. All rights reserved.<br/>
-        <a href="https://designcareermetrics.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
-        <a href="https://designcareermetrics.com/contact-us" style="color: #2563eb; text-decoration: none;">Contact Us</a>
+        &copy; ${new Date().getFullYear()} Levitica Technologies Pvt Ltd. All rights reserved.<br/>
+        <a href="https://leviticatechnologies.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
+        <a href="https://leviticatechnologies.com/contact-us" style="color: #2563eb; text-decoration: none;">Contact Us</a>
       </div>
     </div>
   `;
@@ -155,9 +155,9 @@ export const getContactEmailHTML = (name, email, message,mobile) => {
   return `
     <div style="font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; padding: 0; margin: 0;">
       <!-- Header -->
-      <div style="background-color: #1e293b; padding: 20px; text-align: center;">
-        <img src="https://api.designcareermetrics.com/img/dcmlogotransperent.png" alt="Design Career Metric" style="height: 40px;" />
-        <h1 style="color: #ffffff; font-size: 20px; margin-top: 10px;">Design Career Metric</h1>
+      <div style="background-color: #036481; padding: 20px; text-align: center;">
+        <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies Pvt Ltd" style="height: 40px;" />
+        <h1 style="color: #ffffff; font-size: 20px; margin-top: 10px;">Levitica Technologies Pvt Ltd</h1>
       </div>
 
       <!-- Body -->
@@ -180,9 +180,9 @@ export const getContactEmailHTML = (name, email, message,mobile) => {
 
       <!-- Footer -->
       <div style="background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #666;">
-        &copy; ${new Date().getFullYear()} Design Career Metric. All rights reserved.<br/>
-        <a href="https://designcareermetrics.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
-        <a href="https://designcareermetrics.com/contact-us" style="color: #2563eb; text-decoration: none;">Contact Us</a>
+        &copy; ${new Date().getFullYear()} Levitica Technologies Pvt Ltd. All rights reserved.<br/>
+        <a href="https://leviticatechnologies.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
+        <a href="https://leviticatechnologies.com/contact-us" style="color: #2563eb; text-decoration: none;">Contact Us</a>
       </div>
     </div>
   `;
@@ -196,7 +196,7 @@ export const getInternshipPaymentSuccessEmailHTML = (name, email, programDetails
     <div style="font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; padding: 0; margin: 0;">
       <!-- Header -->
       <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px 20px; text-align: center;">
-        <img src="https://api.designcareermetrics.com/img/dcmlogotransperent.png" alt="Levitica Technologies" style="height: 50px;" />
+        <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height: 50px;" />
         <h1 style="color: #ffffff; font-size: 24px; margin-top: 15px; font-weight: 700;">Payment Successful!</h1>
         <p style="color: #d1fae5; font-size: 16px; margin-top: 8px;">Internship Program Registration Confirmed</p>
       </div>
@@ -285,7 +285,7 @@ export const getInternshipPaymentSuccessEmailHTML = (name, email, programDetails
 
         <!-- CTA Button -->
         <div style="text-align: center; margin: 30px 0;">
-          <a href="https://designcareermetrics.com" 
+          <a href="https://leviticatechnologies.com" 
              style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; display: inline-block;">
             Visit Levitica Technologies
           </a>
@@ -305,14 +305,14 @@ export const getInternshipPaymentSuccessEmailHTML = (name, email, programDetails
       </div>
 
       <!-- Footer -->
-      <div style="background-color: #1e293b; padding: 25px; text-align: center; font-size: 12px; color: #cbd5e1;">
+      <div style="background-color: #036481; padding: 25px; text-align: center; font-size: 12px; color: #cbd5e1;">
         <p style="margin: 0 0 10px 0;">
           &copy; ${new Date().getFullYear()} Levitica Technologies. All rights reserved.
         </p>
         <p style="margin: 8px 0;">
-          <a href="https://designcareermetrics.com/privacy" style="color: #60a5fa; text-decoration: none; margin: 0 10px;">Privacy Policy</a> |
-          <a href="https://designcareermetrics.com/terms" style="color: #60a5fa; text-decoration: none; margin: 0 10px;">Terms of Service</a> |
-          <a href="https://designcareermetrics.com/contact-us" style="color: #60a5fa; text-decoration: none; margin: 0 10px;">Contact Us</a>
+          <a href="https://leviticatechnologies.com/privacy" style="color: #60a5fa; text-decoration: none; margin: 0 10px;">Privacy Policy</a> |
+          <a href="https://leviticatechnologies.com/terms" style="color: #60a5fa; text-decoration: none; margin: 0 10px;">Terms of Service</a> |
+          <a href="https://leviticatechnologies.com/contact-us" style="color: #60a5fa; text-decoration: none; margin: 0 10px;">Contact Us</a>
         </p>
         <p style="margin: 8px 0; color: #94a3b8;">
           Levitica Technologies<br/>
@@ -349,7 +349,7 @@ export const getCoursePaymentSuccessEmailHTML = (
 
     <!-- Header -->
     <div style="background:linear-gradient(135deg,#6366f1 0%,#4f46e5 100%);padding:30px 20px;text-align:center;">
-      <img src="https://api.designcareermetrics.com/img/dcmlogotransperent.png" style="height:50px;" />
+      <img src="https://leviticatechnologies.com/img/leviticalogo.png" style="height:50px;" />
       <h1 style="color:#ffffff;font-size:24px;margin-top:15px;">Payment Successful!</h1>
       <p style="color:#e0e7ff;font-size:16px;margin-top:8px;">
         Course Enrollment Confirmed
@@ -430,7 +430,7 @@ export const getCoursePaymentSuccessEmailHTML = (
 
       <!-- CTA -->
       <div style="text-align:center;margin:30px 0;">
-        <a href="https://designcareermetrics.com/dashboard"
+        <a href="https://leviticatechnologies.com/dashboard"
            style="background:linear-gradient(135deg,#6366f1 0%,#4f46e5 100%);
            color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px;">
           Go to My Courses
@@ -455,14 +455,14 @@ export const getCoursePaymentSuccessEmailHTML = (
     </div>
 
     <!-- Footer -->
-    <div style="background:#1e293b;padding:25px;text-align:center;font-size:12px;color:#cbd5e1;">
+    <div style="background:#036481;padding:25px;text-align:center;font-size:12px;color:#cbd5e1;">
 
       <p>© ${new Date().getFullYear()} Levitica Technologies</p>
 
       <p>
-        <a href="https://designcareermetrics.com/privacy" style="color:#60a5fa;text-decoration:none;">Privacy Policy</a> |
-        <a href="https://designcareermetrics.com/terms" style="color:#60a5fa;text-decoration:none;">Terms</a> |
-        <a href="https://designcareermetrics.com/contact-us" style="color:#60a5fa;text-decoration:none;">Contact</a>
+        <a href="https://leviticatechnologies.com/privacy" style="color:#60a5fa;text-decoration:none;">Privacy Policy</a> |
+        <a href="https://leviticatechnologies.com/terms" style="color:#60a5fa;text-decoration:none;">Terms</a> |
+        <a href="https://leviticatechnologies.com/contact-us" style="color:#60a5fa;text-decoration:none;">Contact</a>
       </p>
 
       <p style="color:#94a3b8;">
@@ -500,9 +500,9 @@ export const getVerificationEmailHTMLOTP = (name, otp, email) => {
   return `
     <div style="font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; padding: 0; margin: 0;">
       <!-- Header -->
-      <div style="background-color: #1e293b; padding: 20px; text-align: center;">
-        <img src="https://api.designcareermetrics.com/img/dcmlogotransperent.png" alt="Design Career Metric" style="height: 40px;" />
-        <h1 style="color: #ffffff; font-size: 20px; margin-top: 10px;">Design Career Metric</h1>
+      <div style="background-color: #036481; padding: 20px; text-align: center;">
+        <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies Pvt Ltd" style="height: 40px;" />
+        <h1 style="color: #ffffff; font-size: 20px; margin-top: 10px;">Levitica Technologies Pvt Ltd</h1>
       </div>
 
       <!-- Body -->
@@ -516,7 +516,7 @@ export const getVerificationEmailHTMLOTP = (name, otp, email) => {
         <div style="text-align: center; margin: 30px 0;">
           <div style="background: #f8fafc; border: 2px dashed #cbd5e1; padding: 20px; border-radius: 8px; display: inline-block;">
             <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">YOUR VERIFICATION CODE</div>
-            <div style="font-size: 32px; font-weight: bold; color: #1e293b; letter-spacing: 8px; font-family: monospace;">
+            <div style="font-size: 32px; font-weight: bold; color: #036481; letter-spacing: 8px; font-family: monospace;">
               ${otp}
             </div>
           </div>
@@ -544,9 +544,9 @@ export const getVerificationEmailHTMLOTP = (name, otp, email) => {
 
       <!-- Footer -->
       <div style="background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #666;">
-        &copy; ${new Date().getFullYear()} Design Career Metric. All rights reserved.<br/>
-        <a href="https://designcareermetrics.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
-        <a href="https://designcareermetrics.com/contact-us" style="color: #2563eb; text-decoration: none;">Contact Us</a>
+        &copy; ${new Date().getFullYear()} Levitica Technologies Pvt Ltd. All rights reserved.<br/>
+        <a href="https://leviticatechnologies.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
+        <a href="https://leviticatechnologies.com/contact-us" style="color: #2563eb; text-decoration: none;">Contact Us</a>
       </div>
     </div>
   `;
@@ -564,9 +564,9 @@ export const getLiveClassScheduledEmailHTML = (
     <div style="font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; padding: 0; margin: 0;">
       
       <!-- Header -->
-      <div style="background-color: #1e293b; padding: 20px; text-align: center;">
-        <img src="https://api.designcareermetrics.com/img/dcmlogotransperent.png" alt="Design Career Metric" style="height: 40px;" />
-        <h1 style="color: #ffffff; font-size: 20px; margin-top: 10px;">Design Career Metric</h1>
+      <div style="background-color: #036481; padding: 20px; text-align: center;">
+        <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies Pvt Ltd" style="height: 40px;" />
+        <h1 style="color: #ffffff; font-size: 20px; margin-top: 10px;">Levitica Technologies Pvt Ltd</h1>
       </div>
 
       <!-- Body -->
@@ -609,9 +609,9 @@ export const getLiveClassScheduledEmailHTML = (
 
       <!-- Footer -->
       <div style="background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #666;">
-        &copy; ${new Date().getFullYear()} Design Career Metric. All rights reserved.<br/>
-        <a href="https://designcareermetrics.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
-        <a href="https://designcareermetrics.com/contact-us" style="color: #2563eb; text-decoration: none;">Contact Us</a>
+        &copy; ${new Date().getFullYear()} Levitica Technologies Pvt Ltd. All rights reserved.<br/>
+        <a href="https://leviticatechnologies.com/privacy" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> |
+        <a href="https://leviticatechnologies.com/contact-us" style="color: #2563eb; text-decoration: none;">Contact Us</a>
       </div>
 
     </div>

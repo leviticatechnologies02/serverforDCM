@@ -12,7 +12,7 @@ export const submitContactForm = async (req, res) => {
   
   try {
     await sendEmail({
-      to: "designcareermetrics@gmail.com",
+      to: "leviticatechnologies@gmail.com",
       html: getContactEmailHTML(name, email, message,mobile),
       replyTo: email,
       subject: `New Contact Form Submission from ${name}`
