@@ -1,2 +1,6 @@
 .env
 node_modules
+
+.htaccess
+stderr.log
+tmp/
