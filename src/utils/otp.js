@@ -1,6 +1,5 @@
 import crypto from 'crypto';
 import Token from '../models/token.js';
-import mongoose from "mongoose";
 
 const OTP_LENGTH = 4;
 const DEFAULT_TTL_MIN = 10;
@@ -24,7 +23,6 @@ export const createOTP = async ({
   const otp = generateOTP();
   const hashedOTP = hashOTP(otp);
 
-
   const expiresAt = new Date(Date.now() + ttlMin * 60 * 1000);
 
   // Cleanup previous OTPs of same type
@@ -37,7 +35,6 @@ export const createOTP = async ({
     expiresAt,
   });
 
-
   return otp; // raw OTP returned for email/SMS
 };
 
@@ -47,9 +44,6 @@ export const verifyOTP = async ({
   otp,
   type,
 }) => {
-
-  
-
   const hashedOTP = hashOTP(otp);
  
   const token = await Token.findOne({

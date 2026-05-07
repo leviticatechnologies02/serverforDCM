@@ -1,6 +1,8 @@
 .env
 node_modules
-
+coverage/
+dist/
+build/
 .htaccess
 stderr.log
 tmp/
