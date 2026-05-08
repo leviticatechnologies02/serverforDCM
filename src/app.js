@@ -3,6 +3,7 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import hpp from 'hpp';
+import cookieParser from 'cookie-parser';
 
 import morgan from 'morgan';
 import { errorHandler } from './middlewares/error.middleware.js';
@@ -30,7 +31,7 @@ app.set('trust proxy', 1);
 // Security middlewares
 app.use(helmet());
 app.use(hpp());
-
+app.use(cookieParser());
 // CORS
 const allowedOrigins = [process.env.FRONTEND_URL, process.env.CLIENT_URL].filter(Boolean);
 app.use(
