@@ -14,6 +14,7 @@ import studentReportsRouter from "./studentReportsRoutes.js";
 import downloadRouter from "../downloadRoute.js";
 import createAdminRouter from "./createAdminRoutes.js";
 import promoRouter from "./ promoRoutes.js";
+import mentorRouter from "./mentorRoutes.js";
 
 const adminRouter = Router();
 
@@ -39,5 +40,6 @@ adminRouter.use("/user", createUserRouter);
 adminRouter.use("/internshipsdomain", internshipsDomainRouter);
 adminRouter.use("/admins",  createAdminRouter);
 adminRouter.use("/promocode",promoRouter)
+adminRouter.use("/mentors", mentorRouter);
 
 export default adminRouter;

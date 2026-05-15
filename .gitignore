@@ -7,4 +7,5 @@ build/
 .env
 .htaccess
 stderr.log
-tmp/
+tmp/  
+secrets/

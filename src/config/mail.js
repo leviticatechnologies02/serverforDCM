@@ -10,3 +10,10 @@ export const transporter = nodemailer.createTransport({
   }
 
 });
+ transporter.verify().then(() => {
+  console.log("SMTP Connection successful");
+}).catch((err) => {
+  console.error("SMTP Connection failed:", err);
+});
+
+export default transporter;

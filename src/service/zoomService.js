@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getZoomAccessToken } from './zoomAuth.js';
+import { getZoomAccessToken } from '../config/zoomAuth.js';
 
 export async function createMeeting({ topic, start_time, duration, hostEmail, timezone, recurrence, endDate }) {
   const zoomAuth = await getZoomAccessToken();

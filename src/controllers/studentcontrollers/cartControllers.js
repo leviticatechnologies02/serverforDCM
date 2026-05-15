@@ -1,34 +1,41 @@
 import Cart from "../../models/cart.js";
 
-
-
-
 export const GetCartItems = async (req, res) => {
   try {
-    const cart = await Cart.findOne({ userId: req.params.userId })
-      .populate('items.courseId', 'name price thumbnail');
+    const cart = await Cart.findOne(
+      { userId: req.params.userId }
+    ).populate({
+      path: "items.courseId",
+      select: "_id name price thumbnail",
+    });
 
+    // Empty cart
     if (!cart) {
-      return res.json({ items: [] });
+      return res.status(200).json({
+        items: [],
+      });
     }
 
-    const filteredCart = {
-      _id: cart._id,
-      items: cart.items.map(item => ({
-       
-          _id: item.courseId._id.toString(),
-          name: item.courseId.name,
-          price: item.courseId.price,
-          thumbnail: item.courseId.thumbnail
-      
-      }))
-    };
+    // Remove deleted courses safely
+    const items = cart.items
+      .filter(item => item.courseId)
+      .map(item => ({
+        _id: item.courseId._id,
+        name: item.courseId.name,
+        price: item.courseId.price,
+        thumbnail: item.courseId.thumbnail,
+      }));
 
-    console.log('Filtered cart:', filteredCart);
-    res.json(filteredCart);
+    return res.status(200).json({
+      items,
+    });
+
   } catch (error) {
-    console.error('Error fetching cart items:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error("Error fetching cart items:", error);
+
+    return res.status(500).json({
+      message: "Server error",
+    });
   }
 };
 

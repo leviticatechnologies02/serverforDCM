@@ -1,5 +1,5 @@
 // utils/sendEmail.js
-import { transporter } from './mailer.js';
+import { transporter } from '../../config/mail.js';
 
 
 export const sendEmail = async ({ to, subject, html, replyTo }) => {

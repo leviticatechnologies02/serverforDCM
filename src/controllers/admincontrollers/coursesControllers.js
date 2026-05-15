@@ -2,6 +2,7 @@ import Course from '../../models/courses.js';
 import CourseAudit from '../../models/courseAudit.js';
 import CourseDetails from '../../models/courseDetails.js';
 import { generateUpdatePayload } from '../../utils/generatepayload.js';
+import mongoose from 'mongoose';
 
 
 export const getCourses = async (req, res) => {
@@ -16,7 +17,7 @@ export const getCourses = async (req, res) => {
 };
 
 export const getFreeCourses = async (req, res) => {
-    console.log("🔥 getFreeCourses controller HIT");
+  console.log("🔥 getFreeCourses controller HIT");
   try {
     const freeCourses = await Course.find({ price: 0 })
       .select("_id name price thumbnail ")
@@ -46,21 +47,32 @@ export const getFreeCourses = async (req, res) => {
 
 export const addCourse = async (req, res) => {
   try {
-    const { name, duration, price, category, thumbnail,shortdescription } = req.body;
+    const { name, duration, price, category, thumbnail, shortdescription } = req.body;
+
+    // 🚀 Auto-generate MongoDB ID so we can create the Google Product ID convention
+    const courseId = new mongoose.Types.ObjectId();
+    const googleProductId = `course_${courseId}`;
 
     const newCourse = new Course({
+      _id: courseId,
       name,
       duration,
       category,
       shortdescription,
       thumbnail,
-      price
+      price,
+      googleProductId // Automatically assigned
     });
 
     await newCourse.save();
-    res.status(201).json({ message: 'Course added', data: newCourse });
+    res.status(201).json({
+      message: 'Course added successfully',
+      data: newCourse,
+      instruction: "Copy this Google Product ID for your Play Console: " + googleProductId
+    });
   } catch (error) {
-    res.status(400).json({ message: 'Error adding course', error });
+    console.error("Add Course Error:", error);
+    res.status(400).json({ message: 'Error adding course', error: error.message });
   }
 };
 
@@ -75,7 +87,7 @@ export const updateCourse = async (req, res) => {
       return res.status(404).json({ message: 'Course not found' });
     }
 
-    const fields = ['name', 'shortdescription', 'instructor', 'duration', 'price', 'category'];
+    const fields = ['name', 'shortdescription', 'duration', 'price', 'category', 'thumbnail'];
     const { payload, changes } = generateUpdatePayload(existingCourse, incoming, fields);
 
     if (Object.keys(payload).length === 0) {

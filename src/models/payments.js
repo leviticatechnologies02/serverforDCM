@@ -22,8 +22,19 @@ const paymentSchema = new mongoose.Schema({
 
   paymentMode: {
     type: String,
-    enum: ['upi', 'card', 'wallet', 'netbanking', 'unknown'],
+    enum: ['upi', 'card', 'wallet', 'netbanking', 'google_play', 'unknown'],
     default: 'unknown'
+  },
+
+  paymentProvider: {
+    type: String,
+    enum: ['razorpay', 'google_play'],
+    default: 'razorpay'
+  },
+
+  googlePurchaseId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Purchase'
   },
 
   appUsed: { type: String },

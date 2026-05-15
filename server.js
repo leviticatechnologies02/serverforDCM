@@ -7,7 +7,7 @@ import http from "http";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
-import connectDB from "./src/database/connect.js";
+import connectDB from "./src/config/connect.js";
 import { initSocket } from "./src/socket.js";
 import chatRouter from "./src/routes/chat.js";
 import authRouter from "./src/routes/authRoutes.js";
@@ -19,7 +19,7 @@ import InternshipsRouter from "./src/routes/InternshipRoutes/InternshipPaymentRo
 import { submitContactForm } from "./src/controllers/admincontrollers/contactUsMail.js";
 import { printRoutes } from "./printRoutes.js";
 import { connectCloudinary } from "./src/config/cloudinary.js";
-import { webhook } from "./src/controllers/paymentControllers/paymentController.js";
+import { webhook } from "./src/controllers/paymentControllers/razorpayPaymentController.js";
 import { handleWebhook } from "./src/controllers/InternshipControllers/InternshipPaymentControllers.js";
 import { sendStartupTestEmail } from "./src/utils/Email/sendEmail.js";
 
@@ -124,14 +124,14 @@ if (process.env.NODE_ENV !== "production") {
   printRoutes(app);
 }
 
-// ================== CLOUDINARY ==================
+// CLOUDINARY 
 
 connectCloudinary()
-// ================== DATABASE ==================
+//  DATABASE 
 
 connectDB(process.env.MONGO_URI);
 
-// ================== SERVER ==================
+//  SERVER 
 
 const PORT = process.env.PORT || 7777;
 const server = http.createServer(app);

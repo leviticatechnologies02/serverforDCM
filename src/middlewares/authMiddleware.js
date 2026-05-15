@@ -6,6 +6,7 @@ const verifyToken = (req, res, next) => {
   const token =
     req.cookies?.auth_token || // Web
     req.headers.authorization?.split(" ")[1]; // Mobile
+    console.log("Token received:", token); // Debug log
 
   if (!token) {
     return res.status(401).json({ error: "Unauthorized" });
