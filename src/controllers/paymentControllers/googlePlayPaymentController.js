@@ -14,7 +14,7 @@ import mongoose from 'mongoose';
  */
 export const verifyGooglePurchaseController = async (req, res) => {
   try {
-    const { packageName, productId, purchaseToken } = req.body;
+    const { packageName, productId, purchaseToken, courseId } = req.body;
 
     // User from auth middleware
     const userId = req.user?._id;
@@ -30,6 +30,39 @@ export const verifyGooglePurchaseController = async (req, res) => {
       });
     }
 
+    const normalizedCourseId = typeof courseId === 'string' && courseId.startsWith('course_')
+      ? courseId.replace(/^course_/, '')
+      : courseId;
+
+    const resolveCourse = async () => {
+      if (normalizedCourseId && mongoose.Types.ObjectId.isValid(normalizedCourseId)) {
+        const courseById = await Course.findById(normalizedCourseId);
+        if (courseById) {
+          return courseById;
+        }
+      }
+
+      if (productId) {
+        const courseIdFromProduct = productId.startsWith('course_')
+          ? productId.replace('course_', '')
+          : null;
+
+        if (courseIdFromProduct && mongoose.Types.ObjectId.isValid(courseIdFromProduct)) {
+          const courseByProductId = await Course.findById(courseIdFromProduct);
+          if (courseByProductId) {
+            return courseByProductId;
+          }
+        }
+
+        const courseByGoogleProduct = await Course.findOne({ googleProductId: productId });
+        if (courseByGoogleProduct) {
+          return courseByGoogleProduct;
+        }
+      }
+
+      return null;
+    };
+
     /**
      * Prevent duplicate processing
      */
@@ -38,6 +71,16 @@ export const verifyGooglePurchaseController = async (req, res) => {
     });
 
     if (existingPurchase) {
+      const course = await resolveCourse();
+
+      if (course) {
+        await enrollInCourses({
+          paymentId: existingPurchase._id,
+          userId,
+          courseId: course._id
+        });
+      }
+
       return res.status(200).json({
         success: true,
         message: 'Purchase already verified',
@@ -111,19 +154,7 @@ export const verifyGooglePurchaseController = async (req, res) => {
      * Grant entitlement/premium access here
      */
     if (isPurchased) {
-      // 1. Find the course linked to this productId
-      // Try to extract courseId if format is 'course_mongoid'
-      const courseIdFromProduct = productId.startsWith('course_') ? productId.replace('course_', '') : null;
-      
-      let course;
-      if (courseIdFromProduct && mongoose.Types.ObjectId.isValid(courseIdFromProduct)) {
-        course = await Course.findById(courseIdFromProduct);
-      }
-
-      // Fallback: search by explicit mapping if not found via ID parsing
-      if (!course) {
-        course = await Course.findOne({ googleProductId: productId });
-      }
+      const course = await resolveCourse();
       
       if (course) {
         // 2. Create/Update a record in the unified Payment model
@@ -157,7 +188,7 @@ export const verifyGooglePurchaseController = async (req, res) => {
 
         console.log(`✅ User ${userId} enrolled in course ${course._id} via Google Play`);
       } else {
-        console.warn(`⚠️ No course found for googleProductId: ${productId}`);
+        console.warn(`⚠️ No course found for googleProductId: ${productId} and courseId: ${normalizedCourseId}`);
       }
     }
 
