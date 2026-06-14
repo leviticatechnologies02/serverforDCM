@@ -16,8 +16,8 @@ export const verifyGooglePurchaseController = async (req, res) => {
   try {
     const { packageName, productId, purchaseToken, courseId } = req.body;
 
-    // User from auth middleware
-    const userId = req.user?._id;
+    // User from auth middleware (JWT payload uses `id`, not `_id`)
+    const userId = req.user?.id || req.body.userId;
 
     /**
      * Basic validation
