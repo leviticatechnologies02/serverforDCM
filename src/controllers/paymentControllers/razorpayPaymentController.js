@@ -339,8 +339,8 @@ export const simulateWebPayment = async (req, res) => {
       amountInRupees: totalAmount,
       currency: 'INR',
       status: 'paid',
-      paymentProvider: 'razorpay',
-      paymentMode: 'unknown',
+      paymentProvider: 'google_play',
+      paymentMode: 'google_play',
       courseIds,
       userId,
       isEnrolled: true
