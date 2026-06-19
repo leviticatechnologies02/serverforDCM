@@ -61,12 +61,13 @@ if (process.env.NODE_ENV !== "production") {
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   process.env.CLIENT_URL,
-].filter(Boolean);
+].filter(Boolean).map(url => url.replace(/\/$/, ""));
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      const sanitizedOrigin = origin ? origin.replace(/\/$/, "") : null;
+      if (!origin || allowedOrigins.includes(sanitizedOrigin)) {
         callback(null, true);
       } else {
         console.log(`❌ Blocked by CORS: ${origin}`);
