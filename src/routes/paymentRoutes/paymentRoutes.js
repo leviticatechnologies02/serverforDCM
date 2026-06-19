@@ -1,7 +1,7 @@
 import express from "express";
-import { createOrder, verifyPayment, webhook, simulateWebPayment } from "../../controllers/paymentControllers/razorpayPaymentController.js";
+import { createOrder, verifyPayment, webhook } from "../../controllers/paymentControllers/razorpayPaymentController.js";
 import { getMyPayments } from "../../controllers/studentcontrollers/paymentHistory.js";
-import {  verifyGooglePurchaseController } from "../../controllers/paymentControllers/googlePlayPaymentController.js";
+import {  verifyGooglePurchaseController, simulateWebPayment } from "../../controllers/paymentControllers/googlePlayPaymentController.js";
 
 const paymentRouter=express.Router();
 paymentRouter.get('/config', (req,res)=>{
