@@ -321,8 +321,6 @@ export const webhook = async (req, res) => {
 };
 
 export const simulateWebPayment = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
   try {
     const { courseIds, userId } = req.body;
     if (!courseIds || !courseIds.length || !userId) {
@@ -334,38 +332,32 @@ export const simulateWebPayment = async (req, res) => {
 
     const totalAmount = courses.reduce((sum, course) => sum + Number(course.price), 0);
 
-    const payment = await Payment.create([{
+    const payment = await Payment.create({
       orderId: `MOCK_${Date.now()}`,
       paymentId: `PAY_${Date.now()}`,
       amount: totalAmount * 100,
       amountInRupees: totalAmount,
       currency: 'INR',
       status: 'paid',
-      paymentProvider: 'mock_test',
-      paymentMode: 'mock_test',
+      paymentProvider: 'razorpay',
+      paymentMode: 'unknown',
       courseIds,
       userId,
       isEnrolled: true
-    }], { session });
+    });
 
     for (const courseId of courseIds) {
       await enrollInCourses({
-        paymentId: payment[0]._id,
+        paymentId: payment._id,
         userId,
-        courseId,
-        session
+        courseId
       });
     }
-
-    await session.commitTransaction();
-    session.endSession();
 
     console.log(`✅ Mock/Test payment processed for user ${userId}`);
     res.status(200).json({ success: true });
   } catch (err) {
-    await session.abortTransaction();
-    session.endSession();
     console.error('❌ simulateWebPayment error:', err);
-    res.status(500).json({ error: 'Test payment failed' });
+    res.status(500).json({ error: err.message || 'Test payment failed' });
   }
 };
