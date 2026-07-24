@@ -64,8 +64,9 @@ export const signup = async (req, res) => {
 export const login = async (req, res) => {
   const ACCESS_SECRET = process.env.ACCESS_SECRET;
   const REFRESH_SECRET = process.env.REFRESH_SECRET;
-  const { email, password } = req.body;
-
+  let { email, password } = req.body;
+  console.log("LOGIN ATTEMPT FROM FRONTEND:", req.body);
+  if (email) email = email.trim();
   try {
     const user = await User.findOne({ email }).select("+password");
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
