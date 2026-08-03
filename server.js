@@ -60,7 +60,7 @@ if (process.env.NODE_ENV !== "production") {
 
 const allowedOrigins = [
   process.env.FRONTEND_URL,
-  process.env.CLIENT_URL,
+  process.env.CLIENT_URL || "https://leviticatechnologies.com/",
 ].filter(Boolean).map(url => url.replace(/\/$/, ""));
 
 app.use(
