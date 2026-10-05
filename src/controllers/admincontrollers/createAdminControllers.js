@@ -3,7 +3,7 @@ import User from '../../models/user.js'
 /* CREATE ADMIN */
 export const createAdmin = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -21,11 +21,13 @@ export const createAdmin = async (req, res) => {
       });
     }
 
+    const validRole = ["admin", "superadmin"].includes(role) ? role : "admin";
+
     const newAdmin = await User.create({
       name,
       email,
       password,
-      role: "admin", // better than auto superadmin
+      role: validRole,
     });
 
     return res.status(201).json({

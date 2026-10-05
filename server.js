@@ -59,6 +59,7 @@ if (process.env.NODE_ENV !== "production") {
 // ================== CORS ==================
 
 const allowedOrigins = [
+  "http://localhost:3000",
   process.env.FRONTEND_URL,
   process.env.CLIENT_URL || "https://leviticatechnologies.com/",
 ].filter(Boolean).map(url => url.replace(/\/$/, ""));
