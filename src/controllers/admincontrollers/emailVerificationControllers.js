@@ -71,6 +71,22 @@ export const verifyEmail = async (req, res) => {
   try {
     console.log("📥 Incoming:", { ivfm, id });
 
+    // 0. Check if user is already verified (handles email pre-fetch bots)
+    const existingUser = await User.findById(id);
+    if (!existingUser) {
+      return res.status(400).json({ message: "User not found." });
+    }
+    if (existingUser.emailVerified) {
+      console.log("✅ User already verified (early exit).");
+      return res.status(200).json({
+        message: "Email verified successfully",
+        user: {
+          name: existingUser.name,
+          email: existingUser.email,
+        },
+      });
+    }
+
     // 1. Find token (convert id → ObjectId ✅)
     const tokenDoc = await Token.findOne({
       userId: new mongoose.Types.ObjectId(id),
