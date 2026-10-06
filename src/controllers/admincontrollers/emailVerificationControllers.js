@@ -65,7 +65,7 @@ export const verifyEmail = async (req, res) => {
   const { ivfm, id } = req.query;
 
   if (!ivfm || !id) {
-    return res.status(400).send("❌ Token and user ID are required");
+    return res.status(400).json({ message: "Token and user ID are required" });
   }
 
   try {
@@ -82,7 +82,7 @@ export const verifyEmail = async (req, res) => {
 
     if (!tokenDoc) {
       console.log("❌ Token not found or expired");
-      return res.redirect("/link-invalid");
+      return res.status(400).json({ message: "The verification link is invalid or has already been used." });
     }
 
     // 2. Validate token
@@ -90,7 +90,7 @@ export const verifyEmail = async (req, res) => {
 
     if (!isValid) {
       console.log("❌ Token mismatch");
-      return res.redirect("/link-invalid");
+      return res.status(400).json({ message: "The verification link is invalid." });
     }
 
     // 3. Mark user verified
@@ -119,7 +119,7 @@ export const verifyEmail = async (req, res) => {
 
   } catch (err) {
     console.error("❌ Verify email error:", err);
-    return res.redirect("/error");
+    return res.status(500).json({ message: "Internal server error during verification." });
   }
 };
 

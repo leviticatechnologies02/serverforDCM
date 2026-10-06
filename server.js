@@ -1,5 +1,5 @@
 // ================== IMPORTS ==================
-import dotenv from "dotenv";
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -24,7 +24,6 @@ import { handleWebhook } from "./src/controllers/InternshipControllers/Internshi
 import { sendStartupTestEmail } from "./src/utils/Email/sendEmail.js";
 
 // ================== CONFIG ==================
-dotenv.config();
 const app = express();
 app.set("trust proxy", 1);
 

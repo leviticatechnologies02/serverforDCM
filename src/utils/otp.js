@@ -12,7 +12,7 @@ export const generateOTP = (length = OTP_LENGTH) => {
 
 // Hash OTP
 export const hashOTP = (otp) => {
-  return crypto.createHash('sha256').update(otp).digest('hex');
+  return crypto.createHash('sha256').update(String(otp)).digest('hex');
 };
 
 // Create & store OTP
