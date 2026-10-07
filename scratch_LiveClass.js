@@ -5,26 +5,16 @@ const LiveClassSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
 
-    classType: {
-      type: String,
-      enum: ["course", "internship"],
-      default: "course",
-    },
     course: {
       type: Schema.Types.ObjectId,
       ref: "Course",
-      required: false,
-    },
-    internshipDomain: {
-      type: Schema.Types.ObjectId,
-      ref: "InternshipsDomain",
-      required: false,
+      required: true,
     },
 
     batch: {
       type: Schema.Types.ObjectId,
       ref: "Batch",
-      required: false,
+      required: true,
     },
 
     startTime: { type: Date, required: true },
@@ -61,9 +51,5 @@ LiveClassSchema.index({ course: 1, batch: 1 });
 
 // 4️⃣ Optional (if you query upcoming classes often)
 LiveClassSchema.index({ batch: 1, startTime: 1 });
-
-// 5️⃣ Index for internship-based queries
-LiveClassSchema.index({ internshipDomain: 1 });
-
 
 export default mongoose.model("LiveClass", LiveClassSchema);

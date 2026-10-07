@@ -40,10 +40,16 @@ const InternshipPaymentSchema = new mongoose.Schema(
       trim: true,
     },
 
-    domain: {
+        domain: {
       type: String,
       required: true,
       trim: true,
+    },
+    
+    domainId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'InternshipsDomain',
+      sparse: true,
     },
 
     rollNumber: {

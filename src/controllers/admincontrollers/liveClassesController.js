@@ -24,7 +24,7 @@ export const createLiveClass = asyncHandler(async (req, res) => {
   try {
     session.startTransaction();
 
-    const { title, startTime, duration, courseId, batchId, hostEmail, recurrence, endDate } = req.body;
+    const { title, startTime, duration, courseId, batchId, internshipDomainId, classType, hostEmail, recurrence, endDate } = req.body;
 
     const startTimeUTC = new Date(startTime).toISOString();
 
@@ -47,8 +47,10 @@ export const createLiveClass = asyncHandler(async (req, res) => {
       [
         {
           title,
-          course: courseId,
-          batch: batchId,
+          classType: classType || 'course',
+          course: classType === 'internship' ? undefined : courseId,
+          batch: classType === 'internship' ? undefined : batchId,
+          internshipDomain: classType === 'internship' ? internshipDomainId : undefined,
           startTime,
           duration,
           zoomMeetingId: String(data.id),
@@ -62,11 +64,21 @@ export const createLiveClass = asyncHandler(async (req, res) => {
 
     /* ===== FIND ENROLLED USERS ===== */
 
-    const enrollments = await Enrollment.find({
-      enrolledCourses: { $elemMatch: { batch: batchId } }
-    })
-      .populate("user", "name email")
-      .session(session);
+    let enrollments = [];
+    if (classType !== 'internship') {
+      enrollments = await Enrollment.find({
+        enrolledCourses: { $elemMatch: { batch: batchId } }
+      })
+        .populate("user", "name email")
+        .session(session);
+    } else {
+      // Find internship enrollments if needed, or skip for now.
+      enrollments = await Enrollment.find({
+        enrolledInternships: { $elemMatch: { domain: internshipDomainId } }
+      })
+        .populate("user", "name email")
+        .session(session);
+    }
 
     /* ===== SEND EMAILS (PARALLEL) ===== */
 
@@ -93,10 +105,17 @@ export const createLiveClass = asyncHandler(async (req, res) => {
 
     /* ===== SOCKET EVENT ===== */
 
-    io.to(`batch_${batchId}`).emit("newLiveClass", {
-      message: "New live class scheduled",
-      liveClass: liveClass[0]
-    });
+    if (classType !== 'internship') {
+      io.to(`batch_${batchId}`).emit("newLiveClass", {
+        message: "New live class scheduled",
+        liveClass: liveClass[0]
+      });
+    } else {
+      io.to(`internship_${internshipDomainId}`).emit("newLiveClass", {
+        message: "New live class scheduled",
+        liveClass: liveClass[0]
+      });
+    }
 
     res.status(201).json({
       message: "Live class created successfully",
@@ -130,6 +149,10 @@ export const getAllLiveClasses = async (req, res) => {
       .sort({ startTime: 1 })
       .populate({
         path: 'course',
+        select: 'name'
+      })
+      .populate({
+        path: 'internshipDomain',
         select: 'name'
       })
       .populate({

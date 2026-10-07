@@ -2,6 +2,8 @@ import { getInternshipPaymentSuccessEmailHTML, getProgramDisplayName } from '../
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import InternshipPayment from '../../models/InternshipPayment.js';
+import User from '../../models/user.js';
+import bcrypt from 'bcrypt';
 import { sendEmail } from '../../utils/Email/sendEmail.js';
 import InternshipsDomain from '../../models/internshipsDomain.js';
 
@@ -187,7 +189,7 @@ export const verifyPayment = async (req, res) => {
       });
     }
 
-    if (paymentRecord.status !== "pending") {
+    if (paymentRecord.status !== "pending" && paymentRecord.status !== "created") {
       return res.json({
         success: true,
         message: "Payment already processed",
@@ -222,7 +224,62 @@ export const verifyPayment = async (req, res) => {
 
     console.log("Payment verified successfully:", razorpay_payment_id);
 
+    let generatedPassword = null;
+    let user = await User.findOne({ email: paymentRecord.email });
+    if (!user) {
+      generatedPassword = Math.random().toString(36).slice(-8); // Generate 8 char password
+      const cleanPhone = paymentRecord.phone ? paymentRecord.phone.replace(/\D/g, '').slice(-10) : '';
+      user = new User({
+        name: paymentRecord.name,
+        email: paymentRecord.email,
+        mobile: cleanPhone.length === 10 ? cleanPhone : undefined,
+        password: generatedPassword,
+        role: 'student',
+        emailVerified: true
+      });
+      try {
+        await user.save();
+      } catch (err) {
+        console.error("Failed to auto-create user:", err.message);
+      }
+      console.log("Created new user:", user.email);
+    }
+  
+
+    
     // ================= Send Email =================
+    try {
+      const programDetails = {
+        domain: paymentRecord.domain,
+        program: paymentRecord.program === "5" ? "5 Days program" : "15 Days program",
+        duration: paymentRecord.program === "5" ? "5 Days" : "15 Days",
+        amount: paymentRecord.amount
+      };
+
+      const paymentDetails = {
+        paymentId: razorpay_payment_id,
+        orderId: razorpay_order_id,
+        date: new Date().toLocaleDateString("en-IN")
+      };
+
+      const emailHTML = getInternshipPaymentSuccessEmailHTML(
+        paymentRecord.name,
+        paymentRecord.email,
+        programDetails,
+        paymentDetails,
+        generatedPassword
+      );
+
+      await sendEmail({
+        to: paymentRecord.email,
+        subject: "Payment Successful 🎉",
+        html: emailHTML
+      });
+      console.log("Email sent from verifyPayment!");
+    } catch (err) {
+      console.error("Email failed but payment already saved", err);
+    }
+
 
 
     res.json({
@@ -340,6 +397,28 @@ export const handleWebhook = async (req, res) => {
 
         console.log(`✅ Payment updated: ${paymentId}`);
 
+    let generatedPassword = null;
+    let user = await User.findOne({ email: updatedPayment.email });
+    if (!user) {
+      generatedPassword = Math.random().toString(36).slice(-8); // Generate 8 char password
+      const cleanPhone = updatedPayment.phone ? updatedPayment.phone.replace(/\D/g, '').slice(-10) : '';
+      user = new User({
+        name: updatedPayment.name,
+        email: updatedPayment.email,
+        mobile: cleanPhone.length === 10 ? cleanPhone : undefined,
+        password: generatedPassword,
+        role: 'student',
+        emailVerified: true
+      });
+      try {
+        await user.save();
+      } catch (err) {
+        console.error("Failed to auto-create user:", err.message);
+      }
+      console.log("Created new user:", user.email);
+    }
+  
+
         // respond immediately to Razorpay
         res.json({ received: true });
 
@@ -347,12 +426,12 @@ export const handleWebhook = async (req, res) => {
         (async () => {
           try {
 
-            const programDetails = {
+                        const programDetails = {
               domain: updatedPayment.domain,
               program: updatedPayment.program === "5"
                 ? "5 Days program"
-                : "15 Days program",
-              duration: updatedPayment.program === "5" ? "5 Days" : "15 Days",
+                : updatedPayment.program + " Days program",
+              duration: updatedPayment.program + " Days",
               amount: updatedPayment.amount
             };
 
@@ -366,7 +445,8 @@ export const handleWebhook = async (req, res) => {
               updatedPayment.name,
               updatedPayment.email,
               programDetails,
-              paymentDetails
+              paymentDetails,
+              generatedPassword
             );
 
             await sendEmail({
@@ -434,3 +514,61 @@ export const getPayment = async (req, res) => {
   }
 }
 
+
+
+export const getMyInternships = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const payments = await InternshipPayment.find({ email: user.email, status: 'paid' });
+    
+    // We map it to look somewhat like the Course summary so the frontend can display it easily
+        const summary = payments.map(p => ({
+      _id: p._id, // use payment ID as unique key
+      courseName: p.domain + " Internship",
+      shortDescription: p.program === "5" ? "5 Days Intensive Program" : p.program + " Days Comprehensive Program",
+      thumbnail: "", // can use a default internship image
+      duration: p.program + " Days",
+      category: "Internship",
+      batchName: null,
+      enrolledAt: p.createdAt || p.updatedAt,
+      completed: false,
+      isInternship: true,
+      domainId: p.domainId
+    }));
+
+    res.json({ success: true, data: summary });
+  } catch (error) {
+    console.error('Error fetching my internships:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+
+export const getMyInternshipDetails = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const paymentId = req.params.id;
+    const payment = await InternshipPayment.findOne({ _id: paymentId, email: user.email, status: 'paid' }).lean();
+    
+    if (!payment) return res.status(404).json({ success: false, message: 'Internship not found' });
+
+        let domainData = null;
+    if (payment.domainId) {
+      domainData = await InternshipsDomain.findById(payment.domainId).lean();
+    } else if (payment.domain) {
+      // Fallback for older payments that didn't store domainId
+      domainData = await InternshipsDomain.findOne({ name: payment.domain }).lean();
+    }
+
+    res.json({ success: true, data: { ...payment, domainDetails: domainData } });
+  } catch (error) {
+    console.error('Error fetching my internship details:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};

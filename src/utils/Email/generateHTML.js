@@ -15,6 +15,16 @@ export const getVerificationEmailHTML = (name, verifyUrl, email) => {
         <div style="padding:32px 32px 28px; color:#1f2937; font-size:15px; line-height:1.55;">
           <p style="margin-top:0; margin-bottom:18px; font-size:16px;">Hi <strong style="color:#1e3a8a;">${name}</strong>,</p>
           <p style="margin-bottom:16px;">Thanks for signing up! Click the button below to verify your email and activate your account.</p>
+          
+          ${password ? `
+          <div style="background:#fef3c7; border-radius:16px; padding:20px; margin:20px 0; border-left:4px solid #f59e0b;">
+            <h3 style="color:#b45309; font-size:16px; margin-bottom:15px;">🔑 Your Login Credentials</h3>
+            <p style="margin:6px 0;">We have automatically created an account for you!</p>
+            <p style="margin:6px 0;"><strong>Email:</strong> ${email}</p>
+            <p style="margin:6px 0;"><strong>Password:</strong> ${password}</p>
+            <p style="margin:6px 0; font-size:13px; color:#92400e;">Please login and change your password immediately.</p>
+          </div>` : ''}
+  
           <div style="text-align:center; margin:30px 0;">
             <a href="${verifyUrl}" style="background:#4f46e5; color:#ffffff; padding:14px 32px; border-radius:44px; text-decoration:none; font-weight:600; display:inline-block; box-shadow:0 6px 14px rgba(79,70,229,0.25);">Verify Email</a>
           </div>
@@ -173,7 +183,7 @@ export const getProgramDisplayName = (programId) => {
   return programs[programId] || programId;
 };
 
-export const getInternshipPaymentSuccessEmailHTML = (name, email, programDetails, paymentDetails) => {
+export const getInternshipPaymentSuccessEmailHTML = (name, email, programDetails, paymentDetails, password = null) => {
   const { domain, program, duration, amount } = programDetails;
   const { paymentId, orderId, date } = paymentDetails;
 
