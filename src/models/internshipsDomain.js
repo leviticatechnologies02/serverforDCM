@@ -14,6 +14,23 @@ const DurationSchema = new mongoose.Schema(
     { _id: false }
 );
 
+const SessionSchema = new mongoose.Schema(
+    {
+        id: { type: String },
+        title: { type: String, required: true },
+    },
+    { _id: true }
+);
+
+const CurriculumWeekSchema = new mongoose.Schema(
+    {
+        id: { type: String },
+        week: { type: Number },
+        title: { type: String, required: true },
+        sessions: { type: [SessionSchema], default: [] },
+    },
+    { _id: true }
+);
 
 const LiveClassSchema = new mongoose.Schema(
     {
@@ -31,7 +48,7 @@ const ModuleSchema = new mongoose.Schema(
         title: { type: String, required: true },
         description: { type: String },
         videoUrl: { type: String },
-        materials: [{ type: String }], // URLs to PDFs, zips, etc.
+        materials: [{ type: String }],
     },
     { _id: true }
 );
@@ -54,7 +71,10 @@ const InternshipsDomainSchema = new mongoose.Schema(
             },
         },
 
-        // Internship Content
+        // Curriculum Content (Weeks & Sessions)
+        curriculum: { type: [CurriculumWeekSchema], default: [] },
+
+        // Legacy Content Support
         modules: { type: [ModuleSchema], default: [] },
         liveClasses: { type: [LiveClassSchema], default: [] },
 
