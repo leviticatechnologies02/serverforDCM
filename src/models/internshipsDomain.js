@@ -71,8 +71,15 @@ const InternshipsDomainSchema = new mongoose.Schema(
             },
         },
 
+
+        // Course-like Details
+        description: { type: String, default: "" },
+        objectives: { type: [String], default: [] },
+        requirements: { type: [String], default: [] },
+
         // Curriculum Content (Weeks & Sessions)
         curriculum: { type: [CurriculumWeekSchema], default: [] },
+
 
         // Legacy Content Support
         modules: { type: [ModuleSchema], default: [] },

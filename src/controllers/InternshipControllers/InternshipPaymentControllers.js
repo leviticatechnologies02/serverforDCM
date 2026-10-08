@@ -522,7 +522,7 @@ export const getMyInternships = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-    const payments = await InternshipPayment.find({ email: user.email, status: 'paid' });
+    const payments = await InternshipPayment.find({ email: user.email, status: 'paid' }).populate('batch', 'batchName');
     
     // We map it to look somewhat like the Course summary so the frontend can display it easily
         const summary = payments.map(p => ({
@@ -532,7 +532,7 @@ export const getMyInternships = async (req, res) => {
       thumbnail: "", // can use a default internship image
       duration: p.program + " Days",
       category: "Internship",
-      batchName: null,
+      batchName: p.batch ? p.batch.batchName : null,
       enrolledAt: p.createdAt || p.updatedAt,
       completed: false,
       isInternship: true,
@@ -554,7 +554,7 @@ export const getMyInternshipDetails = async (req, res) => {
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
     const paymentId = req.params.id;
-    const payment = await InternshipPayment.findOne({ _id: paymentId, email: user.email, status: 'paid' }).lean();
+    const payment = await InternshipPayment.findOne({ _id: paymentId, email: user.email, status: 'paid' }).populate('batch', 'batchName').lean();
     
     if (!payment) return res.status(404).json({ success: false, message: 'Internship not found' });
 
