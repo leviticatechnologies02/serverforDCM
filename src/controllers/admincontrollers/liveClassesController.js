@@ -39,6 +39,10 @@ export const createLiveClass = asyncHandler(async (req, res) => {
       endDate
     });
 
+    if (!meeting.success) {
+      throw new Error(`Zoom API Error: ${JSON.stringify(meeting.error)}`);
+    }
+
     const { data } = meeting;
 
     /* ===== SAVE LIVE CLASS ===== */
@@ -49,7 +53,7 @@ export const createLiveClass = asyncHandler(async (req, res) => {
           title,
           classType: classType || 'course',
           course: classType === 'internship' ? undefined : courseId,
-          batch: classType === 'internship' ? undefined : batchId,
+          batch: batchId,
           internshipDomain: classType === 'internship' ? internshipDomainId : undefined,
           startTime,
           duration,
@@ -310,6 +314,7 @@ export const updateMeetingController = async (req, res) => {
     liveClass.duration = updateData.duration || liveClass.duration;
     liveClass.course = updateData.courseId || liveClass.course;
     liveClass.batch = updateData.batchId || liveClass.batch;
+    liveClass.internshipDomain = updateData.internshipDomainId || liveClass.internshipDomain;
 
     await liveClass.save();
 
@@ -398,11 +403,7 @@ export const deleteMeetingController = async (req, res) => {
     const result = await deleteMeeting(zoomMeetingId);
 
     if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Failed to delete Zoom meeting",
-        error: result.error,
-      });
+      console.warn("Failed to delete Zoom meeting, but proceeding to delete from DB:", result.error);
     }
 
     // 4️⃣ Delete from MongoDB

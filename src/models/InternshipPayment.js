@@ -52,6 +52,17 @@ const InternshipPaymentSchema = new mongoose.Schema(
       sparse: true,
     },
 
+    assigned: {
+      type: Boolean,
+      default: false,
+    },
+
+    batch: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Batch',
+      sparse: true,
+    },
+
     rollNumber: {
       type: String,
       required: true,

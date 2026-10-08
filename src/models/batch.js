@@ -2,7 +2,8 @@ import mongoose from "mongoose";
 
 const batchSchema = new mongoose.Schema({
   batchName: { type: String, required: true, unique: true, trim: true },
-  courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
+  courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: false },
+  internshipDomainId: { type: mongoose.Schema.Types.ObjectId, ref: 'InternshipsDomain', required: false },
   startDate: Date,
   endDate: Date,
   status: {

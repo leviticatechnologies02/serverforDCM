@@ -46,6 +46,7 @@ export const getAllBatches = async (req, res) => {
     const [batches, total] = await Promise.all([
       Batch.find(filter)
         .populate("courseId", "name")
+        .populate("internshipDomainId", "name")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -111,6 +112,40 @@ export const getBatchesByCourseId = async (req, res) => {
   }
 };
 
+export const getBatchesByInternshipId = async (req, res) => {
+  try {
+    const { internshipDomainId } = req.params;
+
+    if (!internshipDomainId) {
+      return res.status(400).json({
+        success: false,
+        message: "internshipDomainId is required",
+      });
+    }
+
+    const batches = await Batch.find(
+      {
+        internshipDomainId,
+        status: "active", //  only active batches
+      },
+      "_id batchName"
+    )
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      data: batches,
+    });
+  } catch (error) {
+    console.error("GET BATCHES BY INTERNSHIP ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch batches",
+    });
+  }
+};
+
 export const getBatchDetails = async (req, res) => {
   try {
     const { id } = req.params;
@@ -126,33 +161,55 @@ export const getBatchDetails = async (req, res) => {
       .populate("enrolledCourses.course", "name")
       .lean();
 
-    if (!enrollments || enrollments.length === 0) {
-      return res.status(200).json({
-        students: [],
-        pagination: {
-          total: 0,
-          page,
-          limit,
-          totalPages: 0,
-        },
+    const InternshipPayment = mongoose.model('InternshipPayment');
+    const User = mongoose.model('User');
+    
+    const internshipPayments = await InternshipPayment.find({
+      batch: id,
+    })
+      .populate("domainId", "name")
+      .lean();
+
+    const emails = internshipPayments.map(ip => ip.email);
+    const usersForInternships = await User.find({ email: { $in: emails } }).lean();
+    const emailToUser = {};
+    usersForInternships.forEach(u => emailToUser[u.email] = u);
+
+    // 🔹 Flatten
+    const allStudents = [];
+    
+    if (enrollments && enrollments.length > 0) {
+      enrollments.forEach((enrollment) => {
+        enrollment.enrolledCourses
+          .filter((c) => c.batch?.toString() === id)
+          .forEach((c) => {
+            if (enrollment.user) {
+              allStudents.push({
+                id: enrollment.user._id,
+                name: enrollment.user.name,
+                email: enrollment.user.email,
+                role: enrollment.user.role,
+                course: c.course?.name,
+              });
+            }
+          });
       });
     }
 
-    // 🔹 Flatten
-    const allStudents = enrollments.flatMap((enrollment) =>
-      enrollment.enrolledCourses
-        .filter((c) => c.batch?.toString() === id)
-        .map((c) => ({
-          id: enrollment.user._id,
-          name: enrollment.user.name,
-          email: enrollment.user.email,
-          role: enrollment.user.role,
-          course: c.course?.name,
-        }))
-    );
+    if (internshipPayments && internshipPayments.length > 0) {
+      internshipPayments.forEach((ip) => {
+        const u = emailToUser[ip.email] || {};
+        allStudents.push({
+          id: u._id || ip._id,
+          name: ip.name || u.name || 'Unknown',
+          email: ip.email,
+          role: u.role || 'Student',
+          course: (ip.domainId?.name || 'Unknown') + ' (Internship)',
+        });
+      });
+    }
 
     const total = allStudents.length;
-
     const students = allStudents.slice(skip, skip + limit);
 
     res.status(200).json({
@@ -172,11 +229,11 @@ export const getBatchDetails = async (req, res) => {
 
 
 export const addBatch = asyncHandler(async (req, res) => {
-  const { batchName, courseId, startDate, endDate } = req.body;
+  const { batchName, courseId, internshipDomainId, startDate, endDate } = req.body;
 
   // Basic field validation
-  if (!batchName || !courseId || !startDate || !endDate) {
-    return res.status(400).json({ message: 'All fields are required.' });
+  if (!batchName || (!courseId && !internshipDomainId) || !startDate || !endDate) {
+    return res.status(400).json({ message: 'batchName, startDate, endDate, and EITHER courseId OR internshipDomainId are required.' });
   }
 
   // Date validation
@@ -185,13 +242,17 @@ export const addBatch = asyncHandler(async (req, res) => {
   }
 
   // Duplicate check
-  const existing = await Batch.findOne({ batchName, courseId });
+  const duplicateQuery = { batchName };
+  if (courseId) duplicateQuery.courseId = courseId;
+  if (internshipDomainId) duplicateQuery.internshipDomainId = internshipDomainId;
+
+  const existing = await Batch.findOne(duplicateQuery);
   if (existing) {
-    return res.status(409).json({ message: 'Batch with this name and course already exists.' });
+    return res.status(409).json({ message: 'Batch with this name already exists for this course/internship.' });
   }
 
   // Create and save the new batch
-  const batch = new Batch({ batchName, courseId, startDate, endDate, });
+  const batch = new Batch({ batchName, courseId, internshipDomainId, startDate, endDate });
   await batch.save();
 
   res.status(201).json({ message: 'Batch created successfully.', batch });
@@ -211,6 +272,7 @@ export const updateBatch = async (req, res) => {
     const {
       batchName,
       courseId,
+      internshipDomainId,
       startDate,
       endDate,
       status,
@@ -232,7 +294,8 @@ export const updateBatch = async (req, res) => {
     }
 
     /* ================= BASIC FIELD UPDATES ================= */
-    if (courseId) batch.courseId = courseId;
+    if (courseId !== undefined) batch.courseId = courseId;
+    if (internshipDomainId !== undefined) batch.internshipDomainId = internshipDomainId;
     if (startDate) batch.startDate = startDate;
     if (endDate) batch.endDate = endDate;
 

@@ -268,3 +268,82 @@ export const getAssignedEnrollments = async (req, res) => {
   }
 };
  
+import InternshipPayment from '../../models/InternshipPayment.js';
+
+export const getUnassignedInternships = async (req, res) => {
+  try {
+    const internships = await InternshipPayment.find({ status: 'paid', assigned: false })
+      .populate('domainId', 'name')
+      .lean();
+    res.status(200).json({ internships });
+  } catch (error) {
+    console.error("Error fetching unassigned internships:", error);
+    res.status(500).json({ message: "Failed to fetch unassigned internships" });
+  }
+};
+
+export const assignInternshipsToBatch = async (req, res) => {
+  const { paymentIds, batchId, domainTitle, batchName } = req.body;
+  if (!Array.isArray(paymentIds) || paymentIds.length === 0) {
+    return res.status(400).json({ error: 'paymentIds must be a non-empty array' });
+  }
+
+  const session = await mongoose.startSession();
+
+  try {
+    await session.withTransaction(async () => {
+      // Update internships
+      const updateResult = await InternshipPayment.updateMany(
+        { _id: { $in: paymentIds } },
+        {
+          $set: {
+            batch: batchId,
+            assigned: true
+          }
+        },
+        { session }
+      );
+
+      const updatedInternships = await InternshipPayment.find({ _id: { $in: paymentIds } }).lean().session(session);
+
+      await Promise.allSettled(
+        updatedInternships.map(i =>
+          sendEmail({
+            to: i.email,
+            subject: "Internship Batch Assigned Successfully",
+            html: getBatchAssignmentEmailHTML(
+              i.name,
+              domainTitle || "Internship Program",
+              batchName,
+              i.email
+            ),
+          })
+        )
+      );
+
+      res.status(200).json({
+        message: 'Internship batch assignment successful',
+        totalUpdated: updateResult.modifiedCount,
+        totalRequests: paymentIds.length
+      });
+    });
+  } catch (error) {
+    console.error('Internship batch assignment error:', error);
+    res.status(500).json({ error: 'Failed to assign internship batches' });
+  } finally {
+    session.endSession();
+  }
+};
+
+export const getAssignedInternships = async (req, res) => {
+  try {
+    const internships = await InternshipPayment.find({ status: 'paid', assigned: true })
+      .populate('domainId', 'name')
+      .populate('batch', 'batchName')
+      .lean();
+    res.status(200).json({ internships });
+  } catch (error) {
+    console.error("Error fetching assigned internships:", error);
+    res.status(500).json({ message: "Failed to fetch assigned internships" });
+  }
+};

@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import { asyncHandler } from '../../middlewares/asyncHandler.js';
 import Enrollment from '../../models/Enrollment.js';
 import LiveClass from '../../models/LiveClass.js';
+import User from '../../models/user.js';
+import InternshipPayment from '../../models/InternshipPayment.js';
 
 
 
@@ -44,30 +46,68 @@ export const joinLiveClass = asyncHandler(async (req, res) => {
 });
 
 export const getLiveClasses = async (req, res) => {
-
   try {
-      const userId = new mongoose.Types.ObjectId(req.user.id);
+    const userId = new mongoose.Types.ObjectId(req.user.id);
+    
 
+    // Get active enrollment for courses
+    const enrollment = await Enrollment.findOne({ 'user': userId });
+    
+    let courseIds = [];
+    let batchIds = [];
+    
+    if (enrollment && enrollment.enrolledCourses?.length) {
+      courseIds = enrollment.enrolledCourses.map(c => c.course);
+      batchIds = enrollment.enrolledCourses.map(c => c.batch).filter(Boolean);
+    }
 
-    // Get active enrollment
-    const enrollment = await Enrollment.findOne({
-      'user': userId,
-     
-    });
+    // Get user details for internship email check
+    const user = await User.findById(userId);
+    let internshipDomainIds = [];
+    let internshipBatchIds = [];
 
-    if (!enrollment || !enrollment.enrolledCourses?.length) {
+    if (user && user.email) {
+      // Find paid internships
+      const internships = await InternshipPayment.find({
+        email: user.email,
+        status: 'paid'
+      });
+      internshipDomainIds = internships.map(i => i.domainId).filter(Boolean);
+      internshipBatchIds = internships.map(i => i.batch).filter(Boolean);
+    }
+
+    if (!courseIds.length && !batchIds.length && !internshipDomainIds.length) {
       return res.json({ liveClasses: [] });
     }
 
-    const courseIds = enrollment.enrolledCourses.map(c => c.course);
-    const batchIds = enrollment.enrolledCourses.map(c => c.batch).filter(Boolean);
+    // Build the query to check EITHER course/batch matches OR internshipDomainId matches
+    const orConditions = [];
     
+    if (courseIds.length > 0) {
+      orConditions.push({
+        course: { $in: courseIds },
+        $or: [
+          { batch: { $in: batchIds } },
+          { batch: null },
+          { batch: { $exists: false } }
+        ]
+      });
+    }
+    
+    if (internshipDomainIds.length > 0) {
+      orConditions.push({
+        internshipDomain: { $in: internshipDomainIds },
+        $or: [
+          { batch: { $in: internshipBatchIds } },
+          { batch: null },
+          { batch: { $exists: false } }
+        ]
+      });
+    }
 
     // Fetch and populate only needed fields
     const liveClasses = await LiveClass.find({
-      course: { $in: courseIds },
-      batch: { $in: batchIds },
-    
+      $or: orConditions,
       status: { $in: ['scheduled', 'ongoing'] }
     })
       .sort({ startTime: 1 })
@@ -79,8 +119,17 @@ export const getLiveClasses = async (req, res) => {
         path: 'batch',
         select: 'batchName'
       })
-      .select('courseId batchId startTime title duration');
-      console.log(liveClasses,"iam live classes")
+      .populate({
+        path: 'internshipDomain',
+        select: 'name'
+      })
+      .select('course batch internshipDomain startTime title duration classType zoomJoinUrl passcode');
+      
+    console.log("Enrolled courseIds:", courseIds);
+    console.log("Enrolled batchIds:", batchIds);
+    console.log("Internship Domain IDs:", internshipDomainIds);
+    console.log("Generated orConditions:", JSON.stringify(orConditions, null, 2));
+    console.log("Fetched liveClasses:", liveClasses);
 
     res.json({ liveClasses });
   } catch (error) {

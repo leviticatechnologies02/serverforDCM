@@ -1,4 +1,4 @@
-export const getVerificationEmailHTML = (name, verifyUrl, email) => {
+export const getVerificationEmailHTML = (name, verifyUrl, email, password = null) => {
   return `
     <div style="max-width:580px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
       <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
