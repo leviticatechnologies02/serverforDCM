@@ -56,7 +56,13 @@ export const createOrder = async (req, res) => {
     }
 
     // Find domain
-    const selectedDomain = await InternshipsDomain.findById(domain);
+    let selectedDomain;
+    // Check if domain is a valid 24-character hex ObjectId
+    if (/^[0-9a-fA-F]{24}$/.test(domain)) {
+      selectedDomain = await InternshipsDomain.findById(domain);
+    } else {
+      selectedDomain = await InternshipsDomain.findOne({ name: domain });
+    }
 
     if (!selectedDomain) {
       return res.status(400).json({
@@ -66,7 +72,7 @@ export const createOrder = async (req, res) => {
     }
 
     // Find duration
-    const selectedDuration = selectedDomain.durations.find(
+    const selectedDuration = selectedDomain.durations?.find(
       (d) => String(d.days) === String(program)
     );
 
@@ -82,17 +88,17 @@ export const createOrder = async (req, res) => {
       currency: 'INR',
       receipt: `receipt_${Date.now()}_${rollNumber}`,
       notes: {
-        name,
-        email,
-        phone,
-        department,
-        semester,
-        rollNumber,
-        program: selectedDuration.days,
-        collegeName,
-        collegeCode,
-        domain: selectedDomain.name,
-        domainId: domain
+        name: String(name).substring(0, 250),
+        email: String(email).substring(0, 250),
+        phone: String(phone).substring(0, 250),
+        department: String(department).substring(0, 250),
+        semester: String(semester).substring(0, 250),
+        rollNumber: String(rollNumber).substring(0, 250),
+        program: String(selectedDuration.days).substring(0, 250),
+        collegeName: String(collegeName).substring(0, 250),
+        collegeCode: String(collegeCode).substring(0, 250),
+        domain: String(selectedDomain.name).substring(0, 250),
+        domainId: String(selectedDomain._id).substring(0, 250)
       }
     };
 
