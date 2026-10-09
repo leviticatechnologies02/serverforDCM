@@ -204,6 +204,12 @@ export const getInternshipPaymentSuccessEmailHTML = (name, email, programDetails
           <p style="margin-top:0; margin-bottom:18px; font-size:16px;">Hi <strong style="color:#1e3a8a;">${name}</strong>,</p>
           <p style="margin-bottom:16px;">Thank you for your payment! Your registration for the internship program has been successfully confirmed. We're excited to have you onboard for this learning journey.</p>
           
+          <div style="background:#fff7ed; border-radius:12px; padding:16px; margin-bottom:20px; border-left:4px solid #ea580c;">
+            <p style="margin:0; font-size:14.5px; color:#9a3412; line-height:1.5;">
+              <strong>Next Step (For New Students):</strong> To access your dashboard, please go to the login page and click on <strong>Forgot Password</strong> to set your new password, then log in.
+            </p>
+          </div>
+          
           <div style="background:#f0fdf4; border-radius:16px; padding:20px; margin:20px 0; border:1px solid #d1fae5;">
             <h3 style="color:#065f46; font-size:18px; margin-bottom:15px;">🎯 Program Details</h3>
             <p style="margin:8px 0;"><strong style="color:#065f46;">Internship Domain:</strong> ${getDomainDisplayName(domain)}</p>
