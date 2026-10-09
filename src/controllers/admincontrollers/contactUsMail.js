@@ -4,18 +4,18 @@ import Enquiry from "../../models/Enquiry.js";
 
 export const submitContactForm = async (req, res) => {
   const { name, email, message, mobile, details } = req.body;
-
+ 
   if (!name || !email || !message) {
     return res.status(400).json({ success: false, message: 'All fields are required.' });
   }
-
+  
   try {
     // Save enquiry to database
     await Enquiry.create({ name, email, mobile, message, details });
 
     // Send email to Admin
     await sendEmail({
-      to: "info@leviticatechnologies.com",
+      to: "leviticatechnologies@gmail.com",
       html: getContactEmailHTML(name, email, message, mobile),
       replyTo: email,
       subject: `New Contact Form Submission from ${name}`
