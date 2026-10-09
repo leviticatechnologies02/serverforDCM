@@ -22,6 +22,7 @@ import { connectCloudinary } from "./src/config/cloudinary.js";
 import { webhook } from "./src/controllers/paymentControllers/razorpayPaymentController.js";
 import { handleWebhook } from "./src/controllers/InternshipControllers/InternshipPaymentControllers.js";
 import { sendStartupTestEmail } from "./src/utils/Email/sendEmail.js";
+import productRoutes from "./src/routes/productRoutes.js";
 
 // ================== CONFIG ==================
 const app = express();
@@ -97,6 +98,7 @@ app.post("/contact", submitContactForm);
 app.use("/auth", authRouter);
 app.use("/student", studentRouter);
 app.use("/admin", adminRouter);
+app.use("/api/products", productRoutes);
 app.use("/api", sharedRouter);
 app.use("/api", profileRoutes);
 // app.use("/api", uploadRoutes);

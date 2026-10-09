@@ -403,3 +403,30 @@ export const getLiveClassScheduledEmailHTML = (name, title, startTime, duration,
     </div>
   `;
 };
+export const getEnquiryAutoReplyHTML = (name, productName) => {
+  return `
+    <div style="max-width:580px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+      <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
+        <div style="padding:24px 28px 12px; text-align:center; border-bottom:1px solid #f0f0f0;">
+          <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height:52px; width:auto; margin-bottom:8px;" />
+          <h1 style="font-size:24px; margin:12px 0 4px; font-weight:700; background:linear-gradient(135deg, #166c8c 0%, #3b36db 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
+            Levitica Technologies Pvt Ltd
+          </h1>
+        </div>
+        <div style="padding:32px 32px 28px; color:#1f2937; font-size:15px; line-height:1.55;">
+          <p style="margin-top:0; margin-bottom:18px; font-size:16px;">Hi <strong style="color:#1e3a8a;">${name}</strong>,</p>
+          <p style="margin-bottom:16px;">Thank you for your enquiry regarding <strong>${productName}</strong>!</p>
+          <p style="margin-bottom:16px;">We have successfully received your request. Our team is currently reviewing your details and will get back to you shortly to discuss your requirements and answer any questions you might have.</p>
+          
+          <div style="background:#eff6ff; border-radius:16px; padding:15px; margin:20px 0; border:1px solid #bfdbfe;">
+            <p style="margin:0; color:#1e40af; font-size:14px;"><strong>What's next?</strong> One of our experts will contact you within 24 hours.</p>
+          </div>
+          
+          <p style="margin-bottom:16px; font-size:15px; color:#1f2937;">For any urgent queries, please contact us at <strong>+91 6305675199</strong>.</p>
+          
+          <p style="margin-top:24px; border-top:1px solid #edf2f7; padding-top:20px;">Best Regards,<br /><strong>The Levitica Team</strong></p>
+        </div>
+      </div>
+    </div>
+  `;
+};
