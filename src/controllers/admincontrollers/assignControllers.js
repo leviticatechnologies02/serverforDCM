@@ -1,5 +1,8 @@
 import Enrollment from '../../models/Enrollment.js';
 import user from '../../models/user.js';
+import '../../models/internshipsDomain.js';
+import '../../models/batch.js';
+import '../../models/courses.js';
 import { getBatchAssignmentEmailHTML } from '../../utils/Email/generateHTML.js';
 import { sendEmail } from '../../utils/Email/sendEmail.js';
 import mongoose from 'mongoose';
