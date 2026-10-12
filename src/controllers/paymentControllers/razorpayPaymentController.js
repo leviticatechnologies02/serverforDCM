@@ -6,6 +6,7 @@ import Enrollment from '../../models/Enrollment.js';
 import { enrollInCourses } from '../studentcontrollers/coursesEnrollControllers.js';
 import mongoose from 'mongoose';
 import User from '../../models/user.js';
+import Promo from '../../models/promocode.js';
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -14,8 +15,8 @@ const razorpay = new Razorpay({
 
 export const createOrder = async (req, res) => {
   try {
-    const { courseIds, userId } = req.body;
-    console.log(courseIds, userId, "create order hit")
+    const { courseIds, userId, promoCode, promoId } = req.body;
+    console.log(courseIds, userId, promoCode, "create order hit");
     const courses = await Course.find({ _id: { $in: courseIds } }).lean();
     if (!courses.length) return res.status(404).json({ error: 'Courses not found' });
 
@@ -46,12 +47,100 @@ export const createOrder = async (req, res) => {
       ) {
         filteredCourses.push(freeCourse);
       }
-    } if (!filteredCourses.length) {
+    }
+
+    if (!filteredCourses.length) {
       return res.status(400).json({ error: 'Already enrolled in all selected courses' });
     }
 
     const totalAmount = filteredCourses.reduce((sum, course) => sum + Number(course.price), 0);
-    const amountInPaise = Math.round(totalAmount * 100);
+
+    // 🔹 Validate and apply promo code if provided
+    let appliedPromo = null;
+    let discount = 0;
+
+    if (promoCode || promoId) {
+      if (promoId && mongoose.Types.ObjectId.isValid(promoId)) {
+        appliedPromo = await Promo.findById(promoId);
+      } else if (promoCode) {
+        appliedPromo = await Promo.findOne({ code: String(promoCode).toUpperCase().trim() });
+      }
+
+      if (appliedPromo) {
+        const now = new Date();
+        if (!appliedPromo.isActive) {
+          return res.status(400).json({ error: 'Promo code is inactive' });
+        }
+        if (appliedPromo.expiryDate && new Date(appliedPromo.expiryDate) < now) {
+          return res.status(400).json({ error: 'Promo code has expired' });
+        }
+        if (appliedPromo.usageLimit && appliedPromo.usedCount >= appliedPromo.usageLimit) {
+          return res.status(400).json({ error: 'Promo code usage limit reached' });
+        }
+        if (appliedPromo.minPurchase && totalAmount < appliedPromo.minPurchase) {
+          return res.status(400).json({
+            error: `Minimum purchase of ₹${appliedPromo.minPurchase} required for this promo`
+          });
+        }
+
+        if (appliedPromo.discountType === 'percentage') {
+          discount = (totalAmount * appliedPromo.discountValue) / 100;
+          if (appliedPromo.maxDiscount) {
+            discount = Math.min(discount, appliedPromo.maxDiscount);
+          }
+        } else {
+          discount = appliedPromo.discountValue;
+        }
+        discount = Math.min(discount, totalAmount);
+      }
+    }
+
+    const finalAmount = Math.max(0, totalAmount - discount);
+
+    // 🔹 Handle 100% discount (Free Enrollment directly)
+    if (finalAmount === 0 && totalAmount > 0) {
+      const freePayment = await Payment.create({
+        orderId: `FREE_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+        paymentId: `PROMO_${appliedPromo?.code || 'FREE'}_${Date.now()}`,
+        amount: 0,
+        amountInRupees: 0,
+        originalAmount: totalAmount,
+        discount,
+        promoId: appliedPromo?._id,
+        currency: 'INR',
+        status: 'paid',
+        paymentMode: 'wallet',
+        paymentProvider: 'razorpay',
+        receipt: `free_${Date.now()}`,
+        courseIds: filteredCourses.map(c => c._id),
+        userId,
+        isEnrolled: true
+      });
+
+      for (const courseId of filteredCourses.map(c => c._id)) {
+        await enrollInCourses({
+          paymentId: freePayment._id,
+          userId,
+          courseId
+        });
+      }
+
+      if (appliedPromo) {
+        await Promo.findByIdAndUpdate(appliedPromo._id, { $inc: { usedCount: 1 } });
+      }
+
+      return res.json({
+        success: true,
+        freeEnrollment: true,
+        message: 'Successfully enrolled with 100% discount promo code!',
+        order: { id: freePayment.orderId, amount: 0, currency: 'INR' },
+        discount,
+        finalAmount: 0,
+        originalAmount: totalAmount
+      });
+    }
+
+    const amountInPaise = Math.round(finalAmount * 100);
 
     const order = await razorpay.orders.create({
       amount: amountInPaise,
@@ -59,7 +148,8 @@ export const createOrder = async (req, res) => {
       receipt: `cart_${Date.now()}`,
       notes: {
         userId: String(userId),
-        courseNames: filteredCourses.map(c => c.name).join(', ')
+        courseNames: filteredCourses.map(c => c.name).join(', '),
+        promoCode: appliedPromo?.code || 'NONE'
       }
     });
 
@@ -67,6 +157,9 @@ export const createOrder = async (req, res) => {
       orderId: order.id,
       amount: order.amount,
       amountInRupees: order.amount / 100,
+      originalAmount: totalAmount,
+      discount,
+      promoId: appliedPromo?._id,
       currency: order.currency,
       status: 'created',
       receipt: order.receipt,
@@ -74,7 +167,13 @@ export const createOrder = async (req, res) => {
       userId
     });
 
-    res.json({ order });
+    res.json({
+      order,
+      discount,
+      finalAmount,
+      originalAmount: totalAmount,
+      promoCode: appliedPromo?.code
+    });
   } catch (err) {
     console.error('Create order error:', err);
     res.status(500).json({ error: 'Failed to create order' });
@@ -137,9 +236,15 @@ export const verifyPayment = async (req, res) => {
       { $set: { isEnrolled: true } },
       { session }
     );
+    if (payment.promoId) {
+      await Promo.findByIdAndUpdate(
+        payment.promoId,
+        { $inc: { usedCount: 1 } },
+        { session }
+      );
+    }
     await session.commitTransaction();
     session.endSession();
-
 
     console.log('✅ verifyPayment route hit');
     res.status(200).json({ success: true });
@@ -236,6 +341,10 @@ export const webhook = async (req, res) => {
             userId: payment.userId,
             courseId
           });
+        }
+
+        if (payment.promoId) {
+          await Promo.findByIdAndUpdate(payment.promoId, { $inc: { usedCount: 1 } });
         }
 
         console.log(`✅ Webhook processed for payment ${paymentId}`);

@@ -6,6 +6,8 @@ import User from '../../models/user.js';
 import bcrypt from 'bcrypt';
 import { sendEmail } from '../../utils/Email/sendEmail.js';
 import InternshipsDomain from '../../models/internshipsDomain.js';
+import Promo from '../../models/promocode.js';
+import mongoose from 'mongoose';
 
 
 
@@ -19,7 +21,7 @@ const razorpay = new Razorpay({
 export const createOrder = async (req, res) => {
 
   try {
-    const { name, email, phone, department, semester, program, rollNumber, amount, collegeName, collegeCode, domain } = req.body;
+    const { name, email, phone, department, semester, program, rollNumber, amount, collegeName, collegeCode, domain, promoCode, promoId } = req.body;
     console.log('Received request:', req.body);
 
     // Validate required fields
@@ -83,8 +85,98 @@ export const createOrder = async (req, res) => {
       });
     }
 
+    const baseFee = selectedDuration.fee;
+    let appliedPromo = null;
+    let discount = 0;
+
+    if (promoCode || promoId) {
+      if (promoId && mongoose.Types.ObjectId.isValid(promoId)) {
+        appliedPromo = await Promo.findById(promoId);
+      } else if (promoCode) {
+        appliedPromo = await Promo.findOne({ code: String(promoCode).toUpperCase().trim() });
+      }
+
+      if (appliedPromo) {
+        const now = new Date();
+        if (!appliedPromo.isActive) {
+          return res.status(400).json({ success: false, message: 'Promo code is inactive' });
+        }
+        if (appliedPromo.expiryDate && new Date(appliedPromo.expiryDate) < now) {
+          return res.status(400).json({ success: false, message: 'Promo code has expired' });
+        }
+        if (appliedPromo.usageLimit && appliedPromo.usedCount >= appliedPromo.usageLimit) {
+          return res.status(400).json({ success: false, message: 'Promo code usage limit reached' });
+        }
+        if (appliedPromo.minPurchase && baseFee < appliedPromo.minPurchase) {
+          return res.status(400).json({
+            success: false,
+            message: `Minimum purchase of ₹${appliedPromo.minPurchase} required for this promo`
+          });
+        }
+
+        if (appliedPromo.discountType === 'percentage') {
+          discount = (baseFee * appliedPromo.discountValue) / 100;
+          if (appliedPromo.maxDiscount) {
+            discount = Math.min(discount, appliedPromo.maxDiscount);
+          }
+        } else {
+          discount = appliedPromo.discountValue;
+        }
+        discount = Math.min(discount, baseFee);
+      }
+    }
+
+    const finalFee = Math.max(0, baseFee - discount);
+
+    // Handle 100% discount
+    if (finalFee === 0 && baseFee > 0) {
+      const paymentRecord = new InternshipPayment({
+        name,
+        email,
+        phone,
+        department,
+        semester,
+        rollNumber,
+        amount: 0,
+        originalAmount: baseFee,
+        discount,
+        promoId: appliedPromo?._id,
+        program: selectedDuration.days,
+        collegeName,
+        collegeCode,
+        domain: selectedDomain.name,
+        domainId: selectedDomain._id,
+        razorpayOrderId: `FREE_${Date.now()}_${rollNumber}`,
+        razorpayPaymentId: `PROMO_${appliedPromo?.code || 'FREE'}_${Date.now()}`,
+        receipt: `free_promo_${Date.now()}_${rollNumber}`,
+        status: 'paid'
+      });
+
+      await paymentRecord.save();
+
+      if (appliedPromo) {
+        await Promo.findByIdAndUpdate(appliedPromo._id, { $inc: { usedCount: 1 } });
+      }
+
+      return res.json({
+        success: true,
+        freeEnrollment: true,
+        message: 'Internship registered successfully with 100% discount promo code!',
+        order: {
+          id: paymentRecord.razorpayOrderId,
+          amount: 0,
+          currency: 'INR',
+          receipt: paymentRecord.receipt
+        },
+        discount,
+        finalAmount: 0,
+        originalAmount: baseFee,
+        student: { name, email, rollNumber }
+      });
+    }
+
     const options = {
-      amount: selectedDuration.fee * 100,
+      amount: Math.round(finalFee * 100),
       currency: 'INR',
       receipt: `receipt_${Date.now()}_${rollNumber}`,
       notes: {
@@ -98,15 +190,15 @@ export const createOrder = async (req, res) => {
         collegeName: String(collegeName).substring(0, 250),
         collegeCode: String(collegeCode).substring(0, 250),
         domain: String(selectedDomain.name).substring(0, 250),
-        domainId: String(selectedDomain._id).substring(0, 250)
+        domainId: String(selectedDomain._id).substring(0, 250),
+        promoCode: appliedPromo?.code || 'NONE'
       }
     };
-
 
     // Create order in Razorpay
     const order = await razorpay.orders.create(options);
 
-    // Save payment record in database - USE DIFFERENT VARIABLE NAME
+    // Save payment record in database
     const paymentRecord = new InternshipPayment({
       name,
       email,
@@ -114,7 +206,10 @@ export const createOrder = async (req, res) => {
       department,
       semester,
       rollNumber,
-      amount: selectedDuration.fee,
+      amount: finalFee,
+      originalAmount: baseFee,
+      discount,
+      promoId: appliedPromo?._id,
       program: selectedDuration.days,
       collegeName,
       collegeCode,
@@ -227,6 +322,10 @@ export const verifyPayment = async (req, res) => {
     paymentRecord.status = "paid";
 
     await paymentRecord.save();
+
+    if (paymentRecord.promoId) {
+      await Promo.findByIdAndUpdate(paymentRecord.promoId, { $inc: { usedCount: 1 } });
+    }
 
     console.log("Payment verified successfully:", razorpay_payment_id);
 
@@ -402,6 +501,10 @@ export const handleWebhook = async (req, res) => {
       if (updatedPayment) {
 
         console.log(`✅ Payment updated: ${paymentId}`);
+
+        if (updatedPayment.promoId) {
+          await Promo.findByIdAndUpdate(updatedPayment.promoId, { $inc: { usedCount: 1 } });
+        }
 
     let generatedPassword = null;
     let user = await User.findOne({ email: updatedPayment.email });

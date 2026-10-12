@@ -106,6 +106,21 @@ const InternshipPaymentSchema = new mongoose.Schema(
       min: 0,
     },
 
+    originalAmount: {
+      type: Number,
+    },
+
+    discount: {
+      type: Number,
+      default: 0,
+    },
+
+    promoId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Promo',
+      sparse: true,
+    },
+
     currency: {
       type: String,
       default: "INR",

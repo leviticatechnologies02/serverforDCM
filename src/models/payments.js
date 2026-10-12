@@ -50,6 +50,13 @@ const paymentSchema = new mongoose.Schema({
     ref: 'Course'
   }],
 
+  promoId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Promo'
+  },
+  discount: { type: Number, default: 0 },
+  originalAmount: { type: Number },
+
   meta: { type: Object },
 
 }, { timestamps: true });
