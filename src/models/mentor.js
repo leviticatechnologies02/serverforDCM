@@ -6,6 +6,8 @@ const mentorSchema = new mongoose.Schema({
   mobile: { type: String, required: true },
   expertise: [{ type: String }],
   courses: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
+  internshipDomains: [{ type: mongoose.Schema.Types.ObjectId, ref: "InternshipsDomain" }],
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   isActive: { type: Boolean, default: true },
   profileImage: {
     url: String,

@@ -5,6 +5,7 @@ import paymentRouter from "../paymentRoutes/paymentRoutes.js";
 import cartRouter from "../studentroutes/cartRoutes.js";
 import noticeRouter from "../adminroutes/noticeRoutes.js";
 import promoRouter from "../studentroutes/promocodeRoutes.js";
+import assignmentStudentRouter from "../studentroutes/assignmentStudentRoutes.js";
 
 const sharedRouter = Router();
 
@@ -14,6 +15,6 @@ sharedRouter.use('/payments',paymentRouter)
 sharedRouter.use('/cart',cartRouter)
 sharedRouter.use('/notices',noticeRouter)
 sharedRouter.use("/promo", promoRouter)
-
+sharedRouter.use("/assignments", assignmentStudentRouter);
 
 export default sharedRouter;

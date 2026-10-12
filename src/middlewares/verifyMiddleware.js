@@ -15,3 +15,4 @@ const checkRole = (roles) => (req, res, next) => {
 export const verifyAdmin = checkRole(["admin","superadmin"]);
 export const verifySuperAdmin = checkRole(["superadmin"]);
 export const verifyStudent = checkRole(["student"]);
+export const verifyMentor = checkRole(["mentor", "admin", "superadmin"]);

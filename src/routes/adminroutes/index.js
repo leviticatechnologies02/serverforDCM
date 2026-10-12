@@ -16,6 +16,7 @@ import createAdminRouter from "./createAdminRoutes.js";
 import promoRouter from "./ promoRoutes.js";
 import mentorRouter from "./mentorRoutes.js";
 import enquiryRouter from "./enquiryRoutes.js";
+import assignmentAdminRouter from "./assignmentAdminRoutes.js";
 
 const adminRouter = Router();
 
@@ -32,6 +33,7 @@ adminRouter.use((req, res, next) => {
 adminRouter.use("/courses", courseRouter);
 adminRouter.use("/batchs", batchRouter);
 adminRouter.use("/enroll", assignRouter);
+adminRouter.use("/assignments", assignmentAdminRouter);
 adminRouter.use("/transactions", transactionRouter);
 adminRouter.use("/zoom", liveClassRouter);
 adminRouter.use("/stats", statsRouter);

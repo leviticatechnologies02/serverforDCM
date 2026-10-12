@@ -23,6 +23,7 @@ import { webhook } from "./src/controllers/paymentControllers/razorpayPaymentCon
 import { handleWebhook } from "./src/controllers/InternshipControllers/InternshipPaymentControllers.js";
 import { sendStartupTestEmail } from "./src/utils/Email/sendEmail.js";
 import productRoutes from "./src/routes/productRoutes.js";
+import mentorPortalRouter from "./src/routes/mentorroutes/mentorPortalRoutes.js";
 
 // ================== CONFIG ==================
 const app = express();
@@ -98,6 +99,7 @@ app.post("/contact", submitContactForm);
 app.use("/auth", authRouter);
 app.use("/student", studentRouter);
 app.use("/admin", adminRouter);
+app.use("/mentor", mentorPortalRouter);
 app.use("/api/products", productRoutes);
 app.use("/api", sharedRouter);
 app.use("/api", profileRoutes);

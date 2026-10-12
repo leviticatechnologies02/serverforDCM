@@ -4,6 +4,7 @@ import exceljs from 'exceljs';
 import verifyToken from '../../middlewares/authMiddleware.js';
 import studentEnrollRouter from './stundentenrollRoutes.js';
 import studentLiveClassRouter from './liveClassStudentRoutes.js';
+import assignmentStudentRouter from './assignmentStudentRoutes.js';
 
 const studentRouter = express.Router();
 studentRouter.use(verifyToken)
@@ -14,8 +15,6 @@ studentRouter.use((req, res, next) => {
 
 studentRouter.use('/enrollments',studentEnrollRouter)
 studentRouter.use('/classes',studentLiveClassRouter)
-
-
-
+studentRouter.use('/assignments', assignmentStudentRouter);
 
 export default studentRouter;

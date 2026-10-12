@@ -6,13 +6,14 @@ import {
   updateMentor,
   deleteMentor
 } from "../../controllers/admincontrollers/mentorControllers.js";
+import { verifySuperAdmin } from "../../middlewares/verifyMiddleware.js";
 
 const router = Router();
 
 router.get("/", getMentors);
 router.get("/:id", getMentorById);
-router.post("/", addMentor);
-router.put("/:id", updateMentor);
-router.delete("/:id", deleteMentor);
+router.post("/", verifySuperAdmin, addMentor);
+router.put("/:id", verifySuperAdmin, updateMentor);
+router.delete("/:id", verifySuperAdmin, deleteMentor);
 
 export default router;
