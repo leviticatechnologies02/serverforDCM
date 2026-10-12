@@ -14,6 +14,9 @@ export const getPromos = async (req, res) => {
 export const createPromo = async (req, res) => {
   try {
     const data = req.body;
+    if (data.code) {
+      data.code = data.code.toUpperCase().trim();
+    }
 
     // prevent duplicate codes
     const exists = await Promo.findOne({ code: data.code });
@@ -33,6 +36,9 @@ export const createPromo = async (req, res) => {
 export const updatePromo = async (req, res) => {
   try {
     const { id } = req.params;
+    if (req.body.code) {
+      req.body.code = req.body.code.toUpperCase().trim();
+    }
 
     const promo = await Promo.findByIdAndUpdate(id, req.body, {
       new: true,

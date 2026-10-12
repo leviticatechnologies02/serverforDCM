@@ -3,8 +3,9 @@ import Promo from "../../models/promocode.js";
 export const applyPromo = async (req, res) => {
   try {
     const { code, amount } = req.body;
+    const normalizedCode = (code || "").toUpperCase().trim();
 
-    const promo = await Promo.findOne({ code });
+    const promo = await Promo.findOne({ code: normalizedCode });
 
     if (!promo) {
       return res.status(404).json({ message: "Invalid promo code" });
