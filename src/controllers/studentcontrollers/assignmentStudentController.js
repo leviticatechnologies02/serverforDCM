@@ -124,7 +124,8 @@ export const getMyAssignments = async (req, res) => {
               feedback: submission.feedback,
               submissionText: submission.submissionText,
               submissionLink: submission.submissionLink,
-              attachments: submission.attachments,
+              attachments: submission.attachments || [],
+              answers: submission.answers || [],
               gradedAt: submission.gradedAt,
             }
           : null,
@@ -135,14 +136,18 @@ export const getMyAssignments = async (req, res) => {
     let filteredList = enrichedAssignments;
     if (filter === "pending") {
       filteredList = enrichedAssignments.filter(
-        (a) => a.submissionStatus === "pending" || a.submissionStatus === "overdue"
+        (a) =>
+          a.submissionStatus === "pending" ||
+          a.submissionStatus === "overdue" ||
+          a.submissionStatus === "resubmit_requested"
       );
     } else if (filter === "submitted") {
       filteredList = enrichedAssignments.filter(
         (a) =>
           a.submissionStatus === "submitted" ||
           a.submissionStatus === "resubmitted" ||
-          a.submissionStatus === "late_submitted"
+          a.submissionStatus === "late_submitted" ||
+          a.submissionStatus === "resubmit_requested"
       );
     } else if (filter === "graded") {
       filteredList = enrichedAssignments.filter(
@@ -312,15 +317,12 @@ export const submitAssignment = async (req, res) => {
     });
 
     if (submission) {
-      // If already graded, check if resubmission was requested
-      if (
-        submission.status === "graded" &&
-        submission.status !== "resubmit_requested"
-      ) {
+      // Resubmission is ONLY permitted if mentor or admin requested it
+      if (submission.status !== "resubmit_requested") {
         return res.status(400).json({
           success: false,
           message:
-            "This assignment has already been graded and cannot be resubmitted without admin request",
+            "This assignment has already been submitted. Resubmission is only permitted when requested by a mentor or administrator.",
         });
       }
 
