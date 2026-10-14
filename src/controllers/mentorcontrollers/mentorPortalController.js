@@ -19,7 +19,7 @@ const getLoggedInMentor = async (user) => {
     ],
   })
     .populate("courses", "name category thumbnail duration level")
-    .populate("internshipDomains", "name focus level durations");
+    .populate("internshipDomains");
 };
 
 // 📌 1. Get Mentor Dashboard Overview
@@ -57,9 +57,8 @@ export const getMentorOverview = async (req, res) => {
         .lean(),
       InternshipPayment.find({
         domainId: { $in: assignedDomainIds },
-        paymentStatus: "completed",
+        status: { $in: ["paid", "completed"] },
       })
-        .populate("userId", "name email mobile profileImage")
         .lean(),
     ]);
 
@@ -70,8 +69,9 @@ export const getMentorOverview = async (req, res) => {
       }
     });
     internshipPayments.forEach((ip) => {
-      if (ip.userId) {
-        studentMap.set(ip.userId._id.toString(), ip.userId);
+      const email = ip.email?.toLowerCase().trim();
+      if (email) {
+        studentMap.set(email, ip);
       }
     });
     const totalStudents = studentMap.size;
@@ -176,7 +176,7 @@ export const getMentorCourses = async (req, res) => {
   }
 };
 
-// 📌 3. Get Mentor Batches & Student Rosters
+// 📌 3. Get Mentor Batches & Student Rosters (Courses + Internships)
 export const getMentorBatches = async (req, res) => {
   try {
     const mentor = await getLoggedInMentor(req.user);
@@ -188,19 +188,30 @@ export const getMentorBatches = async (req, res) => {
     }
 
     const assignedCourseIds = (mentor.courses || []).map((c) => c._id);
+    const assignedDomainIds = (mentor.internshipDomains || []).map((d) => d._id);
 
     const batches = await Batch.find({
-      courseId: { $in: assignedCourseIds },
+      $or: [
+        { courseId: { $in: assignedCourseIds } },
+        { internshipDomainId: { $in: assignedDomainIds } },
+      ],
     })
       .populate("courseId", "name category thumbnail")
+      .populate("internshipDomainId", "name focus level")
       .sort({ createdAt: -1 })
       .lean();
 
-    // Attach student count for each batch
+    // Attach student count for each batch (from Course enrollments + Internship payments)
     const batchIds = batches.map((b) => b._id);
-    const enrollments = await Enrollment.find({
-      "enrolledCourses.batch": { $in: batchIds },
-    }).lean();
+    const [enrollments, internshipPayments] = await Promise.all([
+      Enrollment.find({
+        "enrolledCourses.batch": { $in: batchIds },
+      }).lean(),
+      InternshipPayment.find({
+        batch: { $in: batchIds },
+        status: { $in: ["paid", "completed"] },
+      }).lean(),
+    ]);
 
     const batchStudentCounts = {};
     enrollments.forEach((e) => {
@@ -211,10 +222,17 @@ export const getMentorBatches = async (req, res) => {
         }
       });
     });
+    internshipPayments.forEach((ip) => {
+      if (ip.batch) {
+        const bId = ip.batch.toString();
+        batchStudentCounts[bId] = (batchStudentCounts[bId] || 0) + 1;
+      }
+    });
 
     const enrichedBatches = batches.map((b) => ({
       ...b,
       studentCount: batchStudentCounts[b._id.toString()] || 0,
+      batchType: b.internshipDomainId ? "internship" : "course",
     }));
 
     return res.status(200).json({
@@ -231,7 +249,7 @@ export const getMentorBatches = async (req, res) => {
   }
 };
 
-// 📌 4. Get Enrolled Students in Mentor's Courses
+// 📌 4. Get Enrolled Students & Internship Candidates in Mentor's Programs
 export const getMentorStudents = async (req, res) => {
   try {
     const mentor = await getLoggedInMentor(req.user);
@@ -243,27 +261,91 @@ export const getMentorStudents = async (req, res) => {
     }
 
     const assignedCourseIds = (mentor.courses || []).map((c) => c._id);
+    const assignedDomainIds = (mentor.internshipDomains || []).map((d) => d._id);
 
-    const enrollments = await Enrollment.find({
-      "enrolledCourses.course": { $in: assignedCourseIds },
-    })
-      .populate("user", "name email mobile profileImage createdAt")
-      .populate("enrolledCourses.course", "name")
-      .populate("enrolledCourses.batch", "batchName")
-      .lean();
+    const [enrollments, internshipPayments] = await Promise.all([
+      Enrollment.find({
+        "enrolledCourses.course": { $in: assignedCourseIds },
+      })
+        .populate("user", "name email mobile profileImage createdAt")
+        .populate("enrolledCourses.course", "name")
+        .populate("enrolledCourses.batch", "batchName")
+        .lean(),
+      InternshipPayment.find({
+        domainId: { $in: assignedDomainIds },
+        status: { $in: ["paid", "completed"] },
+      })
+        .populate("batch", "batchName")
+        .populate("domainId", "name focus level")
+        .lean(),
+    ]);
 
     const students = [];
-    const seen = new Set();
+    const seenEmails = new Set();
 
+    // 1. Process Course enrolled students
     enrollments.forEach((e) => {
-      if (e.user && !seen.has(e.user._id.toString())) {
-        seen.add(e.user._id.toString());
-        const myCourses = e.enrolledCourses.filter((ec) =>
-          assignedCourseIds.some((cid) => cid.equals(ec.course?._id))
-        );
+      if (e.user) {
+        const emailKey = e.user.email?.toLowerCase().trim();
+        if (emailKey) seenEmails.add(emailKey);
+        const myCourses = (e.enrolledCourses || [])
+          .filter((ec) => assignedCourseIds.some((cid) => cid.equals(ec.course?._id)))
+          .map((ec) => ({
+            type: "course",
+            name: ec.course?.name || "Course",
+            batch: ec.batch?.batchName,
+            enrolledAt: ec.enrolledAt,
+          }));
+
         students.push({
-          ...e.user,
+          _id: e.user._id,
+          name: e.user.name,
+          email: e.user.email,
+          mobile: e.user.mobile,
+          profileImage: e.user.profileImage,
+          studentType: "course",
           enrolledDetails: myCourses,
+          createdAt: e.user.createdAt,
+        });
+      }
+    });
+
+    // 2. Process Internship candidates
+    internshipPayments.forEach((ip) => {
+      const emailKey = ip.email?.toLowerCase().trim();
+      const internDetail = {
+        type: "internship",
+        domain: ip.domain || ip.domainId?.name,
+        name: ip.domain || ip.domainId?.name,
+        batch: ip.batch?.batchName || "Assigned",
+        collegeName: ip.collegeName,
+        rollNumber: ip.rollNumber,
+        department: ip.department,
+        semester: ip.semester,
+        enrolledAt: ip.createdAt,
+      };
+
+      const existingIndex = students.findIndex(
+        (s) => s.email?.toLowerCase().trim() === emailKey
+      );
+
+      if (existingIndex !== -1) {
+        students[existingIndex].enrolledDetails.push(internDetail);
+        if (students[existingIndex].studentType === "course") {
+          students[existingIndex].studentType = "both";
+        }
+      } else {
+        students.push({
+          _id: ip._id,
+          name: ip.name,
+          email: ip.email,
+          mobile: ip.phone,
+          collegeName: ip.collegeName,
+          rollNumber: ip.rollNumber,
+          department: ip.department,
+          studentType: "internship",
+          enrolledDetails: [internDetail],
+          createdAt: ip.createdAt,
         });
       }
     });
@@ -368,6 +450,12 @@ export const getMentorAssignmentSubmissions = async (req, res) => {
       });
     }
 
+    const assignment = await Assignment.findById(assignmentId)
+      .populate("course", "name")
+      .populate("internshipDomain", "name focus level")
+      .populate("batch", "batchName")
+      .lean();
+
     const submissions = await AssignmentSubmission.find({
       assignment: assignmentId,
     })
@@ -379,6 +467,7 @@ export const getMentorAssignmentSubmissions = async (req, res) => {
     return res.status(200).json({
       success: true,
       total: submissions.length,
+      assignment,
       submissions,
     });
   } catch (error) {
@@ -473,11 +562,16 @@ export const getMentorLiveClasses = async (req, res) => {
     }
 
     const assignedCourseIds = (mentor.courses || []).map((c) => c._id);
+    const assignedDomainIds = (mentor.internshipDomains || []).map((d) => d._id);
 
     const liveClasses = await LiveClass.find({
-      course: { $in: assignedCourseIds },
+      $or: [
+        { course: { $in: assignedCourseIds } },
+        { internshipDomain: { $in: assignedDomainIds } },
+      ],
     })
       .populate("course", "name thumbnail")
+      .populate("internshipDomain", "name focus level")
       .populate("batch", "batchName")
       .sort({ startTime: 1 })
       .lean();
