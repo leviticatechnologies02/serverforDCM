@@ -153,7 +153,23 @@ export const submitContactForm = async (req, res) => {
 
     await sendEmail({
       to: userEmail,
-      html: getEnquiryAutoReplyHTML(contactPerson, rawProductTitle || "our Products & Services"),
+      html: getEnquiryAutoReplyHTML(
+        contactPerson,
+        rawProductTitle || "our Products & Services",
+        {
+          productTitle: rawProductTitle,
+          contactName: contactPerson,
+          organizationName,
+          email: userEmail,
+          mobile: contactMobile,
+          designation,
+          food,
+          state,
+          city,
+          message: userMessage,
+          details: detailsObj
+        }
+      ),
       subject: userSubject
     });
 

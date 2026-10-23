@@ -1,9 +1,11 @@
+export const LEVITICA_LOGO_URL = "https://res.cloudinary.com/leviticatechnologies/image/upload/v1792730979/levitica_logo_official.png";
+
 export const getVerificationEmailHTML = (name, verifyUrl, email, password = null) => {
   return `
     <div style="max-width:580px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
       <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
         <div style="padding:24px 28px 12px; text-align:center; border-bottom:1px solid #f0f0f0;">
-          <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height:52px; width:auto; margin-bottom:8px;" />
+          <img src="${LEVITICA_LOGO_URL}" alt="Levitica Technologies" style="display:block; margin:0 auto 10px; max-width:160px; height:auto;" />
           <h1 style="font-size:24px; margin:12px 0 4px; font-weight:700; background:linear-gradient(135deg, #166c8c 0%, #3b36db 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
             Levitica Technologies Pvt Ltd
           </h1>
@@ -55,7 +57,7 @@ export const getPasswordResetEmailHTML = ({
     <div style="max-width:580px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
       <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
         <div style="padding:24px 28px 12px; text-align:center; border-bottom:1px solid #f0f0f0;">
-          <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height:52px; width:auto; margin-bottom:8px;" />
+          <img src="${LEVITICA_LOGO_URL}" alt="Levitica Technologies" style="display:block; margin:0 auto 10px; max-width:160px; height:auto;" />
           <h1 style="font-size:24px; margin:12px 0 4px; font-weight:700; background:linear-gradient(135deg, #166c8c 0%, #3b36db 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
             Levitica Technologies Pvt Ltd
           </h1>
@@ -98,7 +100,7 @@ export const getBatchAssignmentEmailHTML = (name, courseTitle, batchName, email)
     <div style="max-width:580px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
       <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
         <div style="padding:24px 28px 12px; text-align:center; border-bottom:1px solid #f0f0f0;">
-          <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height:52px; width:auto; margin-bottom:8px;" />
+          <img src="${LEVITICA_LOGO_URL}" alt="Levitica Technologies" style="display:block; margin:0 auto 10px; max-width:160px; height:auto;" />
           <h1 style="font-size:24px; margin:12px 0 4px; font-weight:700; background:linear-gradient(135deg, #166c8c 0%, #3b36db 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
             Levitica Technologies Pvt Ltd
           </h1>
@@ -134,7 +136,7 @@ export const getBatchAssignmentEmailHTML = (name, courseTitle, batchName, email)
       <div style="max-width:580px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
         <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
           <div style="padding:24px 28px 12px; text-align:center; border-bottom:1px solid #f0f0f0;">
-            <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height:52px; width:auto; margin-bottom:8px;" />
+            <img src="${LEVITICA_LOGO_URL}" alt="Levitica Technologies" style="display:block; margin:0 auto 10px; max-width:160px; height:auto;" />
             <h1 style="font-size:24px; margin:12px 0 4px; font-weight:700; background:linear-gradient(135deg, #166c8c 0%, #3b36db 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
               Levitica Technologies Pvt Ltd
             </h1>
@@ -191,7 +193,7 @@ export const getInternshipPaymentSuccessEmailHTML = (name, email, programDetails
     <div style="max-width:580px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
       <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
         <div style="padding:24px 28px 12px; text-align:center; border-bottom:1px solid #f0f0f0;">
-          <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height:52px; width:auto; margin-bottom:8px;" />
+          <img src="${LEVITICA_LOGO_URL}" alt="Levitica Technologies" style="display:block; margin:0 auto 10px; max-width:160px; height:auto;" />
           <h1 style="font-size:24px; margin:12px 0 4px; font-weight:700; background:linear-gradient(135deg, #166c8c 0%, #3b36db 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
             Levitica Technologies Pvt Ltd
           </h1>
@@ -265,7 +267,7 @@ export const getCoursePaymentSuccessEmailHTML = (name, email, courseDetails, pay
     <div style="max-width:580px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
       <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
         <div style="padding:24px 28px 12px; text-align:center; border-bottom:1px solid #f0f0f0;">
-          <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height:52px; width:auto; margin-bottom:8px;" />
+          <img src="${LEVITICA_LOGO_URL}" alt="Levitica Technologies" style="display:block; margin:0 auto 10px; max-width:160px; height:auto;" />
           <h1 style="font-size:24px; margin:12px 0 4px; font-weight:700; background:linear-gradient(135deg, #166c8c 0%, #3b36db 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
             Levitica Technologies Pvt Ltd
           </h1>
@@ -326,7 +328,7 @@ export const getVerificationEmailHTMLOTP = (name, otp, email) => {
     <div style="max-width:580px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
       <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
         <div style="padding:24px 28px 12px; text-align:center; border-bottom:1px solid #f0f0f0;">
-          <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height:52px; width:auto; margin-bottom:8px;" />
+          <img src="${LEVITICA_LOGO_URL}" alt="Levitica Technologies" style="display:block; margin:0 auto 10px; max-width:160px; height:auto;" />
           <h1 style="font-size:24px; margin:12px 0 4px; font-weight:700; background:linear-gradient(135deg, #166c8c 0%, #3b36db 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
             Levitica Technologies Pvt Ltd
           </h1>
@@ -365,7 +367,7 @@ export const getLiveClassScheduledEmailHTML = (name, title, startTime, duration,
     <div style="max-width:580px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
       <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
         <div style="padding:24px 28px 12px; text-align:center; border-bottom:1px solid #f0f0f0;">
-          <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height:52px; width:auto; margin-bottom:8px;" />
+          <img src="${LEVITICA_LOGO_URL}" alt="Levitica Technologies" style="display:block; margin:0 auto 10px; max-width:160px; height:auto;" />
           <h1 style="font-size:24px; margin:12px 0 4px; font-weight:700; background:linear-gradient(135deg, #166c8c 0%, #3b36db 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
             Levitica Technologies Pvt Ltd
           </h1>
@@ -403,14 +405,167 @@ export const getLiveClassScheduledEmailHTML = (name, title, startTime, duration,
     </div>
   `;
 };
-export const getEnquiryAutoReplyHTML = (name, productName) => {
+const FIELD_LABELS = {
+  productTitle: "Product",
+  companyName: "Company Name",
+  propertyName: "Property / Hostel Name",
+  collegeName: "College / Institution Name",
+  facilityName: "Hospital / Clinic Name",
+  contactName: "Contact Person",
+  hrManager: "HR Manager / Contact Name",
+  ownerName: "Owner / Manager Name",
+  tpoName: "TPO / Coordinator Name",
+  adminName: "Administrator / Doctor Name",
+  name: "Name",
+  designation: "Designation",
+  email: "Email Address",
+  mobile: "Mobile Number",
+  phone: "Phone Number",
+  food: "Preferred Food",
+  propertyType: "Property Type",
+  roomCount: "Total Rooms / Beds",
+  city: "City",
+  state: "State",
+  employeeCount: "Number of Employees",
+  teamSize: "Team Size / Users",
+  bedCount: "Number of Beds / Patients per Day",
+  studentCount: "Approx. Students per Batch",
+  industry: "Industry",
+  deployment: "Preferred Deployment",
+  collaboration: "Interested Collaboration",
+  internshipMode: "Internship Mode Preferred",
+  facilityType: "Facility Type",
+  currentTool: "Current Communication Tool",
+  dataVolume: "Estimated Data Volume",
+  compliance: "Compliance Requirement"
+};
+
+const ignoredKeys = new Set([
+  'productTitle',
+  'productName',
+  'productSlug',
+  'name',
+  'email',
+  'mobile',
+  'phone',
+  'message',
+  'companyName',
+  'propertyName',
+  'collegeName',
+  'facilityName',
+  'contactName',
+  'hrManager',
+  'ownerName',
+  'tpoName',
+  'adminName',
+  'designation',
+  'food',
+  'state',
+  'city',
+  'organizationName',
+  'contactPerson'
+]);
+
+const renderEnquiryRows = ({
+  productTitle,
+  organizationName,
+  contactName,
+  designation,
+  email,
+  mobile,
+  food,
+  state,
+  city,
+  message,
+  details = {}
+}) => {
+  const extraRows = Object.entries(details || {})
+    .filter(([key, val]) => !ignoredKeys.has(key) && val !== undefined && val !== null && val !== "")
+    .map(([key, val]) => {
+      const label = FIELD_LABELS[key] || key
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, (str) => str.toUpperCase());
+      return `
+        <tr>
+          <td style="padding:8px 12px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0; width:40%;">${label}</td>
+          <td style="padding:8px 12px; color:#1f2937; border-bottom:1px solid #e2e8f0;">${val}</td>
+        </tr>
+      `;
+    })
+    .join('');
+
+  return `
+    ${productTitle ? `
+    <tr>
+      <td style="padding:8px 12px; font-weight:600; color:#1e40af; border-bottom:1px solid #e2e8f0; width:40%;">Product</td>
+      <td style="padding:8px 12px; font-weight:700; color:#1e3a8a; border-bottom:1px solid #e2e8f0;">${productTitle}</td>
+    </tr>` : ''}
+    ${organizationName ? `
+    <tr>
+      <td style="padding:8px 12px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Organization / Institution</td>
+      <td style="padding:8px 12px; color:#1f2937; border-bottom:1px solid #e2e8f0;">${organizationName}</td>
+    </tr>` : ''}
+    ${contactName ? `
+    <tr>
+      <td style="padding:8px 12px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Contact Person</td>
+      <td style="padding:8px 12px; color:#1f2937; border-bottom:1px solid #e2e8f0;">${contactName}</td>
+    </tr>` : ''}
+    ${designation ? `
+    <tr>
+      <td style="padding:8px 12px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Designation</td>
+      <td style="padding:8px 12px; color:#1f2937; border-bottom:1px solid #e2e8f0;">${designation}</td>
+    </tr>` : ''}
+    ${email ? `
+    <tr>
+      <td style="padding:8px 12px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Email Address</td>
+      <td style="padding:8px 12px; color:#1f2937; border-bottom:1px solid #e2e8f0;"><a href="mailto:${email}" style="color:#2563eb; text-decoration:none;">${email}</a></td>
+    </tr>` : ''}
+    ${mobile && mobile !== 'N/A' ? `
+    <tr>
+      <td style="padding:8px 12px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Mobile Number</td>
+      <td style="padding:8px 12px; color:#1f2937; border-bottom:1px solid #e2e8f0;"><a href="tel:${mobile}" style="color:#2563eb; text-decoration:none;">${mobile}</a></td>
+    </tr>` : ''}
+    ${food ? `
+    <tr>
+      <td style="padding:8px 12px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Preferred Food</td>
+      <td style="padding:8px 12px; color:#1f2937; border-bottom:1px solid #e2e8f0;">${food}</td>
+    </tr>` : ''}
+    ${(state || city) ? `
+    <tr>
+      <td style="padding:8px 12px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Location</td>
+      <td style="padding:8px 12px; color:#1f2937; border-bottom:1px solid #e2e8f0;">${[city, state].filter(Boolean).join(', ')}</td>
+    </tr>` : ''}
+    ${extraRows}
+    ${message ? `
+    <tr>
+      <td style="padding:8px 12px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Message / Requirements</td>
+      <td style="padding:8px 12px; color:#1f2937; border-bottom:1px solid #e2e8f0; white-space:pre-wrap;">${message}</td>
+    </tr>` : ''}
+  `;
+};
+
+export const getEnquiryAutoReplyHTML = (name, productName, submissionDetails = null) => {
   const recipientName = name || "there";
   const displayProduct = productName || "our Products & Services";
+
+  const detailsTableHTML = submissionDetails
+    ? `
+      <div style="background:#f8fafc; border-radius:14px; padding:18px 20px; margin:22px 0; border:1px solid #e2e8f0;">
+        <p style="margin:0 0 12px 0; font-size:14px; font-weight:700; color:#1e3a8a;">📋 Summary of Submitted Details:</p>
+        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+          <tbody>
+            ${renderEnquiryRows(submissionDetails)}
+          </tbody>
+        </table>
+      </div>
+    `
+    : '';
+
   return `
     <div style="max-width:580px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
       <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
         <div style="padding:24px 28px 12px; text-align:center; border-bottom:1px solid #f0f0f0;">
-          <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height:52px; width:auto; margin-bottom:8px;" />
+          <img src="${LEVITICA_LOGO_URL}" alt="Levitica Technologies" style="display:block; margin:0 auto 10px; max-width:160px; height:auto;" />
           <h1 style="font-size:24px; margin:12px 0 4px; font-weight:700; background:linear-gradient(135deg, #166c8c 0%, #3b36db 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
             Levitica Technologies Pvt Ltd
           </h1>
@@ -420,6 +575,8 @@ export const getEnquiryAutoReplyHTML = (name, productName) => {
           <p style="margin-bottom:16px;">Thank you for your enquiry regarding <strong>${displayProduct}</strong>!</p>
           <p style="margin-bottom:16px;">We have successfully received your request. Our team is currently reviewing your details and will get back to you shortly to discuss your requirements and answer any questions you might have.</p>
           
+          ${detailsTableHTML}
+
           <div style="background:#eff6ff; border-radius:16px; padding:15px; margin:20px 0; border:1px solid #bfdbfe;">
             <p style="margin:0; color:#1e40af; font-size:14px;"><strong>What's next?</strong> One of our experts will contact you within 24 hours.</p>
           </div>
@@ -427,6 +584,10 @@ export const getEnquiryAutoReplyHTML = (name, productName) => {
           <p style="margin-bottom:16px; font-size:15px; color:#1f2937;">For any urgent queries, please contact us at <strong>+91 6305675199</strong>.</p>
           
           <p style="margin-top:24px; border-top:1px solid #edf2f7; padding-top:20px;">Best Regards,<br /><strong>The Levitica Team</strong></p>
+        </div>
+        <div style="background:#f9fafb; padding:20px 24px; text-align:center; font-size:12px; color:#6c757d; border-top:1px solid #eef2f6;">
+          <p style="margin:0 0 6px 0;">© ${new Date().getFullYear()} Levitica Technologies Pvt Ltd. All rights reserved.</p>
+          <p style="margin:0;"><a href="https://leviticatechnologies.com/privacy" style="color:#6c86a3; text-decoration:none;">Privacy Policy</a> | <a href="https://leviticatechnologies.com/contact-us" style="color:#6c86a3; text-decoration:none;">Contact Us</a></p>
         </div>
       </div>
     </div>
@@ -446,85 +607,11 @@ export const getProductEnquiryAdminEmailHTML = ({
   message,
   details = {}
 }) => {
-  const FIELD_LABELS = {
-    productTitle: "Product",
-    companyName: "Company Name",
-    propertyName: "Property / Hostel Name",
-    collegeName: "College / Institution Name",
-    facilityName: "Hospital / Clinic Name",
-    contactName: "Contact Person",
-    hrManager: "HR Manager / Contact Name",
-    ownerName: "Owner / Manager Name",
-    tpoName: "TPO / Coordinator Name",
-    adminName: "Administrator / Doctor Name",
-    name: "Name",
-    designation: "Designation",
-    email: "Email Address",
-    mobile: "Mobile Number",
-    phone: "Phone Number",
-    food: "Preferred Food",
-    propertyType: "Property Type",
-    roomCount: "Total Rooms / Beds",
-    city: "City",
-    state: "State",
-    employeeCount: "Number of Employees",
-    teamSize: "Team Size / Users",
-    bedCount: "Number of Beds / Patients per Day",
-    studentCount: "Approx. Students per Batch",
-    industry: "Industry",
-    deployment: "Preferred Deployment",
-    collaboration: "Interested Collaboration",
-    internshipMode: "Internship Mode Preferred",
-    facilityType: "Facility Type",
-    currentTool: "Current Communication Tool",
-    dataVolume: "Estimated Data Volume",
-    compliance: "Compliance Requirement"
-  };
-
-  const ignoredKeys = new Set([
-    'productTitle',
-    'productName',
-    'productSlug',
-    'name',
-    'email',
-    'mobile',
-    'phone',
-    'message',
-    'companyName',
-    'propertyName',
-    'collegeName',
-    'facilityName',
-    'contactName',
-    'hrManager',
-    'ownerName',
-    'tpoName',
-    'adminName',
-    'designation',
-    'food',
-    'state',
-    'city'
-  ]);
-
-  const extraRows = Object.entries(details || {})
-    .filter(([key, val]) => !ignoredKeys.has(key) && val !== undefined && val !== null && val !== "")
-    .map(([key, val]) => {
-      const label = FIELD_LABELS[key] || key
-        .replace(/([A-Z])/g, ' $1')
-        .replace(/^./, (str) => str.toUpperCase());
-      return `
-        <tr>
-          <td style="padding:10px 14px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0; width:40%;">${label}</td>
-          <td style="padding:10px 14px; color:#1f2937; border-bottom:1px solid #e2e8f0;">${val}</td>
-        </tr>
-      `;
-    })
-    .join('');
-
   return `
     <div style="max-width:620px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
       <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
         <div style="padding:24px 28px 12px; text-align:center; border-bottom:1px solid #f0f0f0;">
-          <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height:52px; width:auto; margin-bottom:8px;" />
+          <img src="${LEVITICA_LOGO_URL}" alt="Levitica Technologies" style="display:block; margin:0 auto 10px; max-width:160px; height:auto;" />
           <h1 style="font-size:24px; margin:12px 0 4px; font-weight:700; background:linear-gradient(135deg, #166c8c 0%, #3b36db 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
             Levitica Technologies Pvt Ltd
           </h1>
@@ -538,52 +625,21 @@ export const getProductEnquiryAdminEmailHTML = ({
           <h2 style="color:#1f2937; font-size:20px; margin-bottom:12px;">Enquiry Details</h2>
           <table style="width:100%; border-collapse:collapse; margin-bottom:20px; font-size:14px; background:#f8fafc; border-radius:12px; overflow:hidden; border:1px solid #e2e8f0;">
             <tbody>
-              ${productTitle ? `
-              <tr>
-                <td style="padding:10px 14px; font-weight:600; color:#1e40af; border-bottom:1px solid #e2e8f0; width:40%;">Product</td>
-                <td style="padding:10px 14px; font-weight:700; color:#1e3a8a; border-bottom:1px solid #e2e8f0;">${productTitle}</td>
-              </tr>` : ''}
-              ${organizationName ? `
-              <tr>
-                <td style="padding:10px 14px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Organization / Institution</td>
-                <td style="padding:10px 14px; color:#1f2937; border-bottom:1px solid #e2e8f0;">${organizationName}</td>
-              </tr>` : ''}
-              <tr>
-                <td style="padding:10px 14px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Contact Person</td>
-                <td style="padding:10px 14px; color:#1f2937; border-bottom:1px solid #e2e8f0;">${contactName}</td>
-              </tr>
-              ${designation ? `
-              <tr>
-                <td style="padding:10px 14px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Designation</td>
-                <td style="padding:10px 14px; color:#1f2937; border-bottom:1px solid #e2e8f0;">${designation}</td>
-              </tr>` : ''}
-              <tr>
-                <td style="padding:10px 14px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Email Address</td>
-                <td style="padding:10px 14px; color:#1f2937; border-bottom:1px solid #e2e8f0;"><a href="mailto:${email}" style="color:#2563eb; text-decoration:none;">${email}</a></td>
-              </tr>
-              <tr>
-                <td style="padding:10px 14px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Mobile Number</td>
-                <td style="padding:10px 14px; color:#1f2937; border-bottom:1px solid #e2e8f0;"><a href="tel:${mobile}" style="color:#2563eb; text-decoration:none;">${mobile}</a></td>
-              </tr>
-              ${food ? `
-              <tr>
-                <td style="padding:10px 14px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Preferred Food</td>
-                <td style="padding:10px 14px; color:#1f2937; border-bottom:1px solid #e2e8f0;">${food}</td>
-              </tr>` : ''}
-              ${(state || city) ? `
-              <tr>
-                <td style="padding:10px 14px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Location</td>
-                <td style="padding:10px 14px; color:#1f2937; border-bottom:1px solid #e2e8f0;">${[city, state].filter(Boolean).join(', ')}</td>
-              </tr>` : ''}
-              ${extraRows}
+              ${renderEnquiryRows({
+                productTitle,
+                organizationName,
+                contactName,
+                designation,
+                email,
+                mobile,
+                food,
+                state,
+                city,
+                message,
+                details
+              })}
             </tbody>
           </table>
-
-          ${message ? `
-          <div style="background:#f8fafc; border-radius:12px; padding:16px 20px; margin:20px 0; border-left:4px solid #2563eb;">
-            <p style="margin:0 0 6px 0; font-weight:600; color:#374151; font-size:14px;">Additional Requirements / Message:</p>
-            <p style="margin:0; color:#1f2937; white-space:pre-wrap;">${message}</p>
-          </div>` : ''}
 
           <p style="margin-top:20px;">You can reply directly to <a href="mailto:${email}" style="color:#2563eb; font-weight:600;">${email}</a> to connect with the lead.</p>
           <p style="margin-top:24px; border-top:1px solid #edf2f7; padding-top:20px;">Best regards,<br /><strong>Levitica Support Team</strong></p>
@@ -596,4 +652,5 @@ export const getProductEnquiryAdminEmailHTML = ({
     </div>
   `;
 };
+
 
