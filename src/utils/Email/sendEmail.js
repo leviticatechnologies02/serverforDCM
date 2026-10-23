@@ -17,29 +17,13 @@ export const sendEmail = async ({ to, subject, html, replyTo }) => {
 
     if (error) {
       console.error("Email sending failed (Resend):", error);
-      return;
+      return { success: false, error };
     }
 
-    console.log("Email sent successfully via Resend:", data.id);
+    console.log("Email sent successfully via Resend to:", to, "ID:", data?.id);
+    return { success: true, id: data?.id };
   } catch (error) {
     console.error("Email sending failed:", error);
-  }
-};
-
-export const sendStartupTestEmail = async () => {
-  try {
-    await sendEmail({
-      to: "sameershaikzayn@gmail.com", 
-      subject: "Server Startup Test Email (Resend)",
-      html: `
-        <h2>Server Started Successfully 🚀</h2>
-        <p>This is a test email sent when the server started.</p>
-        <p>If you received this, the Resend API is working perfectly!</p>
-      `
-    });
-
-    console.log("Startup test email sent");
-  } catch (error) {
-    console.error("Startup email failed:", error);
+    return { success: false, error };
   }
 };

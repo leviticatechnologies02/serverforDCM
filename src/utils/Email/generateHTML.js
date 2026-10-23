@@ -404,6 +404,8 @@ export const getLiveClassScheduledEmailHTML = (name, title, startTime, duration,
   `;
 };
 export const getEnquiryAutoReplyHTML = (name, productName) => {
+  const recipientName = name || "there";
+  const displayProduct = productName || "our Products & Services";
   return `
     <div style="max-width:580px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
       <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
@@ -414,8 +416,8 @@ export const getEnquiryAutoReplyHTML = (name, productName) => {
           </h1>
         </div>
         <div style="padding:32px 32px 28px; color:#1f2937; font-size:15px; line-height:1.55;">
-          <p style="margin-top:0; margin-bottom:18px; font-size:16px;">Hi <strong style="color:#1e3a8a;">${name}</strong>,</p>
-          <p style="margin-bottom:16px;">Thank you for your enquiry regarding <strong>${productName}</strong>!</p>
+          <p style="margin-top:0; margin-bottom:18px; font-size:16px;">Hi <strong style="color:#1e3a8a;">${recipientName}</strong>,</p>
+          <p style="margin-bottom:16px;">Thank you for your enquiry regarding <strong>${displayProduct}</strong>!</p>
           <p style="margin-bottom:16px;">We have successfully received your request. Our team is currently reviewing your details and will get back to you shortly to discuss your requirements and answer any questions you might have.</p>
           
           <div style="background:#eff6ff; border-radius:16px; padding:15px; margin:20px 0; border:1px solid #bfdbfe;">
@@ -430,3 +432,168 @@ export const getEnquiryAutoReplyHTML = (name, productName) => {
     </div>
   `;
 };
+
+export const getProductEnquiryAdminEmailHTML = ({
+  productTitle,
+  contactName,
+  organizationName,
+  email,
+  mobile,
+  designation,
+  food,
+  state,
+  city,
+  message,
+  details = {}
+}) => {
+  const FIELD_LABELS = {
+    productTitle: "Product",
+    companyName: "Company Name",
+    propertyName: "Property / Hostel Name",
+    collegeName: "College / Institution Name",
+    facilityName: "Hospital / Clinic Name",
+    contactName: "Contact Person",
+    hrManager: "HR Manager / Contact Name",
+    ownerName: "Owner / Manager Name",
+    tpoName: "TPO / Coordinator Name",
+    adminName: "Administrator / Doctor Name",
+    name: "Name",
+    designation: "Designation",
+    email: "Email Address",
+    mobile: "Mobile Number",
+    phone: "Phone Number",
+    food: "Preferred Food",
+    propertyType: "Property Type",
+    roomCount: "Total Rooms / Beds",
+    city: "City",
+    state: "State",
+    employeeCount: "Number of Employees",
+    teamSize: "Team Size / Users",
+    bedCount: "Number of Beds / Patients per Day",
+    studentCount: "Approx. Students per Batch",
+    industry: "Industry",
+    deployment: "Preferred Deployment",
+    collaboration: "Interested Collaboration",
+    internshipMode: "Internship Mode Preferred",
+    facilityType: "Facility Type",
+    currentTool: "Current Communication Tool",
+    dataVolume: "Estimated Data Volume",
+    compliance: "Compliance Requirement"
+  };
+
+  const ignoredKeys = new Set([
+    'productTitle',
+    'productName',
+    'productSlug',
+    'name',
+    'email',
+    'mobile',
+    'phone',
+    'message',
+    'companyName',
+    'propertyName',
+    'collegeName',
+    'facilityName',
+    'contactName',
+    'hrManager',
+    'ownerName',
+    'tpoName',
+    'adminName',
+    'designation',
+    'food',
+    'state',
+    'city'
+  ]);
+
+  const extraRows = Object.entries(details || {})
+    .filter(([key, val]) => !ignoredKeys.has(key) && val !== undefined && val !== null && val !== "")
+    .map(([key, val]) => {
+      const label = FIELD_LABELS[key] || key
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, (str) => str.toUpperCase());
+      return `
+        <tr>
+          <td style="padding:10px 14px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0; width:40%;">${label}</td>
+          <td style="padding:10px 14px; color:#1f2937; border-bottom:1px solid #e2e8f0;">${val}</td>
+        </tr>
+      `;
+    })
+    .join('');
+
+  return `
+    <div style="max-width:620px; margin:0 auto; background:#f0f2f5; padding:20px 0 40px; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+      <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.04);">
+        <div style="padding:24px 28px 12px; text-align:center; border-bottom:1px solid #f0f0f0;">
+          <img src="https://leviticatechnologies.com/img/leviticalogo.png" alt="Levitica Technologies" style="height:52px; width:auto; margin-bottom:8px;" />
+          <h1 style="font-size:24px; margin:12px 0 4px; font-weight:700; background:linear-gradient(135deg, #166c8c 0%, #3b36db 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
+            Levitica Technologies Pvt Ltd
+          </h1>
+        </div>
+        <div style="background:linear-gradient(98deg, #2563eb 0%, #4f46e5 100%); padding:18px 24px; text-align:center;">
+          <span style="background:rgba(255,255,255,0.18); padding:6px 18px; border-radius:60px; color:#fff; font-weight:600; font-size:15px;">
+            📬 New Product Enquiry: ${productTitle || "General"}
+          </span>
+        </div>
+        <div style="padding:32px 32px 28px; color:#1f2937; font-size:15px; line-height:1.55;">
+          <h2 style="color:#1f2937; font-size:20px; margin-bottom:12px;">Enquiry Details</h2>
+          <table style="width:100%; border-collapse:collapse; margin-bottom:20px; font-size:14px; background:#f8fafc; border-radius:12px; overflow:hidden; border:1px solid #e2e8f0;">
+            <tbody>
+              ${productTitle ? `
+              <tr>
+                <td style="padding:10px 14px; font-weight:600; color:#1e40af; border-bottom:1px solid #e2e8f0; width:40%;">Product</td>
+                <td style="padding:10px 14px; font-weight:700; color:#1e3a8a; border-bottom:1px solid #e2e8f0;">${productTitle}</td>
+              </tr>` : ''}
+              ${organizationName ? `
+              <tr>
+                <td style="padding:10px 14px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Organization / Institution</td>
+                <td style="padding:10px 14px; color:#1f2937; border-bottom:1px solid #e2e8f0;">${organizationName}</td>
+              </tr>` : ''}
+              <tr>
+                <td style="padding:10px 14px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Contact Person</td>
+                <td style="padding:10px 14px; color:#1f2937; border-bottom:1px solid #e2e8f0;">${contactName}</td>
+              </tr>
+              ${designation ? `
+              <tr>
+                <td style="padding:10px 14px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Designation</td>
+                <td style="padding:10px 14px; color:#1f2937; border-bottom:1px solid #e2e8f0;">${designation}</td>
+              </tr>` : ''}
+              <tr>
+                <td style="padding:10px 14px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Email Address</td>
+                <td style="padding:10px 14px; color:#1f2937; border-bottom:1px solid #e2e8f0;"><a href="mailto:${email}" style="color:#2563eb; text-decoration:none;">${email}</a></td>
+              </tr>
+              <tr>
+                <td style="padding:10px 14px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Mobile Number</td>
+                <td style="padding:10px 14px; color:#1f2937; border-bottom:1px solid #e2e8f0;"><a href="tel:${mobile}" style="color:#2563eb; text-decoration:none;">${mobile}</a></td>
+              </tr>
+              ${food ? `
+              <tr>
+                <td style="padding:10px 14px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Preferred Food</td>
+                <td style="padding:10px 14px; color:#1f2937; border-bottom:1px solid #e2e8f0;">${food}</td>
+              </tr>` : ''}
+              ${(state || city) ? `
+              <tr>
+                <td style="padding:10px 14px; font-weight:600; color:#4b5563; border-bottom:1px solid #e2e8f0;">Location</td>
+                <td style="padding:10px 14px; color:#1f2937; border-bottom:1px solid #e2e8f0;">${[city, state].filter(Boolean).join(', ')}</td>
+              </tr>` : ''}
+              ${extraRows}
+            </tbody>
+          </table>
+
+          ${message ? `
+          <div style="background:#f8fafc; border-radius:12px; padding:16px 20px; margin:20px 0; border-left:4px solid #2563eb;">
+            <p style="margin:0 0 6px 0; font-weight:600; color:#374151; font-size:14px;">Additional Requirements / Message:</p>
+            <p style="margin:0; color:#1f2937; white-space:pre-wrap;">${message}</p>
+          </div>` : ''}
+
+          <p style="margin-top:20px;">You can reply directly to <a href="mailto:${email}" style="color:#2563eb; font-weight:600;">${email}</a> to connect with the lead.</p>
+          <p style="margin-top:24px; border-top:1px solid #edf2f7; padding-top:20px;">Best regards,<br /><strong>Levitica Support Team</strong></p>
+        </div>
+        <div style="background:#f9fafb; padding:20px 24px; text-align:center; font-size:12px; color:#6c757d; border-top:1px solid #eef2f6;">
+          <p style="margin:0 0 6px 0;">© ${new Date().getFullYear()} Levitica Technologies Pvt Ltd. All rights reserved.</p>
+          <p style="margin:0;"><a href="https://leviticatechnologies.com" style="color:#6c86a3; text-decoration:none;">leviticatechnologies.com</a></p>
+        </div>
+      </div>
+    </div>
+  `;
+};
+

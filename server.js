@@ -21,7 +21,6 @@ import { printRoutes } from "./printRoutes.js";
 import { connectCloudinary } from "./src/config/cloudinary.js";
 import { webhook } from "./src/controllers/paymentControllers/razorpayPaymentController.js";
 import { handleWebhook } from "./src/controllers/InternshipControllers/InternshipPaymentControllers.js";
-import { sendStartupTestEmail } from "./src/utils/Email/sendEmail.js";
 import productRoutes from "./src/routes/productRoutes.js";
 import mentorPortalRouter from "./src/routes/mentorroutes/mentorPortalRoutes.js";
 
@@ -116,7 +115,6 @@ app.get("/", (req, res) => {
 });
 
 app.get("/health", (req, res) => {
-  sendStartupTestEmail()
   res.json({
     status: "ok",
     service: "DCM Server",
